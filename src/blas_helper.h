@@ -24,37 +24,20 @@
  *  @END LICENSE
  */
 
-#ifndef CG_SOLVER_H
-#define CG_SOLVER_H
+#ifndef BLAS_HELPER_H
+#define BLAS_HELPER_H
+
+#include <cstdio>
+#include <climits>
+#include <cmath>
 
 namespace libsdp{
 
-typedef void (*CGCallbackFunction)(double *,double * ,void *);  
-
-class CGSolver {
-public:
-
-    CGSolver(long int n);
-    ~CGSolver();
-    void solve(double * Ap,
-               double *  x,
-               double *  b,
-               CGCallbackFunction function, void * data);
-
-    int total_iterations();
-    void set_max_iter(int iter);
-    void set_convergence(double conv);
-
-private:
-
-    int    n_;
-    int    iter_;
-    int    cg_max_iter_;
-    double cg_convergence_;
-    double * p_;
-    double * r_;
-
-};
+void C_DSCAL(size_t len, double alpha, double* vec, int inc);
+void C_DCOPY(size_t length, double* x, int inc_x, double* y, int inc_y);
+void C_DAXPY(size_t length, double a, double* x, int inc_x, double* y, int inc_y);
+double C_DDOT(size_t n, double* X, int inc_x, double* Y, int inc_y);
+double C_DNRM2(size_t n, double* X, int inc_x);
 
 } // end of namespace
 

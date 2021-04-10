@@ -29,6 +29,7 @@
 #include<math.h>
 
 #include "cg_solver.h"
+#include "blas_helper.h"
 
 namespace libsdp{
 
@@ -90,7 +91,7 @@ void CGSolver::solve(double * Ap,
         if ( nrm < cg_convergence_ ) break;
 
         C_DSCAL(n_,beta,p_,1);
-        C_DAXPY(n_,1.0,r,1,p_,1);
+        C_DAXPY(n_,1.0,r_,1,p_,1);
 
         iter_++;
 

@@ -1,21 +1,7 @@
 
 #include "blas_helper.h"
 
-#define F_DAXPY daxpy_
-#define F_DCOPY dcopy_
-#define F_DSCAL dscal_
-#define F_DDOT ddot_
-#define F_DNRM2 dnrm2_
-#define F_DGEMM dgemm_
-#define F_DGEMV dgemv_
-
-extern "C" {
-extern void F_DAXPY(int *length, double *a, double *x, int *inc_x, double *y, int *inc_y);
-extern void F_DCOPY(int *length, double *x, int *inc_x, double *y, int *inc_y);
-extern void F_DSCAL(int *n, double *alpha, double *vec, int *inc);
-extern double F_DDOT(int *n, double *x, int *incx, double *y, int *incy);
-extern double F_DNRM2(int *n, double *x, int *incx);
-}
+namespace libsdp {
 
 /*!
  * This function scales a vector by a real scalar.
@@ -33,7 +19,7 @@ void C_DSCAL(size_t length, double alpha, double *vec, int inc) {
     for (int block = 0; block <= big_blocks; block++) {
         double *vec_s = &vec[static_cast<size_t>(block) * inc * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
-        ::F_DSCAL(&length_s, &alpha, vec_s, &inc);
+        F_DSCAL(&length_s, &alpha, vec_s, &inc);
     }
 }
 
@@ -63,7 +49,7 @@ double C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y) {
         double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
-        reg += ::F_DDOT(&length_s, x_s, &inc_x, y_s, &inc_y);
+        reg += F_DDOT(&length_s, x_s, &inc_x, y_s, &inc_y);
     }
 
     return reg;
@@ -90,7 +76,7 @@ double C_DNRM2(size_t length, double *x, int inc_x) {
     for (int block = 0; block <= big_blocks; block++) {
         double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
-        reg += ::F_DNRM2(&length_s, x_s, &inc_x);
+        reg += F_DNRM2(&length_s, x_s, &inc_x);
     }
 
     return reg;
@@ -116,7 +102,7 @@ void C_DAXPY(size_t length, double a, double *x, int inc_x, double *y, int inc_y
         double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
-        ::F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);
+        F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);
     }
 }
 
@@ -141,7 +127,23 @@ void C_DCOPY(size_t length, double *x, int inc_x, double *y, int inc_y) {
         double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
-        ::F_DCOPY(&length_s, x_s, &inc_x, y_s, &inc_y);
+        F_DCOPY(&length_s, x_s, &inc_x, y_s, &inc_y);
     }
 }
 
+/**
+ *  Diagonalize a real symmetric matrix
+ */
+void Diagonalize(int N, double* A, double* W) {
+    char JOBZ = 'V';
+    char UPLO = 'U';
+    int LDA = N;
+    int LWORK = 3 * N - 1;
+    double* WORK = (double*)malloc(LWORK * sizeof(double));
+    int INFO = 0;
+    F_DSYEV(JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, INFO);
+    free(WORK);
+}
+
+
+}// end of namespaces

@@ -33,11 +33,39 @@
 
 namespace libsdp{
 
+#define F_DAXPY daxpy_
+#define F_DCOPY dcopy_
+#define F_DSCAL dscal_
+#define F_DDOT ddot_
+#define F_DNRM2 dnrm2_
+#define F_DGEMM dgemm_
+#define F_DGEMV dgemv_
+#define F_DSYEV dsyev_
+
+extern "C" {
+
+
+extern void F_DGEMM(char*, char*, int*, int*, int*, double*, double*, int*, double*, int*, double*, double*, int*);
+extern void F_DAXPY(int *length, double *a, double *x, int *inc_x, double *y, int *inc_y);
+extern void F_DCOPY(int *length, double *x, int *inc_x, double *y, int *inc_y);
+extern void F_DSCAL(int *n, double *alpha, double *vec, int *inc);
+extern double F_DDOT(int *n, double *x, int *incx, double *y, int *incy);
+extern double F_DNRM2(int *n, double *x, int *incx);
+extern void F_DSYEV(char &JOBZ, char &UPLO, int &N, double *A, int &LDA, double *W, double *WORK,int &LWORK, int &INFO);
+
+}
+
 void C_DSCAL(size_t len, double alpha, double* vec, int inc);
 void C_DCOPY(size_t length, double* x, int inc_x, double* y, int inc_y);
 void C_DAXPY(size_t length, double a, double* x, int inc_x, double* y, int inc_y);
 double C_DDOT(size_t n, double* X, int inc_x, double* Y, int inc_y);
 double C_DNRM2(size_t n, double* X, int inc_x);
+
+/**
+ * diagonalize a real symmetric matrix
+ */
+void Diagonalize(long int N, double *A, double *W);
+
 
 } // end of namespace
 

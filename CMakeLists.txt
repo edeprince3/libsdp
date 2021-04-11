@@ -28,4 +28,11 @@ cmake_minimum_required(VERSION 3.11)
 project(libsdp)
 set(CMAKE_CXX_STANDARD 14)
 
-add_library(sdp src/cg_solver.cc src/blas_helper.cc)     
+add_library(sdp src/cg_solver.cc src/blas_helper.cc src/bpsdp_solver.cc)     
+
+## find blas
+#find_package(BLAS REQUIRED)
+#if (BLAS_FOUND)
+#    target_link_libraries(sdp ${BLAS_LIBRARIES})
+#endif (BLAS_FOUND)
+#

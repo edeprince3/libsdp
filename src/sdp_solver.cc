@@ -24,19 +24,11 @@
  *  @END LICENSE
  */
 
-#include <math.h>
-
-#include <psi4/libmints/vector.h>
-#include <psi4/libmints/matrix.h>
-#include <psi4/liboptions/liboptions.h>
-#include <psi4/libqt/qt.h>
-#include <psi4/libpsi4util/PsiOutStream.h>
+#include<string.h>
 
 #include "sdp_solver.h"
 
-using namespace psi;
-
-namespace hilbert {
+namespace libsdp {
 
 SDPSolver::SDPSolver(long int n_primal, long int n_dual){
 

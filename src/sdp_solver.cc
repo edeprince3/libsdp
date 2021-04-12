@@ -31,8 +31,9 @@
 
 namespace libsdp {
 
-SDPSolver::SDPSolver(long int n_primal, long int n_dual){
+SDPSolver::SDPSolver(long int n_primal, long int n_dual, SDPOptions options){
 
+    options_      = options;
     n_primal_     = n_primal;
     n_dual_       = n_dual;
     mu_           = 0.1;
@@ -52,10 +53,6 @@ SDPSolver::SDPSolver(long int n_primal, long int n_dual){
     memset((void*)Au_, '\0',n_dual_   * sizeof(double));
     memset((void*)z_,  '\0',n_primal_ * sizeof(double));
     memset((void*)ATu_,'\0',n_primal_ * sizeof(double));
-
-    // TODO handle with set_...
-    e_convergence_ = 1.0e-5; 
-    r_convergence_ = 1.0e-5; 
 
     is_converged_ = false;
 }

@@ -34,6 +34,14 @@
 
 namespace libsdp {
 
+struct SDPOptions {
+    int cg_maxiter                   = 10000;
+    int mu_update_frequency          = 500;
+    double cg_convergence            = 1e-8;
+    double sdp_objective_convergence = 1e-4;
+    double sdp_error_convergence     = 1e-4;
+};
+
 typedef void (*SDPCallbackFunction)(double *,double *,void *);
 
 class SDPSolver{
@@ -41,7 +49,7 @@ class SDPSolver{
   public:
 
     /// SDPSolver constructor
-    SDPSolver(long int n_primal, long int n_dual);
+    SDPSolver(long int n_primal, long int n_dual, SDPOptions options);
 
     /// SDPSolver destructor
     ~SDPSolver();
@@ -92,6 +100,9 @@ class SDPSolver{
 
   protected:
 
+    /// options for the SDP
+    SDPOptions options_;
+
     /// pointer to input data
     void * data_;
 
@@ -136,12 +147,6 @@ class SDPSolver{
 
     /// temporary container the size of ATu
     double * ATu_;
-
-    /// the requested convergence of the primal dual gap
-    double e_convergence_;
-
-    /// the requested convergence of the primal and dual errors
-    double r_convergence_;
 
     /// the dimension of the primal vector
     long int n_primal_;

@@ -56,11 +56,12 @@ void BPSDPSolver::evaluate_AATu(double * AATu,double * u) {
     free(ATu);
 }
 
-BPSDPSolver::BPSDPSolver(long int n_primal, long int n_dual)
-    : SDPSolver(n_primal,n_dual) {
+BPSDPSolver::BPSDPSolver(long int n_primal, long int n_dual,SDPOptions options)
+    : SDPSolver(n_primal,n_dual,options) {
 
     cg_rhs_ = (double*)malloc(n_dual_*sizeof(double));
     memset((void*)cg_rhs_,'\0',n_dual_*sizeof(double));
+
 }
 
 BPSDPSolver::~BPSDPSolver(){
@@ -83,15 +84,13 @@ void BPSDPSolver::solve(double * x,
 
     // cg solver
     std::shared_ptr<CGSolver> cg (new CGSolver(n_dual_));
-    // TODO: get CG_MAXITER from set() function
-    cg->set_max_iter(10000);
-    // TODO: get CG_CONVERGENCE from set() function
-    double cg_convergence = 1e-8;
-    cg->set_convergence(cg_convergence);
+
+    cg->set_max_iter(options_.cg_maxiter);
+    cg->set_convergence(options_.cg_convergence);
 
     // the iterations
     printf("\n");
-    printf("    initial primal energy: %20.12lf\n",C_DDOT(n_primal_,c,1,x,1));
+    printf("    initial primal objective function value: %20.12lf\n",C_DDOT(n_primal_,c,1,x,1));
     printf("\n");
     printf("      oiter");
     printf(" iiter");
@@ -102,12 +101,9 @@ void BPSDPSolver::solve(double * x,
     printf("     eps(p)");
     printf("     eps(d)\n");
 
-    double primal_dual_energy_gap = 0.0;
+    double primal_dual_objective_gap = 0.0;
 
     int oiter_local = 0;
-
-    // TODO: get MU_UPDATE_FREQUENCY from set function
-    int mu_update_frequency = 500;
 
     do {
 
@@ -127,14 +123,13 @@ void BPSDPSolver::solve(double * x,
         C_DAXPY(n_dual_,1.0,Au_,1,cg_rhs_,1);
 
         // set convergence for CG problem (step 1 in table 1 of PRL 106 083001)
-        // TODO: get CG_CONVERGENCE from set() function
-        double cg_conv_i = 1e-8;
+        double cg_conv_i = options_.cg_convergence;
         if (oiter_ == 0)
             cg_conv_i = 0.01;
         else
             cg_conv_i = (primal_error_ > dual_error_) ? 0.01 * dual_error_ : 0.01 * primal_error_;
-        if (cg_conv_i < cg_convergence)
-            cg_conv_i = cg_convergence;
+        if (cg_conv_i < options_.cg_convergence)
+            cg_conv_i = options_.cg_convergence;
         cg->set_convergence(cg_conv_i);
 
         // solve CG problem (step 1 in table 1 of PRL 106 083001)
@@ -169,23 +164,23 @@ void BPSDPSolver::solve(double * x,
         primal_error_ = C_DNRM2(n_dual_,Au_,1);
 
         // compute current primal and dual energies
-        double energy_primal = C_DDOT(n_primal_,c,1,x,1);
-        double energy_dual   = C_DDOT(n_dual_,b,1,y_,1);
+        double objective_primal = C_DDOT(n_primal_,c,1,x,1);
+        double objective_dual   = C_DDOT(n_dual_,b,1,y_,1);
 
-        primal_dual_energy_gap = fabs(energy_primal-energy_dual);
+        primal_dual_objective_gap = fabs(objective_primal-objective_dual);
 
         printf("      %5i %5i %11.6lf %11.6lf %11.6le %7.3lf %10.5le %10.5le\n",
-                    oiter_,iiter,energy_primal,energy_dual,primal_dual_energy_gap,mu_,primal_error_,dual_error_);
+                    oiter_,iiter,objective_primal,objective_dual,primal_dual_objective_gap,mu_,primal_error_,dual_error_);
 
         oiter_++;
         oiter_local++;
 
         // don't update mu every iteration
-        if ( oiter_ % mu_update_frequency == 0 && oiter_ > 0 ){
+        if ( oiter_ % options_.mu_update_frequency == 0 && oiter_ > 0 ){
             mu_ = mu_ * primal_error_ / dual_error_;
         }
 
-        if ( primal_error_ > r_convergence_ || dual_error_ > r_convergence_  || primal_dual_energy_gap > e_convergence_ ) {
+        if ( primal_error_ > options_.sdp_error_convergence || dual_error_ > options_.sdp_error_convergence  || primal_dual_objective_gap > options_.sdp_objective_convergence ) {
             is_converged_ = false;
         }else {
             is_converged_ = true;

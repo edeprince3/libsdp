@@ -36,7 +36,7 @@ class BPSDPSolver: public SDPSolver{
   public:
 
     /// BPSDPSolver constructor
-    BPSDPSolver(long int n_primal, long int n_dual);
+    BPSDPSolver(long int n_primal, long int n_dual,SDPOptions options);
 
     /// BPSDPSolver destructor
     ~BPSDPSolver();

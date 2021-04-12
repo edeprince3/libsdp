@@ -27,6 +27,7 @@
 #include<string.h>
 
 #include "sdp_solver.h"
+#include "blas_helper.h"
 
 namespace libsdp {
 
@@ -66,6 +67,14 @@ SDPSolver::~SDPSolver(){
     free(z_);
     free(ATu_);
 
+}
+
+void SDPSolver::set_y(double * y) { 
+    C_DCOPY(n_dual_,y,1,y_,1); 
+}
+
+void SDPSolver::set_z(double * z) {
+   C_DCOPY(n_primal_,z,1,z_,1); 
 }
 
 }

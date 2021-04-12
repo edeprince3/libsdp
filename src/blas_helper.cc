@@ -13,12 +13,12 @@ namespace libsdp {
  *
  * \ingroup QT
  */
-void C_DSCAL(size_t length, double alpha, double *vec, int inc) {
-    int big_blocks = (int)(length / INT_MAX);
-    int small_size = (int)(length % INT_MAX);
-    for (int block = 0; block <= big_blocks; block++) {
+void C_DSCAL(size_t length, double alpha, double *vec, long int inc) {
+    long int big_blocks = (long int)(length / INT_MAX);
+    long int small_size = (long int)(length % INT_MAX);
+    for (long int block = 0; block <= big_blocks; block++) {
         double *vec_s = &vec[static_cast<size_t>(block) * inc * INT_MAX];
-        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        signed long int length_s = (block == big_blocks) ? small_size : INT_MAX;
         F_DSCAL(&length_s, &alpha, vec_s, &inc);
     }
 }
@@ -28,27 +28,27 @@ void C_DSCAL(size_t length, double alpha, double *vec, int inc) {
  * This function returns the dot product of two vectors, x and y.
  *
  * \param length Number of elements in x and y.
- * \param x      A pointer to the beginning of the data in x.
+ * \param x      A polong inter to the beginning of the data in x.
  *               Must be of at least length (1+(N-1)*abs(inc_x).
  * \param inc_x  how many places to skip to get to next element in x
- * \param y      A pointer to the beginning of the data in y.
+ * \param y      A polong inter to the beginning of the data in y.
  * \param inc_y  how many places to skip to get to next element in y
  *
  * @returns the dot product
  *
  */
 
-double C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y) {
+double C_DDOT(size_t length, double *x, long int inc_x, double *y, long int inc_y) {
     if (length == 0) return 0.0;
 
     double reg = 0.0;
 
-    int big_blocks = (int)(length / INT_MAX);
-    int small_size = (int)(length % INT_MAX);
-    for (int block = 0; block <= big_blocks; block++) {
+    long int big_blocks = (long int)(length / INT_MAX);
+    long int small_size = (long int)(length % INT_MAX);
+    for (long int block = 0; block <= big_blocks; block++) {
         double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
-        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        signed long int length_s = (block == big_blocks) ? small_size : INT_MAX;
         reg += F_DDOT(&length_s, x_s, &inc_x, y_s, &inc_y);
     }
 
@@ -58,7 +58,7 @@ double C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y) {
  * This function returns the square of the norm of this vector.
  *
  * \param length Number of elements in x.
- * \param x      A pointer to the beginning of the data in x.
+ * \param x      A polong inter to the beginning of the data in x.
  *               Must be of at least length (1+(N-1)*abs(inc_x).
  * \param inc_x  how many places to skip to get to next element in x
  *
@@ -66,16 +66,16 @@ double C_DDOT(size_t length, double *x, int inc_x, double *y, int inc_y) {
  *
  */
 
-double C_DNRM2(size_t length, double *x, int inc_x) {
+double C_DNRM2(size_t length, double *x, long int inc_x) {
     if (length == 0) return 0.0;
 
     double reg = 0.0;
 
-    int big_blocks = (int)(length / INT_MAX);
-    int small_size = (int)(length % INT_MAX);
-    for (int block = 0; block <= big_blocks; block++) {
+    long int big_blocks = (long int)(length / INT_MAX);
+    long int small_size = (long int)(length % INT_MAX);
+    for (long int block = 0; block <= big_blocks; block++) {
         double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
-        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        signed long int length_s = (block == big_blocks) ? small_size : INT_MAX;
         reg += F_DNRM2(&length_s, x_s, &inc_x);
     }
 
@@ -95,20 +95,20 @@ double C_DNRM2(size_t length, double *x, int inc_x) {
  * \param inc_y    how many places to skip to get to next element in y
  *
  */
-void C_DAXPY(size_t length, double a, double *x, int inc_x, double *y, int inc_y) {
-    int big_blocks = (int)(length / INT_MAX);
-    int small_size = (int)(length % INT_MAX);
-    for (int block = 0; block <= big_blocks; block++) {
+void C_DAXPY(size_t length, double a, double *x, long int inc_x, double *y, long int inc_y) {
+    long int big_blocks = (long int)(length / INT_MAX);
+    long int small_size = (long int)(length % INT_MAX);
+    for (long int block = 0; block <= big_blocks; block++) {
         double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
-        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        signed long int length_s = (block == big_blocks) ? small_size : INT_MAX;
         F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);
     }
 }
 
 
 /*!
- * This function copies x into y.
+ * This function copies x long into y.
  *
  * Steps every inc_x in x and every inc_y in y (normally both 1).
  *
@@ -120,13 +120,13 @@ void C_DAXPY(size_t length, double a, double *x, int inc_x, double *y, int inc_y
  *
  * \ingroup QT
  */
-void C_DCOPY(size_t length, double *x, int inc_x, double *y, int inc_y) {
-    int big_blocks = (int)(length / INT_MAX);
-    int small_size = (int)(length % INT_MAX);
-    for (int block = 0; block <= big_blocks; block++) {
+void C_DCOPY(size_t length, double *x, long int inc_x, double *y, long int inc_y) {
+    long int big_blocks = (long int)(length / INT_MAX);
+    long int small_size = (long int)(length % INT_MAX);
+    for (long int block = 0; block <= big_blocks; block++) {
         double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
-        signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
+        signed long int length_s = (block == big_blocks) ? small_size : INT_MAX;
         F_DCOPY(&length_s, x_s, &inc_x, y_s, &inc_y);
     }
 }
@@ -134,13 +134,13 @@ void C_DCOPY(size_t length, double *x, int inc_x, double *y, int inc_y) {
 /**
  *  Diagonalize a real symmetric matrix
  */
-void Diagonalize(int N, double* A, double* W) {
+void Diagonalize(long int N, double* A, double* W) {
     char JOBZ = 'V';
     char UPLO = 'U';
-    int LDA = N;
-    int LWORK = 3 * N - 1;
+    long int LDA = N;
+    long int LWORK = 3 * N - 1;
     double* WORK = (double*)malloc(LWORK * sizeof(double));
-    int INFO = 0;
+    long int INFO = 0;
     F_DSYEV(JOBZ, UPLO, N, A, LDA, W, WORK, LWORK, INFO);
     free(WORK);
 }

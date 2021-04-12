@@ -27,9 +27,10 @@
 #ifndef SDP_SOLVER_H
 #define SDP_SOLVER_H
 
-#include<vector>
+#include<stdio.h>
+#include<stdlib.h>
 
-#include"blas_helper.h"
+#include<vector>
 
 namespace libsdp {
 
@@ -66,8 +67,8 @@ class SDPSolver{
     double oiter_time() { return oiter_time_; }
 
     void set_mu(double mu) { mu_ = mu; }
-    void set_y(double * y) { C_DCOPY(n_dual_,y,1,y_,1); }
-    void set_z(double * z) { C_DCOPY(n_primal_,z,1,z_,1); }
+    void set_y(double * y);
+    void set_z(double * z);
 
     double get_mu() { return mu_; }
     double * get_y() { return y_; }

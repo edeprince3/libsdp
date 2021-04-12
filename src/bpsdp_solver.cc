@@ -248,22 +248,23 @@ void BPSDPSolver::Update_xz(double * x, double * c, std::vector<int> primal_bloc
                 mydim++;
             }
         }
-        int dim = (int)mydim;
-        F_DGEMM(&char_t,&char_n,&primal_block_dim[i],&primal_block_dim[i],&dim,&one,mat,&primal_block_dim[i],eigvec2,&primal_block_dim[i],&zero,&x[myoffset],&primal_block_dim[i]);
+
+        long int block_dim = primal_block_dim[i];
+
+        F_DGEMM(&char_t,&char_n,&block_dim,&block_dim,&mydim,&one,mat,&block_dim,eigvec2,&block_dim,&zero,&x[myoffset],&block_dim);
 
         // (-) part
         mydim = 0;
-        for (long int j = 0; j < primal_block_dim[i]; j++) {
+        for (long int j = 0; j < block_dim; j++) {
             if ( eigval[j] < 0.0 ) {
-                for (long int q = 0; q < primal_block_dim[i]; q++) {
-                    mat[q*primal_block_dim[i]+mydim]   = -eigvec[q*primal_block_dim[i]+j] * eigval[j];
-                    eigvec2[q*primal_block_dim[i]+mydim] =  eigvec[q*primal_block_dim[i]+j];
+                for (long int q = 0; q < block_dim; q++) {
+                    mat[q*block_dim+mydim]   = -eigvec[q*block_dim+j] * eigval[j];
+                    eigvec2[q*block_dim+mydim] =  eigvec[q*block_dim+j];
                 }
                 mydim++;
             }
         }
-        dim = (int)mydim;
-        F_DGEMM(&char_t,&char_n,&primal_block_dim[i],&primal_block_dim[i],&dim,&one,mat,&primal_block_dim[i],eigvec,&primal_block_dim[i],&zero,&z_[myoffset],&primal_block_dim[i]);
+        F_DGEMM(&char_t,&char_n,&block_dim,&block_dim,&mydim,&one,mat,&block_dim,eigvec,&block_dim,&zero,&z_[myoffset],&block_dim);
 
         free(mat);
         free(eigvec);

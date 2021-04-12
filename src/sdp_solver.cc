@@ -41,8 +41,6 @@ SDPSolver::SDPSolver(long int n_primal, long int n_dual, SDPOptions options){
     dual_error_   = 0.0;
     oiter_        = 0;
     iiter_total_  = 0;
-    oiter_time_   = 0.0;
-    iiter_time_   = 0.0;
 
     y_   = (double*)malloc(n_dual_   * sizeof(double));
     Au_  = (double*)malloc(n_dual_   * sizeof(double));

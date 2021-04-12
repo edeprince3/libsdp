@@ -30,7 +30,6 @@
 #include "bpsdp_solver.h"
 #include "blas_helper.h"
 #include "cg_solver.h"
-#include "omp.h"
 
 namespace libsdp {
 
@@ -107,8 +106,6 @@ void BPSDPSolver::solve(double * x,
 
     do {
 
-        double start = omp_get_wtime();
-
         // evaluate mu * (b - Ax) for CG
         evaluate_Au(Au_, x, data);
         C_DAXPY(n_dual_,-1.0,b,1,Au_,1);
@@ -136,19 +133,10 @@ void BPSDPSolver::solve(double * x,
         cg->solve(Au_,y_,cg_rhs_,evaluate_cg_AATu,(void*)this);
         int iiter = cg->total_iterations();
 
-        double end = omp_get_wtime();
-
-        iiter_time_  += end - start;
         iiter_total_ += iiter;
-
-        start = omp_get_wtime();
 
         // update primal and dual solutions
         Update_xz(x, c, primal_block_dim, evaluate_ATu, data);
-
-        end = omp_get_wtime();
-
-        oiter_time_ += end - start;
 
         // update mu (step 3)
 

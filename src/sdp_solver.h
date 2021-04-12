@@ -71,8 +71,6 @@ class SDPSolver{
 
     int iiter_total() { return iiter_total_; }
     int oiter_total() { return oiter_; }
-    double iiter_time() { return iiter_time_; }
-    double oiter_time() { return oiter_time_; }
 
     void set_mu(double mu) { mu_ = mu; }
     void set_y(double * y);
@@ -126,12 +124,6 @@ class SDPSolver{
 
     /// the total number of inner iterations
     int iiter_total_;
-
-    /// the total time taken by the inner iterations
-    double iiter_time_;
-
-    /// the total time taken by the outer iterations
-    double oiter_time_;
 
     /// the penalty parameter
     double mu_;

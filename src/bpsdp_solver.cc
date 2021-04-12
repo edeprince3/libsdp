@@ -202,8 +202,7 @@ void BPSDPSolver::Update_xz(double * x, double * c, std::vector<int> primal_bloc
     // evaluate M(mu*x + ATy - c)
     evaluate_ATu(ATu_, y_, data);
     C_DAXPY(n_primal_,-1.0,c,1,ATu_,1);
-    C_DSCAL(n_primal_,mu_,x,1);
-    C_DAXPY(n_primal_,1.0,x,1,ATu_,1);
+    C_DAXPY(n_primal_,mu_,x,1,ATu_,1);
 
     char char_n = 'n';
     char char_t = 't';
@@ -218,38 +217,38 @@ void BPSDPSolver::Update_xz(double * x, double * c, std::vector<int> primal_bloc
             myoffset += primal_block_dim[j] * primal_block_dim[j];
         }
 
-        double * mat     = (double*)malloc(primal_block_dim[i]*primal_block_dim[i]*sizeof(double));
-        double * eigvec  = (double*)malloc(primal_block_dim[i]*primal_block_dim[i]*sizeof(double));
-        double * eigval  = (double*)malloc(primal_block_dim[i]*sizeof(double));
+        long int block_dim = primal_block_dim[i];
 
-        for (int p = 0; p < primal_block_dim[i]; p++) {
-            for (int q = p; q < primal_block_dim[i]; q++) {
-                double dum = 0.5 * ( ATu_[myoffset + p * primal_block_dim[i] + q] +
-                                     ATu_[myoffset + q * primal_block_dim[i] + p] );
-                mat[p*primal_block_dim[i] + q] = mat[q*primal_block_dim[i] + p] = dum;
+        double * mat     = (double*)malloc(block_dim*block_dim*sizeof(double));
+        double * eigvec  = (double*)malloc(block_dim*block_dim*sizeof(double));
+        double * eigval  = (double*)malloc(block_dim*sizeof(double));
+
+        for (int p = 0; p < block_dim; p++) {
+            for (int q = p; q < block_dim; q++) {
+                double dum = 0.5 * ( ATu_[myoffset + p * block_dim + q] +
+                                     ATu_[myoffset + q * block_dim + p] );
+                mat[p*block_dim + q] = mat[q*block_dim + p] = dum;
             }
         }
 
-        Diagonalize(primal_block_dim[i],mat,eigval);
-        C_DCOPY(primal_block_dim[i]*primal_block_dim[i],mat,1,eigvec,1);
+        Diagonalize(block_dim,mat,eigval);
+        C_DCOPY(block_dim*block_dim,mat,1,eigvec,1);
 
         // separate U+ and U-, transform back to nondiagonal basis
 
-        double * eigvec2 = (double*)malloc(primal_block_dim[i]*primal_block_dim[i]*sizeof(double));
+        double * eigvec2 = (double*)malloc(block_dim*block_dim*sizeof(double));
 
         // (+) part
         long int mydim = 0;
-        for (long int j = 0; j < primal_block_dim[i]; j++) {
+        for (long int j = 0; j < block_dim; j++) {
             if ( eigval[j] > 0.0 ) {
-                for (long int q = 0; q < primal_block_dim[i]; q++) {
-                    mat[q*primal_block_dim[i]+mydim]   = eigvec[q*primal_block_dim[i]+j] * eigval[j]/mu_;
-                    eigvec2[q*primal_block_dim[i]+mydim] = eigvec[q*primal_block_dim[i]+j];
+                for (long int q = 0; q < block_dim; q++) {
+                    mat[q*block_dim+mydim]     = eigvec[j*block_dim+q] * eigval[j]/mu_;
+                    eigvec2[q*block_dim+mydim] = eigvec[j*block_dim+q];
                 }
                 mydim++;
             }
         }
-
-        long int block_dim = primal_block_dim[i];
 
         F_DGEMM(&char_t,&char_n,&block_dim,&block_dim,&mydim,&one,mat,&block_dim,eigvec2,&block_dim,&zero,&x[myoffset],&block_dim);
 
@@ -258,13 +257,14 @@ void BPSDPSolver::Update_xz(double * x, double * c, std::vector<int> primal_bloc
         for (long int j = 0; j < block_dim; j++) {
             if ( eigval[j] < 0.0 ) {
                 for (long int q = 0; q < block_dim; q++) {
-                    mat[q*block_dim+mydim]   = -eigvec[q*block_dim+j] * eigval[j];
-                    eigvec2[q*block_dim+mydim] =  eigvec[q*block_dim+j];
+                    mat[q*block_dim+mydim]     = -eigvec[j*block_dim+q] * eigval[j];
+                    eigvec2[q*block_dim+mydim] =  eigvec[j*block_dim+q];
                 }
                 mydim++;
             }
         }
-        F_DGEMM(&char_t,&char_n,&block_dim,&block_dim,&mydim,&one,mat,&block_dim,eigvec,&block_dim,&zero,&z_[myoffset],&block_dim);
+
+        F_DGEMM(&char_t,&char_n,&block_dim,&block_dim,&mydim,&one,mat,&block_dim,eigvec2,&block_dim,&zero,&z_[myoffset],&block_dim);
 
         free(mat);
         free(eigvec);

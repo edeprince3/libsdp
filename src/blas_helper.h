@@ -64,7 +64,7 @@ double C_DNRM2(size_t n, double* X, long int inc_x);
 /**
  * diagonalize a real symmetric matrix
  */
-void Diagonalize(long long int N, double *A, double *W);
+void Diagonalize(long int N, double *A, double *W);
 
 
 } // end of namespace

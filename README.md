@@ -1,1 +1,2 @@
-# libsdp: a library of semidefinite programming solvers
+# libsdp
+a library of semidefinite programming solvers

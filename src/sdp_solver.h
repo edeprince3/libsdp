@@ -1,7 +1,7 @@
 /* 
  *  @BEGIN LICENSE
  * 
- *  libsdp: a c++ library for solving semidefinite programs
+ *  libsdp: a library of semidefinite programming solvers
  * 
  *  Copyright (c) 2021 by its authors (LICENSE).
  * 

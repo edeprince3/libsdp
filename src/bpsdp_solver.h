@@ -49,6 +49,7 @@ class BPSDPSolver: public SDPSolver{
                int maxiter,
                SDPCallbackFunction evaluate_Au,
                SDPCallbackFunction evaluate_ATu,
+               SDPProgressMonitorFunction progress_monitor,
                void * data);
 
     void evaluate_AATu(double * AATu,double * u);

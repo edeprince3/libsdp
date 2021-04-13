@@ -75,6 +75,7 @@ void BPSDPSolver::solve(double * x,
                         int maxiter,
                         SDPCallbackFunction evaluate_Au, 
                         SDPCallbackFunction evaluate_ATu, 
+                        SDPProgressMonitorFunction progress_monitor,
                         void * data){
 
     data_         = data;
@@ -88,20 +89,6 @@ void BPSDPSolver::solve(double * x,
     cg->set_convergence(options_.cg_convergence);
 
     // the iterations
-    if ( options_.print_level > 0 ) { 
-        fprintf(options_.outfile,"\n");
-        fprintf(options_.outfile,"    initial primal objective function value: %20.12lf\n",C_DDOT(n_primal_,c,1,x,1));
-        fprintf(options_.outfile,"\n");
-        fprintf(options_.outfile,"      oiter");
-        fprintf(options_.outfile," iiter");
-        fprintf(options_.outfile,"        E(p)");
-        fprintf(options_.outfile,"        E(d)");
-        fprintf(options_.outfile,"      E(gap)");
-        fprintf(options_.outfile,"      mu");
-        fprintf(options_.outfile,"     eps(p)");
-        fprintf(options_.outfile,"     eps(d)\n");
-    }
-
     double primal_dual_objective_gap = 0.0;
 
     int oiter_local = 0;
@@ -159,10 +146,7 @@ void BPSDPSolver::solve(double * x,
 
         primal_dual_objective_gap = fabs(objective_primal-objective_dual);
 
-        if ( options_.print_level > 0 ) { 
-            fprintf(options_.outfile,"      %5i %5i %11.6lf %11.6lf %11.6le %7.3lf %10.5le %10.5le\n",
-                        oiter_,iiter,objective_primal,objective_dual,primal_dual_objective_gap,mu_,primal_error_,dual_error_);
-        }
+        progress_monitor(oiter_,iiter,objective_primal,objective_dual,mu_,primal_error_,dual_error_, data);
 
         oiter_++;
         oiter_local++;

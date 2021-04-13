@@ -40,11 +40,10 @@ struct SDPOptions {
     double cg_convergence            = 1e-8;
     double sdp_objective_convergence = 1e-4;
     double sdp_error_convergence     = 1e-4;
-    FILE * outfile                   = stdout;
-    int print_level                  = 1;
 };
 
 typedef void (*SDPCallbackFunction)(double *,double *,void *);
+typedef void (*SDPProgressMonitorFunction)(int,int,double,double,double,double,double,void *);
 
 class SDPSolver{
 
@@ -64,6 +63,7 @@ class SDPSolver{
                        int maxiter,
                        SDPCallbackFunction evaluate_Au,
                        SDPCallbackFunction evaluate_ATu,
+                       SDPProgressMonitorFunction progress_monitor,
                        void * data){
         printf("\n");
         printf("    solve() has not been implemented for this sdp solver\n");

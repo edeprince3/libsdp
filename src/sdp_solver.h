@@ -40,6 +40,8 @@ struct SDPOptions {
     double cg_convergence            = 1e-8;
     double sdp_objective_convergence = 1e-4;
     double sdp_error_convergence     = 1e-4;
+    FILE * outfile                   = stdout;
+    int print_level                  = 1;
 };
 
 typedef void (*SDPCallbackFunction)(double *,double *,void *);

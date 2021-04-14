@@ -36,9 +36,6 @@ add_library(sdp SHARED
     src/bpsdp_solver.cc 
     src/rrsdp_solver.cc)
 
-## find blas
-#find_package(BLAS REQUIRED)
-#if (BLAS_FOUND)
-#    target_link_libraries(sdp ${BLAS_LIBRARIES})
-#endif (BLAS_FOUND)
-#
+# 
+target_include_directories(sdp PRIVATE ${LBFGS_INCLUDE})
+

@@ -28,6 +28,8 @@
 
 #include "lbfgs_helper.h"
 
+#include <lbfgs.h>
+
 namespace libsdp {
 
 void lbfgs_error_check(int value) {

@@ -134,20 +134,6 @@ void RRSDPSolver::solve(double * x,
         mu_ = 0.1;
     }
 
-/*
-// TODO fix printing
-    // the iterations
-    outfile->Printf("\n");
-    outfile->Printf("    initial primal energy: %20.12lf\n",energy);
-    outfile->Printf("\n");
-    outfile->Printf("           oiter");
-    outfile->Printf("        iiter");
-    outfile->Printf("            L");
-    outfile->Printf("            E");
-    outfile->Printf("           mu");
-    outfile->Printf("     ||Ax-b||\n");
-*/
-
     int oiter_local = 0;
 
     double max_err = -999;
@@ -176,7 +162,7 @@ void RRSDPSolver::solve(double * x,
             param.epsilon = options_.sdp_error_convergence;
         }
         int status = lbfgs(n_primal_,lbfgs_vars_x_,&lagrangian,lbfgs_evaluate,monitor_lbfgs_progress,(void*)this,&param);
-        lbfgs_error_check(status);
+        //lbfgs_error_check(status);
 
         // update lagrange multipliers and penalty parameter
 
@@ -209,11 +195,6 @@ void RRSDPSolver::solve(double * x,
         max_err = new_max_err;
 
         progress_monitor(oiter_,iiter_,lagrangian,objective_primal,mu_,primal_error_,0.0, data);
-
-/* TODO: fix printing
-        outfile->Printf("    %12i %12i %12.6lf %12.6lf %12.2le %12.3le\n",
-                    oiter_,iiter_,lagrangian,objective_primal,mu_,primal_error_);
-*/
 
         iiter_total_ += iiter_;
 

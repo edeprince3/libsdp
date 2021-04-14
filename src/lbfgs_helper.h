@@ -27,8 +27,6 @@
 #ifndef MY_LBFGS_H
 #define MY_LBFGS_H
 
-#include <lbfgs.h>
-
 namespace libsdp {
 
 void lbfgs_error_check(int value);

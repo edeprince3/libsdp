@@ -35,6 +35,7 @@
 namespace libsdp {
 
 struct SDPOptions {
+    int maxiter                      = 50000;
     int cg_maxiter                   = 10000;
     int mu_update_frequency          = 500;
     double cg_convergence            = 1e-8;

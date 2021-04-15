@@ -42,7 +42,9 @@ target_include_directories(sdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
 # liblbfgs headers
 target_include_directories(sdp PRIVATE ${LBFGS_INCLUDE})
 
+set_target_properties(sdp PROPERTIES PUBLIC_HEADER "include/rrsdp_solver.h;include/bpsdp_solver.h")
 install(TARGETS sdp
-    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 

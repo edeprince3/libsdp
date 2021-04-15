@@ -42,3 +42,7 @@ target_include_directories(sdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
 # liblbfgs headers
 target_include_directories(sdp PRIVATE ${LBFGS_INCLUDE})
 
+install(TARGETS sdp
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
+

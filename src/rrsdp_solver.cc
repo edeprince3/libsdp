@@ -27,7 +27,8 @@
 #include <string.h>
 #include <memory>
 
-#include "rrsdp_solver.h"
+#include <rrsdp_solver.h>
+
 #include "blas_helper.h"
 #include "lbfgs_helper.h"
 

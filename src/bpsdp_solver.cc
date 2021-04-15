@@ -27,9 +27,10 @@
 #include <string.h>
 #include <memory>
 
-#include "bpsdp_solver.h"
+#include <bpsdp_solver.h>
+#include <cg_solver.h>
+
 #include "blas_helper.h"
-#include "cg_solver.h"
 
 namespace libsdp {
 

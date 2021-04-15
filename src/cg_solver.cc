@@ -28,7 +28,8 @@
 #include<stdlib.h>
 #include<math.h>
 
-#include "cg_solver.h"
+#include <cg_solver.h>
+
 #include "blas_helper.h"
 
 namespace libsdp{

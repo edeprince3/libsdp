@@ -26,7 +26,8 @@
 
 #include<string.h>
 
-#include "sdp_solver.h"
+#include <sdp_solver.h>
+
 #include "blas_helper.h"
 
 namespace libsdp {

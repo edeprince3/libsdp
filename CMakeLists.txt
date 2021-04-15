@@ -36,6 +36,9 @@ add_library(sdp SHARED
     src/bpsdp_solver.cc 
     src/rrsdp_solver.cc)
 
-# 
+# libsdp headers
+target_include_directories(sdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
+
+# liblbfgs headers
 target_include_directories(sdp PRIVATE ${LBFGS_INCLUDE})
 

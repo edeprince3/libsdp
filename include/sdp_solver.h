@@ -32,6 +32,7 @@
 
 #include<vector>
 #include<string>
+#include<functional>
 
 namespace libsdp {
 
@@ -50,8 +51,8 @@ struct SDPOptions {
     SDPAlgorithm algorithm;
 };
 
-typedef void (*SDPCallbackFunction)(double *,double *,void *);
-typedef void (*SDPProgressMonitorFunction)(int,int,double,double,double,double,double,void *);
+typedef std::function<void(double*,double*,void*)> SDPCallbackFunction;
+typedef std::function<void(int,int,double,double,double,double,double,void*)> SDPProgressMonitorFunction;
 
 class SDPSolver{
 

@@ -31,16 +31,23 @@
 #include<stdlib.h>
 
 #include<vector>
+#include<string>
 
 namespace libsdp {
 
 struct SDPOptions {
+    enum SDPAlgorithm {
+        BPSDP = 0,
+        RRSDP
+    };
+    SDPOptions(){};
     int maxiter                      = 50000;
     int cg_maxiter                   = 10000;
     int mu_update_frequency          = 500;
     double cg_convergence            = 1e-8;
     double sdp_objective_convergence = 1e-4;
     double sdp_error_convergence     = 1e-4;
+    SDPAlgorithm algorithm;
 };
 
 typedef void (*SDPCallbackFunction)(double *,double *,void *);

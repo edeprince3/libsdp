@@ -28,6 +28,21 @@ cmake_minimum_required(VERSION 3.11)
 project(libsdp)
 set(CMAKE_CXX_STANDARD 14)
 
+include(FetchContent)
+FetchContent_Declare(
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11
+    GIT_TAG        v2.5.0
+)
+
+FetchContent_GetProperties(pybind11)
+if(NOT pybind11_POPULATED)
+    FetchContent_Populate(pybind11)
+    add_subdirectory(${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
+endif()
+
+set(PYBIND11_CPP_STANDARD -std=c++14)
+
 add_library(sdp SHARED 
     src/blas_helper.cc 
     src/lbfgs_helper.cc 
@@ -39,12 +54,42 @@ add_library(sdp SHARED
 # libsdp headers
 target_include_directories(sdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
 
-# liblbfgs headers
+# liblbfgs header
 target_include_directories(sdp PRIVATE ${LBFGS_INCLUDE})
 
 set_target_properties(sdp PROPERTIES PUBLIC_HEADER "include/sdp_solver.h;include/rrsdp_solver.h;include/bpsdp_solver.h")
+
 install(TARGETS sdp
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+# python interface
+if ( BUILD_PYTHON_INTERFACE ) 
+
+    pybind11_add_module(pysdp SHARED 
+        src/blas_helper.cc 
+        src/lbfgs_helper.cc 
+        src/cg_solver.cc 
+        src/sdp_solver.cc 
+        src/bpsdp_solver.cc 
+        src/rrsdp_solver.cc
+        src/sdp_helper.cc)
+    
+    #add_dependencies(pysdp sdp)
+    
+    # BLAS
+    find_package(BLAS REQUIRED)
+    target_link_libraries(pysdp PRIVATE ${BLAS_LIBRARIES})
+    
+    # libsdp 
+    target_include_directories(pysdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
+    #target_link_libraries(pysdp PRIVATE "${PROJECT_SOURCE_DIR}/libsdp.so")
+    
+    # link liblbfgs 
+    target_link_libraries(pysdp PRIVATE ${LBFGS_LIBRARY})
+    
+    # liblbfgs header
+    target_include_directories(pysdp PRIVATE ${LBFGS_INCLUDE})
+
+endif()

@@ -78,7 +78,7 @@ void export_SDPHelper(py::module& m) {
 
 }
 
-PYBIND11_MODULE(pysdp, m) {
+PYBIND11_MODULE(libsdp, m) {
     m.doc() = "Python API of libsdp";
     export_SDPHelper(m);
 }

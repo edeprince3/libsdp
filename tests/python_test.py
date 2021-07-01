@@ -1,9 +1,9 @@
 # test python implementation to libsdp
 
 import sys
-sys.path.insert(0, '../../.')
-import libsdp
+sys.path.insert(0, '../.')
 
+import libsdp
 
 def evaluate_Au(Au, u, data):
 

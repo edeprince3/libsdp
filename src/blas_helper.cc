@@ -1,6 +1,8 @@
 
 #include "blas_helper.h"
 
+#include <stdlib.h>
+
 namespace libsdp {
 
 /*!

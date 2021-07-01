@@ -47,7 +47,7 @@ set(PYBIND11_CPP_STANDARD -std=c++14)
 # python interface
 if ( BUILD_PYTHON_INTERFACE ) 
 
-    pybind11_add_module(pysdp SHARED 
+    pybind11_add_module(libsdp SHARED 
         src/blas_helper.cc 
         src/lbfgs_helper.cc 
         src/cg_solver.cc 
@@ -56,21 +56,19 @@ if ( BUILD_PYTHON_INTERFACE )
         src/rrsdp_solver.cc
         src/sdp_helper.cc)
     
-    #add_dependencies(pysdp sdp)
-    
     # BLAS
     find_package(BLAS REQUIRED)
-    target_link_libraries(pysdp PRIVATE ${BLAS_LIBRARIES})
+    target_link_libraries(libsdp PRIVATE ${BLAS_LIBRARIES})
     
     # libsdp 
-    target_include_directories(pysdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
-    #target_link_libraries(pysdp PRIVATE "${PROJECT_SOURCE_DIR}/libsdp.so")
+    target_include_directories(libsdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
+    #target_link_libraries(libsdp PRIVATE "${PROJECT_SOURCE_DIR}/libsdp.so")
     
     # link liblbfgs 
-    target_link_libraries(pysdp PRIVATE ${LBFGS_LIBRARY})
+    target_link_libraries(libsdp PRIVATE ${LBFGS_LIBRARY})
     
     # liblbfgs header
-    target_include_directories(pysdp PRIVATE ${LBFGS_INCLUDE})
+    target_include_directories(libsdp PRIVATE ${LBFGS_INCLUDE})
 
 else()
 

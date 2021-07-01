@@ -1,8 +1,8 @@
 # test python implementation to libsdp
 
 import sys
-sys.path.insert(0, '../.')
-import pysdp
+sys.path.insert(0, '../../.')
+import libsdp
 
 
 def evaluate_Au(Au, u, data):
@@ -19,7 +19,7 @@ def progress_monitor(oiter, iiter, objective_primal, objective_dual,
     pass
 
 # define SDPOptions object
-options = pysdp.sdp_options()
+options = libsdp.sdp_options()
 
 #print(options.sdp_algorithm)
 
@@ -29,7 +29,7 @@ n_primal = 1
 # number of dual variables
 n_dual = 1
 
-sdp = pysdp.sdp_solver(n_primal,n_dual,options)
+sdp = libsdp.sdp_solver(n_primal,n_dual,options)
 
 x = [0]
 b = [0]

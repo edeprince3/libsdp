@@ -48,7 +48,7 @@ struct SDPOptions {
     double cg_convergence            = 1e-8;
     double sdp_objective_convergence = 1e-4;
     double sdp_error_convergence     = 1e-4;
-    SDPAlgorithm algorithm;
+    SDPAlgorithm algorithm           = SDPAlgorithm::BPSDP;
 };
 
 typedef std::function<void(double*,double*,void*)> SDPCallbackFunction;

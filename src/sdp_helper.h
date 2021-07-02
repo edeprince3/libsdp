@@ -53,10 +53,10 @@ class SDPHelper{
                               std::vector<double> b,
                               std::vector<double> c,
                               std::vector<int> primal_block_dim,
-                              int maxiter,
-                              SDPCallbackFunction evaluate_Au,
-                              SDPCallbackFunction evaluate_ATu,
-                              SDPProgressMonitorFunction progress_monitor);
+                              int maxiter);
+                              //SDPCallbackFunction evaluate_Au,
+                              //SDPCallbackFunction evaluate_ATu,
+                              //SDPProgressMonitorFunction progress_monitor);
 
   protected:
 

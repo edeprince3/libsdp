@@ -71,10 +71,10 @@ void export_SDPHelper(py::module& m) {
             "b"_a,
             "c"_a,
             "primal_block_dim"_a,
-            "maxiter"_a,
-            "evaluate_Au"_a,
-            "evaluate_ATu"_a,
-            "progress_monitor"_a);
+            "maxiter"_a);
+            //"evaluate_Au"_a,
+            //"evaluate_ATu"_a,
+            //"progress_monitor"_a);
 
 }
 
@@ -112,12 +112,17 @@ std::vector<double> SDPHelper::solve(std::vector<double> x,
                                      std::vector<double> b,
                                      std::vector<double> c,
                                      std::vector<int> primal_block_dim,
-                                     int maxiter,
-                                     SDPCallbackFunction evaluate_Au,
-                                     SDPCallbackFunction evaluate_ATu,
-                                     SDPProgressMonitorFunction progress_monitor) {
+                                     int maxiter) {
+                                     //SDPCallbackFunction evaluate_Au,
+                                     //SDPCallbackFunction evaluate_ATu,
+                                     //SDPProgressMonitorFunction progress_monitor) {
     void * data;
-    sdp_->solve(x.data(),b.data(),c.data(),primal_block_dim,maxiter,evaluate_Au,evaluate_ATu,progress_monitor,data);
+
+    printf("\n");
+    printf("    sorry, the python interface to libsdp does not work.\n");
+    printf("\n");
+    exit(1);
+    //sdp_->solve(x.data(),b.data(),c.data(),primal_block_dim,maxiter,evaluate_Au,evaluate_ATu,progress_monitor,data);
     return x;
 
 }

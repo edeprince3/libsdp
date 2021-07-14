@@ -40,11 +40,13 @@ namespace libsdp {
 /// a constraint matrix in sparse SDPA format
 struct SDPMatrix {
     SDPMatrix(){};
-    std::vector<int> constraint_number;
     std::vector<int> block_number;
     std::vector<int> row;
     std::vector<int> column;
     std::vector<double> value;
+    //// composite index, accounting for row, column, block offset
+    //// (not meant for use on python side)
+    std::vector<int> id;
 };
 
 class SDPHelper{
@@ -58,12 +60,18 @@ class SDPHelper{
     ~SDPHelper();
 
     /// solve the sdp problem
-    std::vector<double> solve(std::vector<double> x,
-                              std::vector<double> b,
-                              SDPMatrix F0,
-                              std::vector<SDPMatrix> Fi,
-                              std::vector<int> primal_block_dim,
-                              int maxiter);
+    void solve(std::vector<double> b,
+               SDPMatrix F0,
+               std::vector<SDPMatrix> Fi,
+               std::vector<int> primal_block_dim,
+               int maxiter);
+
+    /// evaluate Au
+    void evaluate_Au(double * Au, double * u);
+
+    /// evaluate ATu
+    void evaluate_ATu(double * ATu, double * u);
+
   protected:
 
     /// options for the SDP

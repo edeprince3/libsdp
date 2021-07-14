@@ -66,7 +66,6 @@ void export_SDPHelper(py::module& m) {
     py::class_<SDPMatrix> matrix(m, "sdp_matrix");
 
     matrix.def(py::init< >())
-        .def_readwrite("constraint_number",&SDPMatrix::constraint_number)
         .def_readwrite("block_number",&SDPMatrix::block_number)
         .def_readwrite("row",&SDPMatrix::row)
         .def_readwrite("column",&SDPMatrix::column)
@@ -77,7 +76,6 @@ void export_SDPHelper(py::module& m) {
     py::class_<SDPHelper, std::shared_ptr<SDPHelper> >(m, "sdp_solver")
         .def(py::init<long int,long int, SDPOptions>())
         .def("solve", &SDPHelper::solve,
-            "x"_a,
             "b"_a,
             "F0"_a,
             "Fi"_a,
@@ -89,7 +87,6 @@ PYBIND11_MODULE(libsdp, m) {
     m.doc() = "Python API of libsdp";
     export_SDPHelper(m);
 }
-
 
 
 /// SDPHelper constructor
@@ -105,19 +102,72 @@ SDPHelper::SDPHelper(long int n_primal, long int n_dual, SDPOptions options) {
 SDPHelper::~SDPHelper() {
 }
 
+/// BPSDP monitor callback function
+static void bpsdp_monitor(int oiter, int iiter, double energy_primal, double energy_dual, double mu, double primal_error, double dual_error, void * data) {
+
+    printf("      %5i %5i %11.6lf %11.6lf %11.6le %7.3lf %10.5le %10.5le\n",
+        oiter,iiter,energy_primal,energy_dual,fabs(energy_primal-energy_dual),mu,primal_error,dual_error);
+    fflush(stdout);
+
+}
+
+/// RRSDP monitor callback function
+static void rrsdp_monitor(int oiter, int iiter, double lagrangian, double objective, double mu, double error, double zero, void * data) {
+
+    printf("    %12i %12i %12.6lf %12.6lf %12.2le %12.3le\n",
+        oiter,iiter,lagrangian,objective,mu,error);
+    fflush(stdout);
+
+}
+
+
+/// SDP callback function: Au
+static void Au_callback(double * Au, double * u, void * data) {
+
+    // reinterpret void * as an instance of SDPHelper
+    SDPHelper * sdp = reinterpret_cast<SDPHelper*>(data);
+    sdp->evaluate_Au(Au,u);
+
+}
+void SDPHelper::evaluate_Au(double * Au, double * u) {
+    for (size_t i = 0; i < Fi_.size(); i++) {
+        double dum = 0.0;
+        for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
+            dum += Fi_[i].value[j] * u[Fi_[i].id[j]];
+        }
+        Au[i] = dum;
+    }
+}
+
+/// SDP callback function: ATu
+static void ATu_callback(double * ATu, double * u, void * data) {
+
+    // reinterpret void * as an instance of SDPHelper
+    SDPHelper * sdp = reinterpret_cast<SDPHelper*>(data);
+    sdp->evaluate_ATu(ATu,u);
+
+}
+void SDPHelper::evaluate_ATu(double * ATu, double * u) {
+    memset((void*)ATu,'\0',n_primal_*sizeof(double));
+    for (size_t i = 0; i < Fi_.size(); i++) {
+        for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
+            ATu[Fi_[i].id[j]] += Fi_[i].value[j] * u[i];
+        }
+    }
+}
 
 /// solve the sdp problem
-std::vector<double> SDPHelper::solve(std::vector<double> x,
-                                     std::vector<double> b,
-                                     SDPMatrix F0,
-                                     std::vector<SDPMatrix> Fi,
-                                     std::vector<int> primal_block_dim,
-                                     int maxiter) {
+void SDPHelper::solve(std::vector<double> b,
+                      SDPMatrix F0,
+                      std::vector<SDPMatrix> Fi,
+                      std::vector<int> primal_block_dim,
+                      int maxiter) {
 
     // copy some quantities to class members for objective 
     // function / Au / ATu evaluation
 
-    // c vector
+    // c vector (-F0 in SDPA format)
+
     std::vector<double> c (n_primal_, 0.0);
 
     for (size_t i = 0; i < F0.block_number.size(); i++) {
@@ -128,16 +178,39 @@ std::vector<double> SDPHelper::solve(std::vector<double> x,
         // calculate offset
         size_t off = 0;
         for (size_t j = 0; j < my_block; j++) {
-            off += primal_block_dim[j];
+            off += primal_block_dim[j] * primal_block_dim[j];
         }
 
-        // populate relevant entry in c
-        c[off + my_row * primal_block_dim[my_block] + my_column] = F0.value[i];
+        // populate relevant entry in c. note our definition of the problem has c = -F0
+        c[off + my_row * primal_block_dim[my_block] + my_column] = -F0.value[i];
     }
 
     // constraint matrices
     for (size_t i = 0; i < Fi.size(); i++) {
+
         Fi_.push_back(Fi[i]);
+
+        // add composite indices
+        for (size_t j = 0; j < Fi[i].block_number.size(); j++) {
+
+            int my_block  = Fi[i].block_number[j] - 1;
+            int my_row    = Fi[i].row[j] - 1;
+            int my_column = Fi[i].column[j] - 1;
+
+            // calculate offset
+            size_t off = 0;
+            for (size_t k = 0; k < my_block; k++) {
+                off += primal_block_dim[k] * primal_block_dim[k];
+            }
+
+            // composite index
+            size_t id = off + my_row * primal_block_dim[my_block] + my_column;
+
+            // add to matrix object
+            Fi_[i].id.push_back(id);
+
+        }
+
     }
 
     // primal block dimensions
@@ -145,35 +218,46 @@ std::vector<double> SDPHelper::solve(std::vector<double> x,
         primal_block_dim_.push_back(primal_block_dim[i]);
     }
 
-    // solve sdp
+    // primal solution vector (random guess on [-1:1])
+    srand(0);
+    double * x = (double*)malloc(n_primal_*sizeof(double));
+    for (size_t i = 0; i < n_primal_; i++) {
+        x[i] = 2.0 * ( (double)rand()/RAND_MAX - 1.0 );
+    }
+
+    // initialize sdp solver
 
     std::shared_ptr<SDPSolver> sdp;
+
+    libsdp::SDPProgressMonitorFunction sdp_monitor;
 
     if ( options_.algorithm == SDPOptions::SDPAlgorithm::BPSDP ) {
 
         sdp = (std::shared_ptr<SDPSolver>)(new BPSDPSolver(n_primal_,n_dual_,options_));
+        sdp_monitor = bpsdp_monitor;
 
     }else if ( options_.algorithm == SDPOptions::SDPAlgorithm::RRSDP ) {
 
         sdp = (std::shared_ptr<SDPSolver>)(new RRSDPSolver(n_primal_,n_dual_,options_));
+        sdp_monitor = rrsdp_monitor;
 
     }
 
-/*
     // solve sdp
-    sdp->solve(x->pointer(), 
-               b->pointer(), 
-               c->pointer(), 
+    sdp->solve(x,
+               b.data(),
+               c.data(),
                primal_block_dim_, 
                maxiter, 
-               evaluate_Au, 
-               evaluate_ATu, 
+               Au_callback, 
+               ATu_callback, 
                sdp_monitor, 
                (void*)this);
-*/
 
-    return x;
+    free(x);
 }
+
+
 
 SDPOptions options() {
     SDPOptions opt;

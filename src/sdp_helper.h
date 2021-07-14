@@ -24,8 +24,8 @@
  *  @END LICENSE
  */
 
-#ifndef SDP_HELPER_H
-#define SDP_HELPER_H
+#ifndef SDPA_HELPER_H
+#define SDPA_HELPER_H
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -33,10 +33,19 @@
 #include<vector>
 #include<memory>
 
-#include<rrsdp_solver.h>
-#include<bpsdp_solver.h>
+#include<sdp_solver.h>
 
 namespace libsdp {
+
+/// a constraint matrix in sparse SDPA format
+struct SDPMatrix {
+    SDPMatrix(){};
+    std::vector<int> constraint_number;
+    std::vector<int> block_number;
+    std::vector<int> row;
+    std::vector<int> column;
+    std::vector<double> value;
+};
 
 class SDPHelper{
 
@@ -51,25 +60,28 @@ class SDPHelper{
     /// solve the sdp problem
     std::vector<double> solve(std::vector<double> x,
                               std::vector<double> b,
-                              std::vector<double> c,
+                              SDPMatrix F0,
+                              std::vector<SDPMatrix> Fi,
                               std::vector<int> primal_block_dim,
                               int maxiter);
-                              //SDPCallbackFunction evaluate_Au,
-                              //SDPCallbackFunction evaluate_ATu,
-                              //SDPProgressMonitorFunction progress_monitor);
-
   protected:
 
-    /// the sdp solver
-    std::shared_ptr<SDPSolver> sdp_;
+    /// options for the SDP
+    SDPOptions options_;
 
+    /// the dimension of the primal vector (what SDPA calls the dual solution)
+    long int n_primal_;
+
+    /// the dimension of the dual vector (what SDPA calls the primal solution)
+    long int n_dual_;
+
+    /// the Fi matrices
+    std::vector<SDPMatrix> Fi_;
+
+    /// list of block sizes
+    std::vector<int> primal_block_dim_;
 
 };
-
-SDPOptions options() {
-    SDPOptions opt;
-    return opt;
-}
 
 }
 

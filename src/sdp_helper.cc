@@ -247,6 +247,8 @@ void SDPHelper::solve(std::vector<double> b,
     if ( options_.algorithm == SDPOptions::SDPAlgorithm::BPSDP ) {
     
         printf("\n");
+        printf("    ==> BPSDP: Boundary-point SDP <==\n");
+        printf("\n");
         printf("      oiter");
         printf(" iiter");
         printf("         c.x");
@@ -258,6 +260,8 @@ void SDPHelper::solve(std::vector<double> b,
         
     }else if ( options_.algorithm == SDPOptions::SDPAlgorithm::RRSDP ) {
     
+        printf("\n");
+        printf("    ==> RRSDP: Matrix-factorization-based first-order SDP <==\n");
         printf("\n");
         printf("           oiter");
         printf("        iiter");

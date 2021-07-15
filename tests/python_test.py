@@ -29,9 +29,6 @@ options = libsdp.sdp_options()
 # set the SDP solver algorithm (if you want ... default is BPSDP)
 options.sdp_algorithm = options.SDPAlgorithm.RRSDP
 
-# initialize sdp solver
-sdp = libsdp.sdp_solver(options)
-
 # F0 ... define as a single sdp_matrix object
 F0 = libsdp.sdp_matrix()
 
@@ -149,5 +146,6 @@ block_dim = [2, 2]
 maxiter = 50000
 
 # call the SDP solver
+sdp = libsdp.sdp_solver(options)
 sdp.solve(c,F0,Fi,block_dim,maxiter)
 

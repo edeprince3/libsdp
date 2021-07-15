@@ -243,6 +243,31 @@ void SDPHelper::solve(std::vector<double> b,
 
     }
 
+    // print header
+    if ( options_.algorithm == SDPOptions::SDPAlgorithm::BPSDP ) {
+    
+        printf("\n");
+        printf("      oiter");
+        printf(" iiter");
+        printf("         c.x");
+        printf("         b.y");
+        printf("    |c.x-b.y|");
+        printf("      mu");
+        printf("    ||Ax-b||");
+        printf(" ||ATy-c+z||\n");
+        
+    }else if ( options_.algorithm == SDPOptions::SDPAlgorithm::RRSDP ) {
+    
+        printf("\n");
+        printf("           oiter");
+        printf("        iiter");
+        printf("            L");
+        printf("          c.x");
+        printf("           mu");
+        printf("     ||Ax-b||\n");
+        
+    } 
+
     // solve sdp
     sdp->solve(x,
                b.data(),
@@ -254,10 +279,10 @@ void SDPHelper::solve(std::vector<double> b,
                sdp_monitor, 
                (void*)this);
 
+    printf("\n");
+
     free(x);
 }
-
-
 
 SDPOptions options() {
     SDPOptions opt;

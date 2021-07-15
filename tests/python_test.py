@@ -29,16 +29,8 @@ options = libsdp.sdp_options()
 # set the SDP solver algorithm (if you want ... default is BPSDP)
 options.sdp_algorithm = options.SDPAlgorithm.RRSDP
 
-# number of primal variables (what SDPA considers to be dual variables)
-# should be sum of squares of block dimensions
-n_primal = 8
-
-# number of dual variables (what SDPA considers to be primal variables)
-# should be mdim
-n_dual = 2
-
 # initialize sdp solver
-sdp = libsdp.sdp_solver(n_primal,n_dual,options)
+sdp = libsdp.sdp_solver(options)
 
 # F0 ... define as a single sdp_matrix object
 F0 = libsdp.sdp_matrix()

@@ -54,7 +54,7 @@ class SDPHelper{
   public:
 
     /// SDPHelper constructor
-    SDPHelper(long int n_primal, long int n_dual, SDPOptions options);
+    SDPHelper(SDPOptions options);
 
     /// SDPHelper destructor
     ~SDPHelper();

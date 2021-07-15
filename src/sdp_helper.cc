@@ -74,7 +74,7 @@ void export_SDPHelper(py::module& m) {
     // export SDP solver
 
     py::class_<SDPHelper, std::shared_ptr<SDPHelper> >(m, "sdp_solver")
-        .def(py::init<long int,long int, SDPOptions>())
+        .def(py::init<SDPOptions>())
         .def("solve", &SDPHelper::solve,
             "b"_a,
             "F0"_a,
@@ -90,12 +90,8 @@ PYBIND11_MODULE(libsdp, m) {
 
 
 /// SDPHelper constructor
-SDPHelper::SDPHelper(long int n_primal, long int n_dual, SDPOptions options) {
-
+SDPHelper::SDPHelper(SDPOptions options) {
     options_      = options;
-    n_primal_     = n_primal;
-    n_dual_       = n_dual;
-
 }
 
 /// SDPHelper destructor
@@ -165,6 +161,15 @@ void SDPHelper::solve(std::vector<double> b,
 
     // copy some quantities to class members for objective 
     // function / Au / ATu evaluation
+
+    // number of primal variables
+    n_primal_ = 0;
+    for (size_t i = 0; i < primal_block_dim.size(); i++) {
+        n_primal_ += primal_block_dim[i] * primal_block_dim[i];
+    }
+
+    // number of dual variables
+    n_dual_ = Fi.size();
 
     // c vector (-F0 in SDPA format)
 
@@ -284,6 +289,7 @@ void SDPHelper::solve(std::vector<double> b,
                (void*)this);
 
     printf("\n");
+    fflush(stdout);
 
     free(x);
 }

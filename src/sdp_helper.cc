@@ -77,7 +77,6 @@ void export_SDPHelper(py::module& m) {
         .def(py::init<SDPOptions>())
         .def("solve", &SDPHelper::solve,
             "b"_a,
-            "F0"_a,
             "Fi"_a,
             "primal_block_dim"_a,
             "maxiter"_a);
@@ -154,7 +153,6 @@ void SDPHelper::evaluate_ATu(double * ATu, double * u) {
 
 /// solve the sdp problem
 void SDPHelper::solve(std::vector<double> b,
-                      SDPMatrix F0,
                       std::vector<SDPMatrix> Fi,
                       std::vector<int> primal_block_dim,
                       int maxiter) {
@@ -168,17 +166,17 @@ void SDPHelper::solve(std::vector<double> b,
         n_primal_ += primal_block_dim[i] * primal_block_dim[i];
     }
 
-    // number of dual variables
-    n_dual_ = Fi.size();
+    // number of dual variables (F0 is part of Fi...)
+    n_dual_ = Fi.size()-1;
 
     // c vector (-F0 in SDPA format)
 
     std::vector<double> c (n_primal_, 0.0);
 
-    for (size_t i = 0; i < F0.block_number.size(); i++) {
-        int my_block  = F0.block_number[i] - 1;
-        int my_row    = F0.row[i] - 1;
-        int my_column = F0.column[i] - 1;
+    for (size_t i = 0; i < Fi[0].block_number.size(); i++) {
+        int my_block  = Fi[0].block_number[i] - 1;
+        int my_row    = Fi[0].row[i] - 1;
+        int my_column = Fi[0].column[i] - 1;
 
         // calculate offset
         size_t off = 0;
@@ -187,11 +185,11 @@ void SDPHelper::solve(std::vector<double> b,
         }
 
         // populate relevant entry in c. note our definition of the problem has c = -F0
-        c[off + my_row * primal_block_dim[my_block] + my_column] = -F0.value[i];
+        c[off + my_row * primal_block_dim[my_block] + my_column] = -Fi[0].value[i];
     }
 
     // constraint matrices
-    for (size_t i = 0; i < Fi.size(); i++) {
+    for (size_t i = 1; i < Fi.size(); i++) {
 
         Fi_.push_back(Fi[i]);
 
@@ -212,7 +210,7 @@ void SDPHelper::solve(std::vector<double> b,
             size_t id = off + my_row * primal_block_dim[my_block] + my_column;
 
             // add to matrix object
-            Fi_[i].id.push_back(id);
+            Fi_[i-1].id.push_back(id);
 
         }
 

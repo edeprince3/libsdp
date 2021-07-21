@@ -61,7 +61,6 @@ class SDPHelper{
 
     /// solve the sdp problem
     void solve(std::vector<double> b,
-               SDPMatrix F0,
                std::vector<SDPMatrix> Fi,
                std::vector<int> primal_block_dim,
                int maxiter);

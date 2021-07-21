@@ -29,8 +29,8 @@ options = libsdp.sdp_options()
 # set the SDP solver algorithm (if you want ... default is BPSDP)
 options.sdp_algorithm = options.SDPAlgorithm.RRSDP
 
-# F0 ... define as a single sdp_matrix object
-F0 = libsdp.sdp_matrix()
+# Fi ... define as a list of sdp_matrix objects
+Fi = [libsdp.sdp_matrix()]
 
 block_number = []
 row = []
@@ -61,15 +61,14 @@ row.append(2)
 column.append(2)
 value.append(4.0)
 
-F0.block_number = block_number
-F0.row          = row
-F0.column       = column
-F0.value        = value
+Fi[0].block_number = block_number
+Fi[0].row          = row
+Fi[0].column       = column
+Fi[0].value        = value
 
-# Fi ... define as a list of sdp_matrix objects
+# first constraint matrix (Fi[1] = F1 from input)
 
-# first object in Fi list (Fi[0] = F1 from input)
-Fi = [libsdp.sdp_matrix()]
+Fi.append(libsdp.sdp_matrix())
 
 block_number = []
 row = []
@@ -88,12 +87,15 @@ row.append(2)
 column.append(2)
 value.append(1.0)
 
-Fi[0].block_number = block_number
-Fi[0].row          = row
-Fi[0].column       = column
-Fi[0].value        = value
+Fi[1].block_number = block_number
+Fi[1].row          = row
+Fi[1].column       = column
+Fi[1].value        = value
 
-# second object in Fi list (Fi[1] = F2 from input)
+# second constraint matrix (Fi[2] = F2 from input)
+
+Fi.append(libsdp.sdp_matrix())
+
 block_number = []
 row = []
 column = []
@@ -129,12 +131,10 @@ row.append(2)
 column.append(2)
 value.append(6.0)
 
-Fi.append(libsdp.sdp_matrix())
-
-Fi[1].block_number = block_number
-Fi[1].row          = row
-Fi[1].column       = column
-Fi[1].value        = value
+Fi[2].block_number = block_number
+Fi[2].row          = row
+Fi[2].column       = column
+Fi[2].value        = value
 
 # SDPA c vector (the constraint vector b, in our convention)
 c = [10.0, 20.0]
@@ -147,5 +147,5 @@ maxiter = 50000
 
 # call the SDP solver
 sdp = libsdp.sdp_solver(options)
-sdp.solve(c,F0,Fi,block_dim,maxiter)
+sdp.solve(c,Fi,block_dim,maxiter)
 

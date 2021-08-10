@@ -45,6 +45,7 @@ struct SDPOptions {
     int maxiter                      = 50000;
     int cg_maxiter                   = 10000;
     int mu_update_frequency          = 500;
+    double penalty_parameter_scaling = 0.1;
     double cg_convergence            = 1e-8;
     double sdp_objective_convergence = 1e-4;
     double sdp_error_convergence     = 1e-4;

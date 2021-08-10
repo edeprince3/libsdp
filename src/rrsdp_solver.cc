@@ -81,7 +81,7 @@ RRSDPSolver::RRSDPSolver(long int n_primal, long int n_dual, SDPOptions options)
 
     mu_ = 0.1;
     mu_reset_ = true;
-    mu_scale_factor_ = 0.1;
+    mu_scale_factor_ = options.penalty_parameter_scaling;
 }
 
 RRSDPSolver::~RRSDPSolver(){
@@ -202,7 +202,7 @@ void RRSDPSolver::solve(double * x,
         oiter_++;
         oiter_local++;
 
-        if ( primal_error_ > options_.sdp_error_convergence  || fabs(objective - objective_primal) > options_.sdp_error_convergence ) {
+        if ( primal_error_ > options_.sdp_error_convergence  || fabs(objective - objective_primal) > options_.sdp_objective_convergence ) {
             is_converged_ = false;
         }else {
             is_converged_ = true;

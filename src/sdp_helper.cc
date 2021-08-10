@@ -55,6 +55,8 @@ void export_SDPHelper(py::module& m) {
         .def_readwrite("cg_convergence",&SDPOptions::cg_convergence)
         .def_readwrite("sdp_objective_convergence",&SDPOptions::sdp_objective_convergence)
         .def_readwrite("sdp_error_convergence",&SDPOptions::sdp_error_convergence)
+        .def_readwrite("sdp_objective_convergence",&SDPOptions::sdp_objective_convergence)
+        .def_readwrite("penalty_parameter_scaling",&SDPOptions::penalty_parameter_scaling)
         .def_readwrite("sdp_algorithm",&SDPOptions::algorithm);
 
     py::enum_<SDPOptions::SDPAlgorithm>(options, "SDPAlgorithm")
@@ -196,9 +198,14 @@ void SDPHelper::solve(std::vector<double> b,
         // add composite indices
         for (size_t j = 0; j < Fi[i].block_number.size(); j++) {
 
+            // don't forget that the input Fi used unit-offset labels
             int my_block  = Fi[i].block_number[j] - 1;
             int my_row    = Fi[i].row[j] - 1;
             int my_column = Fi[i].column[j] - 1;
+
+            Fi_[i-1].block_number[j] = my_block;
+            Fi_[i-1].row[j]          = my_row;
+            Fi_[i-1].column[j]       = my_column;
 
             // calculate offset
             size_t off = 0;
@@ -221,11 +228,11 @@ void SDPHelper::solve(std::vector<double> b,
         primal_block_dim_.push_back(primal_block_dim[i]);
     }
 
-    // primal solution vector (random guess on [-1:1])
+    // primal solution vector (random guess on [-0.001:0.001])
     srand(0);
     double * x = (double*)malloc(n_primal_*sizeof(double));
     for (size_t i = 0; i < n_primal_; i++) {
-        x[i] = 2.0 * ( (double)rand()/RAND_MAX - 1.0 );
+        x[i] = 2.0 * ( (double)rand()/RAND_MAX - 1.0 ) * 0.001;
     }
 
     // initialize sdp solver

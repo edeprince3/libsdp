@@ -13,17 +13,23 @@ def read_sdp_problem(filename):
     # read file
     my_file = h.readlines()
     
-    # TODO: need to account for any comments at the top of the file
+    # need to account for any comments at the top of the file
+    offset = 0
+    for i in range(0,len(my_file)):
+        if ( my_file[i][0] == '"' or my_file[i][0] == '*' ):
+            offset += 1
+        else:
+            break
     
     # number of constraints 
-    m=int(my_file[0])
+    m=int(my_file[offset])
     
     # number of blocks 
-    nblocks=int(my_file[1])
+    nblocks=int(my_file[offset+1])
     
     # block dimensions 
     # TODO: need to account for formatting including {,}
-    tmp_block_dim=(my_file[2].split())
+    tmp_block_dim=(my_file[offset+2].split())
     block_dim=[]
     for i in range(0,len(tmp_block_dim)):
         my_dim = int(tmp_block_dim[i])
@@ -35,7 +41,7 @@ def read_sdp_problem(filename):
             #    block_dim.append(1)
     
     # TODO: will "float" have the correct precision?
-    c=(my_file[3].split())
+    c=(my_file[offset+3].split())
     for i in range(0,len(c)):
         c[i] = float((c[i]))
                      
@@ -50,8 +56,7 @@ def read_sdp_problem(filename):
     value=[]
     
     count = 0
-    # TODO: hard-coding line 4 won't work when there are comments
-    for i in range(4,len(my_file)):
+    for i in range(offset+4,len(my_file)):
     
         temp=(my_file[i].split())
         my_block = int(temp[0])
@@ -100,14 +105,13 @@ def read_sdp_problem(filename):
 
     return c, Fi, block_dim
 
-
 def main():
 
     """
     Example for using libsdp with SDPA sparse format inputs
     """
 
-    #filename = 'SDPLIB/data/truss1.dat-s'
+    #filename = 'SDPLIB/data/truss5.dat-s'
     filename = 'truss1.dat-s'
     c, Fi, block_dim = read_sdp_problem(filename)
     

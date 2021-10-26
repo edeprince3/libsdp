@@ -112,7 +112,7 @@ void BPSDPSolver::solve(double * x,
         // set convergence for CG problem (step 1 in table 1 of PRL 106 083001)
         double cg_conv_i = options_.cg_convergence;
         if (oiter_ == 0)
-            cg_conv_i = options_.cg_convergence;//0.01;
+            cg_conv_i = 0.01;
         else
             cg_conv_i = (primal_error_ > dual_error_) ? 0.01 * dual_error_ : 0.01 * primal_error_;
         if (cg_conv_i < options_.cg_convergence)

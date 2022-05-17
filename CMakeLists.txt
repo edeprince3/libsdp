@@ -43,7 +43,6 @@ endif()
 
 set(PYBIND11_CPP_STANDARD -std=c++14)
 
-
 # python interface
 if ( BUILD_PYTHON_INTERFACE ) 
 
@@ -60,16 +59,14 @@ if ( BUILD_PYTHON_INTERFACE )
     find_package(BLAS REQUIRED)
     target_link_libraries(libsdp PRIVATE ${BLAS_LIBRARIES})
     
+    # liblbfgs
+    set(EXTERNAL_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/external/)
+    add_subdirectory(external)
+    target_link_libraries(libsdp PUBLIC LBFGS::lib)
+
     # libsdp 
     target_include_directories(libsdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
-    #target_link_libraries(libsdp PRIVATE "${PROJECT_SOURCE_DIR}/libsdp.so")
     
-    # link liblbfgs 
-    target_link_libraries(libsdp PRIVATE ${LBFGS_LIBRARY})
-    
-    # liblbfgs header
-    target_include_directories(libsdp PRIVATE ${LBFGS_INCLUDE})
-
 else()
 
     add_library(sdp SHARED 
@@ -79,13 +76,20 @@ else()
         src/sdp_solver.cc 
         src/bpsdp_solver.cc 
         src/rrsdp_solver.cc)
+
     
     # libsdp headers
     target_include_directories(sdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
+
+    # BLAS
+    find_package(BLAS REQUIRED)
+    target_link_libraries(sdp PRIVATE ${BLAS_LIBRARIES})
     
-    # liblbfgs header
-    target_include_directories(sdp PRIVATE ${LBFGS_INCLUDE})
-    
+    # liblbfgs
+    set(EXTERNAL_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/external/)
+    add_subdirectory(external)
+    target_link_libraries(sdp PUBLIC LBFGS::lib)
+
     set_target_properties(sdp PROPERTIES PUBLIC_HEADER "include/sdp_solver.h;include/rrsdp_solver.h;include/bpsdp_solver.h")
     
     install(TARGETS sdp

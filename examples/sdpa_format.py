@@ -37,7 +37,7 @@ def read_sdp_problem(filename):
             block_dim.append(my_dim)
         else:
             block_dim.append(-my_dim)
-            #for j in range (0,-my_dim+1):
+            #for j in range (0,-my_dim):
             #    block_dim.append(1)
     
     # TODO: will "float" have the correct precision?
@@ -113,6 +113,8 @@ def main():
 
     #filename = 'SDPLIB/data/truss5.dat-s'
     filename = 'truss1.dat-s'
+    #filename = 'arch0.dat-s'
+    #filename = 'SDPLIB/data/gpp100.dat-s'
     c, Fi, block_dim = read_sdp_problem(filename)
     
     # set options
@@ -122,8 +124,8 @@ def main():
     
     options.sdp_algorithm             = options.SDPAlgorithm.RRSDP
     options.maxiter                   = maxiter
-    options.sdp_error_convergence     = 1e-7
-    options.sdp_objective_convergence = 1e-6
+    options.sdp_error_convergence     = 1e-5
+    options.sdp_objective_convergence = 1e-4
     options.penalty_parameter_scaling = 0.5
     
     # solve sdp

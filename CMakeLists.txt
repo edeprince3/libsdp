@@ -78,7 +78,7 @@ else()
         src/rrsdp_solver.cc)
     
     # libsdp headers
-    target_include_directories(sdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
+    target_include_directories(sdp PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
     # BLAS
     find_package(BLAS REQUIRED)
@@ -90,6 +90,7 @@ else()
     target_link_libraries(sdp PUBLIC LBFGS::lib)
 
     set_target_properties(sdp PROPERTIES PUBLIC_HEADER "include/sdp_solver.h;include/rrsdp_solver.h;include/bpsdp_solver.h")
+
     
     install(TARGETS sdp
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

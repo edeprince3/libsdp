@@ -65,7 +65,7 @@ if ( BUILD_PYTHON_INTERFACE )
     target_link_libraries(libsdp PUBLIC LBFGS::lib)
 
     # libsdp 
-    target_include_directories(libsdp PRIVATE "${PROJECT_SOURCE_DIR}/include")
+    target_include_directories(libsdp PUBLIC "${PROJECT_SOURCE_DIR}/include")
     
 else()
 
@@ -95,5 +95,6 @@ else()
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
+    message(${CMAKE_INSTALL_INCLUDEDIR})
 
 endif()

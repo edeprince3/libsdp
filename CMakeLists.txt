@@ -76,7 +76,6 @@ else()
         src/sdp_solver.cc 
         src/bpsdp_solver.cc 
         src/rrsdp_solver.cc)
-
     
     # libsdp headers
     target_include_directories(sdp PRIVATE "${PROJECT_SOURCE_DIR}/include")

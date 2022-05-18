@@ -11,7 +11,7 @@ Then, to build the library's C/C++ interface
 cd libsdp
 cmake .
 ```
-The package will attemt to locate BLAS libraries and install libLBFGS. Assuming these steps are successful, you can then build the library
+The package will attempt to locate BLAS and install libLBFGS. Assuming these steps are successful, you can then build the library
 ```
 make 
 ```

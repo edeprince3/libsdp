@@ -119,7 +119,7 @@ int main(int argc, char * argv[]) {
     //
     // min Dij hij
     // 
-    // subject to
+    // with respect to Dij and subject to
     // 
     // Tr(D) = 1
     // Dij + Qij = dij
@@ -136,14 +136,17 @@ int main(int argc, char * argv[]) {
     // x >= 0
     // 
     // and we map D,Q -> x
+    // and h -> c
     // and Tr(D) = 1, Dij + Qij = dij -> Ax  = b
     // 
-    // for this example, lets say dim(D) = 10
+    // for this example, lets say dim(D) = 100
     // 
-    // so, n_primal would be 2 * 10 * 10 = 200
-    // and n_dual would be 1 + 10 * 10 = 101
+    // so, n_primal would be 2 * 100 * 100 = 20000
+    // and n_dual would be 1 + 100 * 100 = 10001
     // 
-    // note that, for some reason, bpsdp has a really hard time with the problem ... so use rrsdp for this test
+    // note that, for some reason, rrsdp and bpsdp find slightly different solutions that 
+    // both appear to satisfy the simple constraints above
+    // 
 
     size_t dim = 100;
 
@@ -204,20 +207,19 @@ int main(int argc, char * argv[]) {
     double * c = (double*)malloc(n_primal*sizeof(double));
     memset((void*)c,'\0',n_primal*sizeof(double));
     
-    // let's just consider random hij that is symmetric 
-    for (size_t i = 0; i < dim; i++) {
-        for (size_t j = i; j < dim; j++) {
-            double val = 2.0 * ( (double)rand()/RAND_MAX - 1.0 );
-            c[i * dim + j] = val;
-            c[j * dim + i] = val;
-        }
+    // let's just consider hij with nearest-neighbor hopping terms
+    for (size_t i = 0; i < dim - 1; i++) {
+        c[i * dim + (i+1)] = 10.0;
+    }
+    for (size_t i = 1; i < dim; i++) {
+        c[i * dim + (i-1)] = 10.0;
     }
 
     // container for constraints
     double * b = (double*)malloc(n_dual*sizeof(double));
     memset((void*)b,'\0',n_dual*sizeof(double));
 
-    // dimensions of each block of x ... in this case, we have only 2 blocks, each with dimension 10
+    // dimensions of each block of x ... in this case, we have only 2 blocks, each with dimension 100
     std::vector<int> dimensions;
     dimensions.push_back(dim);
     dimensions.push_back(dim);
@@ -254,5 +256,9 @@ int main(int argc, char * argv[]) {
                data);
 
     printf("\n");
+
+    for (size_t i = 0; i < n_primal; i++) {
+        printf("%20.12lf\n",x[i]);
+    }
 
 }

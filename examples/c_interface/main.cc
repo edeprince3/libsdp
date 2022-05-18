@@ -8,7 +8,14 @@
 #include<rrsdp_solver.h>
 #include<bpsdp_solver.h>
 
-// callback function to evaluate A.u
+/**
+ * callback function to evaluate A.u
+ *
+ * @param Au   - a container that will hold the result of A.u
+ * @param u    - an input vector for evaluating A.u
+ * @param data - any user-defined problem-specific data to aid in evaluating A.u
+ * 
+ */ 
 static void evaluate_Au(double * Au, double * u, void * data) {
 
     int dim = static_cast<int>(reinterpret_cast<intptr_t>(data));
@@ -33,7 +40,14 @@ static void evaluate_Au(double * Au, double * u, void * data) {
 
 }
 
-// callback function to evaluate A^T.u
+/**
+ * callback function to evaluate A^T.u
+ *
+ * @param ATu  - a container that will hold the result of AT.u
+ * @param u    - an input vector for evaluating AT.u
+ * @param data - any user-defined problem-specific data to aid in evaluating AT.u
+ * 
+ */ 
 static void evaluate_ATu(double * ATu, double * u, void * data) {
 
     int off = 0;
@@ -59,7 +73,19 @@ static void evaluate_ATu(double * ATu, double * u, void * data) {
 
 }
 
-// monitor function for bpsdp
+/**
+ * monitor function for rrsdp
+ *
+ * @param oiter         - current outer iteration (macroiteration)
+ * @param iiter         - number of CG steps taken
+ * @param energy_primal - primal objective value, x.c
+ * @param energy_dual   - dual objective value, b.y
+ * @param mu            - penalty parameter
+ * @param primal_error  - error in the primal solution, ||Ax - b||
+ * @param dual_error    - error in the dual solution, ||A^T y - c + z||
+ * @param data          - any user-defined problem-specific data that you might want to print
+ * 
+ */ 
 static void bpsdp_monitor(int oiter, int iiter, double energy_primal, double energy_dual, double mu, double primal_error, double dual_error, void * data) {
 
     printf("      %5i %5i %11.6lf %11.6lf %11.6le %7.3lf %10.5le %10.5le\n",
@@ -67,14 +93,31 @@ static void bpsdp_monitor(int oiter, int iiter, double energy_primal, double ene
 
 }
 
-// monitor function for rrsdp
+/**
+ * progress monitor function for rrsdp
+ *
+ * @param oiter         - current outer iteration (macroiteration)
+ * @param iiter         - number of L-BFGS steps taken
+ * @param lagrangian    - lagrangian, L = x.c - y.b + 1/mu^2 ||Ax - b||
+ * @param objective     - objective function value, x.c
+ * @param mu            - penalty parameter
+ * @param primal_error  - error in the primal solution, ||Ax - b||
+ * @param zero          - uhhh ... can't remember why this is here
+ * @param data          - any user-defined problem-specific data that you might want to print
+ * 
+ */ 
 static void rrsdp_monitor(int oiter, int iiter, double lagrangian, double objective, double mu, double error, double zero, void * data) {
 
     printf("    %12i %12i %12.6lf %12.6lf %12.2le %12.3le\n",
                 oiter,iiter,lagrangian,objective,mu,error);
-
 }
 
+/**
+ * print header before solving the SDP
+ *
+ * @param sdp_solver_type - which solver? rrsdp or bpsdp?
+ * 
+ */ 
 void print_header(std::string sdp_solver_type) {
 
     printf("\n");
@@ -103,11 +146,14 @@ void print_header(std::string sdp_solver_type) {
 
 }
 
+/**
+ * main
+ */ 
 int main(int argc, char * argv[]) {
 
     if ( argc != 2 ) {
         printf("\n");
-        printf("    usage: ./a.out sdpsolver (rrsdp / bpsdp)\n");
+        printf("    usage: ./a.out sdp_solver_type (rrsdp / bpsdp)\n");
         printf("\n");
         exit(1);
     }
@@ -143,9 +189,6 @@ int main(int argc, char * argv[]) {
     // 
     // so, n_primal would be 2 * 100 * 100 = 20000
     // and n_dual would be 1 + 100 * 100 = 10001
-    // 
-    // note that, for some reason, rrsdp and bpsdp find slightly different solutions that 
-    // both appear to satisfy the simple constraints above
     // 
 
     size_t dim = 100;
@@ -196,7 +239,7 @@ int main(int argc, char * argv[]) {
 
     }
 
-    // container for primal solution vector. no need to initialize
+    // container for primal solution vector. initialized as random numbers 
     double * x = (double*)malloc(n_primal*sizeof(double));
     memset((void*)x,'\0',n_primal*sizeof(double));
     for (size_t i = 0; i < n_primal; i++) {
@@ -219,11 +262,6 @@ int main(int argc, char * argv[]) {
     double * b = (double*)malloc(n_dual*sizeof(double));
     memset((void*)b,'\0',n_dual*sizeof(double));
 
-    // dimensions of each block of x ... in this case, we have only 2 blocks, each with dimension 100
-    std::vector<int> dimensions;
-    dimensions.push_back(dim);
-    dimensions.push_back(dim);
-
     // Tr(D) = 1
     b[0] = 1.0;
 
@@ -235,6 +273,11 @@ int main(int argc, char * argv[]) {
         }
     }
 
+    // dimensions of each block of x ... in this case, we have only 2 blocks, each with dimension 100
+    std::vector<int> dimensions;
+    dimensions.push_back(dim);
+    dimensions.push_back(dim);
+
     // normally, you would use "data" to pass the details of your problem to the Au/ATu functions
     // for this problem, all we need is the dimension of the matrix D (dim)
     void *data = (void*)dim;
@@ -245,20 +288,17 @@ int main(int argc, char * argv[]) {
 
     print_header(sdp_solver_type);
 
-    sdp->solve(x,
-               b,
-               c,
-               dimensions,
-               local_maxiter,
-               evaluate_Au,
-               evaluate_ATu,
-               sdp_monitor,
-               data);
+    // solve the SDP!
+    sdp->solve(x,                // primal solution vector
+               b,                // constraint vector
+               c,                // vector defining the problem
+               dimensions,       // list of dimensions of blocks of x
+               local_maxiter,    // a way to kick out early (only used by bpsdp)
+               evaluate_Au,      // a callback function to evaluate A.u
+               evaluate_ATu,     // a callback function to evaluate A^T.u
+               sdp_monitor,      // a function to monitor the progress of the optimization
+               data);            // user defined data to define how to evaluate A.u / A^T.u
 
     printf("\n");
-
-    for (size_t i = 0; i < n_primal; i++) {
-        printf("%20.12lf\n",x[i]);
-    }
 
 }

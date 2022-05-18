@@ -208,8 +208,8 @@ int main(int argc, char * argv[]) {
     if ( sdp_solver_type == "bpsdp" ) {
 
         libsdp::SDPOptions sdp_options;
-        sdp_options.sdp_objective_convergence = 1e-4;
-        sdp_options.sdp_error_convergence     = 1e-4;
+        sdp_options.sdp_objective_convergence = 1e-5;
+        sdp_options.sdp_error_convergence     = 1e-5;
         sdp_options.cg_convergence            = 1e-8; 
         sdp_options.cg_maxiter                = 10000;
         sdp_options.maxiter                   = 10000;
@@ -221,8 +221,8 @@ int main(int argc, char * argv[]) {
     }else if ( sdp_solver_type == "rrsdp" ) {
 
         libsdp::SDPOptions sdp_options;
-        sdp_options.sdp_objective_convergence = 1e-4;
-        sdp_options.sdp_error_convergence     = 1e-4;
+        sdp_options.sdp_objective_convergence = 1e-5;
+        sdp_options.sdp_error_convergence     = 1e-5;
         sdp_options.maxiter                   = 10000;
         //sdp_options.penalty_parameter_scaling = 0.99;
 
@@ -299,6 +299,17 @@ int main(int argc, char * argv[]) {
                sdp_monitor,      // a function to monitor the progress of the optimization
                data);            // user defined data to define how to evaluate A.u / A^T.u
 
+
+    double xc = 0.0;
+    for (size_t i = 0; i < n_primal; i++) {
+        xc += x[i] * c[i];
+    }
     printf("\n");
+    printf("    x.c = %20.12lf\n",xc);
+    printf("\n");
+
+    free(x);
+    free(c);
+    free(b);
 
 }

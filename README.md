@@ -48,7 +48,11 @@ An example using the Python interface to libsdp is provided in
 ```
 libsdp/examples/python_interface
 ```
-In this example, the SDP problem is expressed in the "SDPA" sparse format described here: http://euler.nmt.edu/~brian/sdplib/sdplib.pdf . That pdf also describes a library of test SDP problems, and the corresponding SPDA-style input files can be found here: http://euler.nmt.edu/~brian/sdplib/. The example for the Python interface to libsdp corresponds to the "truss1" test case. You can run that test by first building the Python interface to the library
+In this example, the SDP problem is expressed in the "SDPA" sparse format described here: http://euler.nmt.edu/~brian/sdplib/sdplib.pdf . T The example for the Python interface to libsdp corresponds is identical to the example for C/C++ formatted case. You can see how the problem is represented in SDPA-style sparse format in 
+```
+libsdp/examples/python_interface/c_example.in
+```
+You can run the corresponding test by first building the Python interface to the library
 ```
 cd libsdp
 cmake . -DBUILD_PYTHON_INTERFACE=true
@@ -61,6 +65,6 @@ python sdpa_format.py
 ```
 Other SDP problems can be solved using the Python interface by developing a suitable SDPA-style input file and replacing
 ```
-    filename = 'truss1.dat-s'
+    filename = 'c_example.in'
 ```
 with the corresponding file name in libsdp/examples/python_interface/sdpa_format.py

@@ -48,7 +48,7 @@ An example using the Python interface to libsdp is provided in
 ```
 libsdp/examples/python_interface
 ```
-In this example, the SDP problem is expressed in the "SDPA" sparse format described here: http://euler.nmt.edu/~brian/sdplib/sdplib.pdf . That pdf also describes a library of test SDP problems, and SPDA-tyle input files for which can be found here: http://euler.nmt.edu/~brian/sdplib/. The example for the Python interface to libsdp corresponds to the "truss1" test case. You can run that test by first building the Python interface to the library
+In this example, the SDP problem is expressed in the "SDPA" sparse format described here: http://euler.nmt.edu/~brian/sdplib/sdplib.pdf . That pdf also describes a library of test SDP problems, and the corresponding SPDA-style input files can be found here: http://euler.nmt.edu/~brian/sdplib/. The example for the Python interface to libsdp corresponds to the "truss1" test case. You can run that test by first building the Python interface to the library
 ```
 cd libsdp
 cmake . -DBUILD_PYTHON_INTERFACE=true

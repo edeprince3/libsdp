@@ -1,7 +1,7 @@
 import numpy as np
 
 import sys
-sys.path.insert(0, '../.')
+sys.path.insert(0, '../../.')
 
 import libsdp
 
@@ -111,10 +111,12 @@ def main():
     Example for using libsdp with SDPA sparse format inputs
     """
 
+    filename = 'c_example.in'
     #filename = 'SDPLIB/data/truss5.dat-s'
-    filename = 'truss1.dat-s'
+    #filename = 'truss1.dat-s'
     #filename = 'arch0.dat-s'
     #filename = 'SDPLIB/data/gpp100.dat-s'
+
     c, Fi, block_dim = read_sdp_problem(filename)
     
     # set options
@@ -124,9 +126,9 @@ def main():
     
     options.sdp_algorithm             = options.SDPAlgorithm.RRSDP
     options.maxiter                   = maxiter
-    options.sdp_error_convergence     = 1e-5
-    options.sdp_objective_convergence = 1e-4
-    options.penalty_parameter_scaling = 0.5
+    options.sdp_error_convergence     = 1e-6
+    options.sdp_objective_convergence = 1e-6
+    options.penalty_parameter_scaling = 0.1
     
     # solve sdp
     sdp = libsdp.sdp_solver(options)

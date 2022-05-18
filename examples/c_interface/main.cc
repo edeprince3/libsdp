@@ -308,6 +308,55 @@ int main(int argc, char * argv[]) {
     printf("    x.c = %20.12lf\n",xc);
     printf("\n");
 
+    // the following will print an SDPA-style input file for use with the python interface to libsdp
+/*
+    printf("\" this is the SDPA-formatted version of the example\n");
+    printf("\" implemented in libsdp/examples/c_interface\n");
+    printf("\" 101 constraints ... 2 blocks ... each with dimension 10\n");
+    printf("\" next comes the constraint vector (b)\n");
+    printf("\" next comes the vector defining the problem (c) in sparse format\n");
+    printf("\" next comes the rows of the constraint matrix\n");
+
+    // number of constraints
+    printf("%i\n",n_dual);
+
+    // number of blocks of primal vector
+    printf("%i\n",dimensions.size());
+
+    // dimensions of blocks of primal vector
+    for (size_t i = 0; i < dimensions.size(); i++) {
+        printf("%5i",dimensions[i]);
+    }
+    printf("\n");
+
+    // constraint vector
+    for (size_t i = 0; i < n_dual; i++) {
+        printf("%20.12lf",b[i]);
+    }
+    printf("\n");
+
+    // c vector in sparse symmetric format
+    for (size_t i = 0; i < dim - 1; i++) {
+        printf("0 1 %i %i 10.0\n", i + 1, i + 2);
+    }
+
+    // constraints (rows of A) in sparse symmetric format
+
+    // trace constraint
+    for (size_t i = 0; i < dim; i++) {
+            printf("1 1 %i %i 1.0\n", i + 1, i + 1);
+    }
+
+    // Dij + Qij = dij constraint
+    for (size_t i = 0; i < dim; i++) {
+        for (size_t j = 0; j < dim; j++) {
+            size_t id = i * dim + j;
+            printf("%i 1 %i %i 1.0\n", 1 + id + 1, i + 1, j + 1);
+            printf("%i 2 %i %i 1.0\n", 1 + id + 1, i + 1, j + 1);
+        }
+    }
+*/
+
     free(x);
     free(c);
     free(b);

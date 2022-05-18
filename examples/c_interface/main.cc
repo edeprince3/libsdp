@@ -74,7 +74,7 @@ static void evaluate_ATu(double * ATu, double * u, void * data) {
 }
 
 /**
- * monitor function for bpsdp
+ * progress monitor function for bpsdp
  *
  * @param oiter         - current outer iteration (macroiteration)
  * @param iiter         - number of CG steps taken

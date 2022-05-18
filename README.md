@@ -48,7 +48,7 @@ An example using the Python interface to libsdp is provided in
 ```
 libsdp/examples/python_interface
 ```
-In this example, the SDP problem is expressed in the "SDPA" sparse format described here: http://euler.nmt.edu/~brian/sdplib/sdplib.pdf . The example for the Python interface to libsdp corresponds is identical to the example for C/C++ formatted case. You can see how the problem is represented in SDPA-style sparse format in 
+In this example, the SDP problem is expressed in the "SDPA" sparse format described here: http://euler.nmt.edu/~brian/sdplib/sdplib.pdf . We solve a problem that is identical to that given in the C/C++ interface example. You can see how that problem is represented in SDPA-style sparse format in 
 ```
 libsdp/examples/python_interface/c_example.in
 ```

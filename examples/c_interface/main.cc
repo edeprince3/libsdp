@@ -185,13 +185,13 @@ int main(int argc, char * argv[]) {
     // and h -> c
     // and Tr(D) = 1, Dij + Qij = dij -> Ax  = b
     // 
-    // for this example, lets say dim(D) = 100
+    // for this example, lets say dim(D) = 10
     // 
-    // so, n_primal would be 2 * 100 * 100 = 20000
-    // and n_dual would be 1 + 100 * 100 = 10001
+    // so, n_primal would be 2 * 10 * 10 = 200
+    // and n_dual would be 1 + 10 * 10 = 101
     // 
 
-    size_t dim = 100;
+    size_t dim = 10;
 
     // dimension of primal solution vector (number of variables)
     size_t n_primal = 2 * dim * dim;
@@ -273,7 +273,7 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    // dimensions of each block of x ... in this case, we have only 2 blocks, each with dimension 100
+    // dimensions of each block of x ... in this case, we have only 2 blocks, each with dimension 10
     std::vector<int> dimensions;
     dimensions.push_back(dim);
     dimensions.push_back(dim);

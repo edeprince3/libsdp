@@ -1,7 +1,7 @@
 import numpy as np
 
 import sys
-sys.path.insert(0, '../.')
+sys.path.insert(0, '../../.')
 
 import libsdp
 
@@ -124,9 +124,9 @@ def main():
     
     options.sdp_algorithm             = options.SDPAlgorithm.RRSDP
     options.maxiter                   = maxiter
-    options.sdp_error_convergence     = 1e-5
-    options.sdp_objective_convergence = 1e-4
-    options.penalty_parameter_scaling = 0.5
+    options.sdp_error_convergence     = 1e-6
+    options.sdp_objective_convergence = 1e-6
+    options.penalty_parameter_scaling = 0.1
     
     # solve sdp
     sdp = libsdp.sdp_solver(options)

@@ -186,8 +186,12 @@ void SDPHelper::solve(std::vector<double> b,
             off += primal_block_dim[j] * primal_block_dim[j];
         }
 
-        // populate relevant entry in c. note our definition of the problem has c = -F0
-        c[off + my_row * primal_block_dim[my_block] + my_column] = -Fi[0].value[i];
+        // populate relevant entry in c. 
+        // note that, compared to SDPLIB problems, our definition of the problem 
+        // has c = -F0. (we're minimizing; they maximize). the result will be that
+        // our final objective will have the opposite sign compared to tabulated
+        // SDPLIB values
+        c[off + my_row * primal_block_dim[my_block] + my_column] = Fi[0].value[i];
     }
 
     // constraint matrices

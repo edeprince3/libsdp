@@ -60,10 +60,10 @@ class SDPHelper{
     ~SDPHelper();
 
     /// solve the sdp problem
-    void solve(std::vector<double> b,
-               std::vector<SDPMatrix> Fi,
-               std::vector<int> primal_block_dim,
-               int maxiter);
+    std::vector<double> solve(std::vector<double> b,
+                              std::vector<SDPMatrix> Fi,
+                              std::vector<int> primal_block_dim,
+                              int maxiter);
 
     /// evaluate Au
     void evaluate_Au(double * Au, double * u);

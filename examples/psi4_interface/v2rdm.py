@@ -1,5 +1,5 @@
 """
-Driver for spin-orbital v2RDM. Integrals come from psi4.
+Driver for variational two-electron reduced-density matrix method. Integrals come from psi4.
 """
 import numpy as np
 from numpy import einsum
@@ -11,76 +11,33 @@ import libsdp
 
 import psi4
 
-def main():
+def build_sdp(nalpha, nbeta, nmo, H, tei):
+    """
+    set up details of the SDP
 
-    # set molecule
-    mol = psi4.geometry("""
-    0 1
-         H 0.0 0.0 0.0
-         H 0.0 0.0 1.0
-    no_reorient
-    nocom
-    symmetry c1
-    """)  
-    
-    # set options
-    psi4_options_dict = {
-        'basis': 'sto-3g',
-        'scf_type': 'pk',
-        'e_convergence': 1e-10,
-        'd_convergence': 1e-10
-    }
-    psi4.set_options(psi4_options_dict)
-    
-    # compute the Hartree-Fock energy and wave function
-    scf_e, wfn = psi4.energy('SCF', return_wfn=True)
-
-    # number of alpha electrons
-    nalpha = wfn.nalpha()
-
-    # number of abeta electrons
-    nbeta = wfn.nbeta()
-
-    # total number of orbitals
-    nmo     = wfn.nmo()
-    
-    # molecular orbitals (spatial):
-    C = wfn.Ca()
-
-    # use Psi4's MintsHelper to generate integrals
-    mints = psi4.core.MintsHelper(wfn.basisset())
-
-    # build the one-electron integrals
-    H = np.asarray(mints.ao_kinetic()) + np.asarray(mints.ao_potential())
-    H = np.einsum('uj,vi,uv', C, C, H)
-
-    # build the two-electron integrals:
-    tei = np.asarray(mints.mo_eri(C, C, C, C))
-    
-    # SDP time
+    :param nalpha:       number of alpha electrons
+    :param nbeta:        number of beta electrons
+    :param nmo:          number of spatial molecular orbitals
+    :param H:            core Hamiltonian matrix
+    :param tei:          two-electron repulsion integrals
+    :return: c:          the constraint vector
+    :return: Fi:         list of rows of constraint matrix in sparse format; 
+                         note that Fi[0] is actually the vector defining the 
+                         problem (contains the one- and two-electron integrals)
+    :return: dimensions: list of dimensions of blocks of primal solution
+    """
 
     # for a two-electron system, all we need are
     # D1a D1b D2ab 
 
-    # constraints:
-    # Tr(D1a)  = Na
-    # Tr(D1a)  = Nb
-    # Tr(D2ab) = Na Nb
-    # D2ab -> D1a
-    # D2ab -> D1b
-
-    n_dual = 3 + 2 * nmo*nmo
-
     # block dimensions
     dimensions = []
-    dimensions.append(nmo)
-    dimensions.append(nmo)
-    dimensions.append(nmo*nmo)
+    dimensions.append(nmo)     # D1a
+    dimensions.append(nmo)     # D1a
+    dimensions.append(nmo*nmo) # D2ab
 
     # number of blocks
     nblocks = len(dimensions)
-
-    n_primal = 2*nmo*nmo + nmo*nmo*nmo*nmo
 
     # F0 
     block_number=[]
@@ -95,14 +52,14 @@ def main():
             block_number.append(1)
             row.append(i+1)
             column.append(j+1)
-            value.append(-H[i][j])
+            value.append(H[i][j])
 
     for i in range (0,nmo):
         for j in range (0,nmo):
             block_number.append(2)
             row.append(i+1)
             column.append(j+1)
-            value.append(-H[i][j])
+            value.append(H[i][j])
 
     for i in range (0,nmo):
         for j in range (0,nmo):
@@ -113,7 +70,7 @@ def main():
                     block_number.append(3)
                     row.append(ij+1)
                     column.append(kl+1)
-                    value.append(-tei[i][k][j][l])
+                    value.append(tei[i][k][j][l])
 
     count = 0
     Fi[count].block_number = block_number
@@ -260,6 +217,58 @@ def main():
 
             count += 1
 
+    return c, Fi, dimensions
+
+
+def main():
+
+    # set molecule
+    mol = psi4.geometry("""
+    0 1
+         H 0.0 0.0 0.0
+         H 0.0 0.0 1.0
+    no_reorient
+    nocom
+    symmetry c1
+    """)  
+    
+    # set options
+    psi4_options_dict = {
+        'basis': 'sto-3g',
+        'scf_type': 'pk',
+        'e_convergence': 1e-10,
+        'd_convergence': 1e-10
+    }
+    psi4.set_options(psi4_options_dict)
+    
+    # compute the Hartree-Fock energy and wave function
+    scf_e, wfn = psi4.energy('SCF', return_wfn=True)
+
+    # number of alpha electrons
+    nalpha = wfn.nalpha()
+
+    # number of beta electrons
+    nbeta = wfn.nbeta()
+
+    # total number of orbitals
+    nmo     = wfn.nmo()
+    
+    # molecular orbitals (spatial):
+    C = wfn.Ca()
+
+    # use Psi4's MintsHelper to generate integrals
+    mints = psi4.core.MintsHelper(wfn.basisset())
+
+    # build the one-electron integrals
+    H = np.asarray(mints.ao_kinetic()) + np.asarray(mints.ao_potential())
+    H = np.einsum('uj,vi,uv', C, C, H)
+
+    # build the two-electron integrals:
+    tei = np.asarray(mints.mo_eri(C, C, C, C))
+    
+    # build inputs for the SDP
+    c, Fi, dimensions = build_sdp(nalpha,nbeta,nmo,H,tei)
+
     # set options
     options = libsdp.sdp_options()
 
@@ -273,7 +282,26 @@ def main():
 
     # solve sdp
     sdp = libsdp.sdp_solver(options)
-    sdp.solve(c,Fi,dimensions,maxiter)
+    x = sdp.solve(c,Fi,dimensions,maxiter)
+
+    # primal energy:
+    objective = 0
+    for i in range (0,len(Fi[0].block_number)):
+        block  = Fi[0].block_number[i] - 1
+        row    = Fi[0].row[i] - 1
+        column = Fi[0].column[i] - 1
+        value  = Fi[0].value[i]
+        
+        off = 0
+        for j in range (0,block):
+            off += dimensions[j] * dimensions[j]
+
+        objective += x[off + row * dimensions[block] + column] * value
+
+    print('')
+    print('    * v2RDM electronic energy: %20.12f' % (objective))
+    print('    * v2RDM total energy:      %20.12f' % (objective + mol.nuclear_repulsion_energy()))
+    print('')
 
 if __name__ == "__main__":
     main()

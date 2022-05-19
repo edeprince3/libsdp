@@ -154,10 +154,10 @@ void SDPHelper::evaluate_ATu(double * ATu, double * u) {
 }
 
 /// solve the sdp problem
-void SDPHelper::solve(std::vector<double> b,
-                      std::vector<SDPMatrix> Fi,
-                      std::vector<int> primal_block_dim,
-                      int maxiter) {
+std::vector<double> SDPHelper::solve(std::vector<double> b,
+                                     std::vector<SDPMatrix> Fi,
+                                     std::vector<int> primal_block_dim,
+                                     int maxiter) {
 
     // copy some quantities to class members for objective 
     // function / Au / ATu evaluation
@@ -232,11 +232,11 @@ void SDPHelper::solve(std::vector<double> b,
         primal_block_dim_.push_back(primal_block_dim[i]);
     }
 
-    // primal solution vector (random guess on [-0.001:0.001])
+   // primal solution vector (random guess on [-0.001:0.001])
     srand(0);
-    double * x = (double*)malloc(n_primal_*sizeof(double));
+    std::vector<double> x;
     for (size_t i = 0; i < n_primal_; i++) {
-        x[i] = 2.0 * ( (double)rand()/RAND_MAX - 1.0 ) * 0.001;
+        x.push_back(2.0 * ( (double)rand()/RAND_MAX - 1.0 ) * 0.001);
     }
 
     // initialize sdp solver
@@ -287,7 +287,7 @@ void SDPHelper::solve(std::vector<double> b,
     } 
 
     // solve sdp
-    sdp->solve(x,
+    sdp->solve(x.data(),
                b.data(),
                c.data(),
                primal_block_dim_, 
@@ -300,7 +300,7 @@ void SDPHelper::solve(std::vector<double> b,
     printf("\n");
     fflush(stdout);
 
-    free(x);
+    return x;
 }
 
 SDPOptions options() {

@@ -1,5 +1,5 @@
 """
-Driver for variational two-electron reduced-density matrix method. Integrals come from psi4.
+Driver for variational two-electron reduced-density matrix method. Integrals come from PySCF
 """
 import numpy as np
 from numpy import einsum
@@ -9,16 +9,15 @@ sys.path.insert(0, '../../.')
 
 import libsdp
 
-import psi4
+import pyscf
 
-def build_sdp(nalpha, nbeta, nmo, H, tei):
-    """
-    set up details of the SDP
+def build_sdp(nalpha, nbeta, nmo, oei, tei):
+    """ set up details of the SDP
 
     :param nalpha:       number of alpha electrons
     :param nbeta:        number of beta electrons
     :param nmo:          number of spatial molecular orbitals
-    :param H:            core Hamiltonian matrix
+    :param oei:          core Hamiltonian matrix
     :param tei:          two-electron repulsion integrals
     :return: c:          the constraint vector
     :return: Fi:         list of rows of constraint matrix in sparse format; 
@@ -52,14 +51,14 @@ def build_sdp(nalpha, nbeta, nmo, H, tei):
             block_number.append(1)
             row.append(i+1)
             column.append(j+1)
-            value.append(H[i][j])
+            value.append(oei[i][j])
 
     for i in range (0,nmo):
         for j in range (0,nmo):
             block_number.append(2)
             row.append(i+1)
             column.append(j+1)
-            value.append(H[i][j])
+            value.append(oei[i][j])
 
     for i in range (0,nmo):
         for j in range (0,nmo):
@@ -219,55 +218,45 @@ def build_sdp(nalpha, nbeta, nmo, H, tei):
 
     return c, Fi, dimensions
 
-
 def main():
 
-    # set molecule
-    mol = psi4.geometry("""
-    0 1
-         H 0.0 0.0 0.0
-         H 0.0 0.0 1.0
-    no_reorient
-    nocom
-    symmetry c1
-    """)  
-    
-    # set options
-    psi4_options_dict = {
-        'basis': 'sto-3g',
-        'scf_type': 'pk',
-        'e_convergence': 1e-10,
-        'd_convergence': 1e-10
-    }
-    psi4.set_options(psi4_options_dict)
-    
-    # compute the Hartree-Fock energy and wave function
-    scf_e, wfn = psi4.energy('SCF', return_wfn=True)
+    # build molecule
+    mol = pyscf.M(
+        atom='H 0 0 0; H 0 0 1.0',
+        basis='sto-3g',
+        symmetry=False)
 
-    # number of alpha electrons
-    nalpha = wfn.nalpha()
+    # run RHF
+    mf = mol.RHF().run()
 
-    # number of beta electrons
-    nbeta = wfn.nbeta()
+    # get mo coefficient matrix
+    C = mf.mo_coeff
 
-    # total number of orbitals
-    nmo     = wfn.nmo()
-    
-    # molecular orbitals (spatial):
-    C = wfn.Ca()
+    # get two-electron integrals
+    tei = mol.intor('int2e')
 
-    # use Psi4's MintsHelper to generate integrals
-    mints = psi4.core.MintsHelper(wfn.basisset())
+    # transform two-electron integrals to mo basis
+    tei = np.einsum('uj,vi,wl,xk,uvwx',C,C,C,C,tei)
 
-    # build the one-electron integrals
-    H = np.asarray(mints.ao_kinetic()) + np.asarray(mints.ao_potential())
-    H = np.einsum('uj,vi,uv', C, C, H)
+    # get core hamiltonian
+    kinetic   = mol.intor('int1e_kin')
+    potential = mol.intor('int1e_nuc')
+    oei       = kinetic + potential
 
-    # build the two-electron integrals:
-    tei = np.asarray(mints.mo_eri(C, C, C, C))
-    
+    # transform core hamiltonian to mo basis
+    oei = np.einsum('uj,vi,uv',C,C,oei)
+
+    # number of occupied orbitals
+    occ = mf.mo_occ
+    nele = int(sum(occ))
+    nalpha = nele // 2
+    nbeta  = nalpha
+
+    # number of spatial orbitals
+    nmo = int(mf.mo_coeff.shape[1])
+
     # build inputs for the SDP
-    c, Fi, dimensions = build_sdp(nalpha,nbeta,nmo,H,tei)
+    c, Fi, dimensions = build_sdp(nalpha,nbeta,nmo,oei,tei)
 
     # set options
     options = libsdp.sdp_options()
@@ -300,7 +289,7 @@ def main():
 
     print('')
     print('    * v2RDM electronic energy: %20.12f' % (objective))
-    print('    * v2RDM total energy:      %20.12f' % (objective + mol.nuclear_repulsion_energy()))
+    print('    * v2RDM total energy:      %20.12f' % (objective + mf.energy_nuc()))
     print('')
 
 if __name__ == "__main__":

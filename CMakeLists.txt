@@ -70,6 +70,9 @@ if ( BUILD_PYTHON_INTERFACE )
 else()
 
     add_library(sdp SHARED 
+        include/sdp_solver.h
+        include/rrsdp_solver.h 
+        include/bpsdp_solver.h 
         src/blas_helper.cc 
         src/lbfgs_helper.cc 
         src/cg_solver.cc 
@@ -90,7 +93,6 @@ else()
     target_link_libraries(sdp PUBLIC LBFGS::lib)
 
     set_target_properties(sdp PROPERTIES PUBLIC_HEADER "include/sdp_solver.h;include/rrsdp_solver.h;include/bpsdp_solver.h")
-
     
     install(TARGETS sdp
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

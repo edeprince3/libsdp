@@ -3,6 +3,7 @@
 #include<math.h>
 #include<string.h>
 #include<string>
+#include<memory>
 
 // rrsdp and bpsdp headers
 #include<rrsdp_solver.h>

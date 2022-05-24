@@ -1,6 +1,12 @@
 # libsdp
 a library of semidefinite programming solvers
 
+[Installation](#installation)
+
+[Quickstart](#quickstart)
+
+[The SDP Problem](#the-sdp-problem)
+
 ## Installation
 Installing libsdp requires cmake.  To install, first clone the package
 ```
@@ -84,3 +90,5 @@ An example in which libsdp interfaces directly with the PySCF electronic structu
 libsdp/examples/pyscf_interface/pyscf_v2rdm.py
 ```
 This example is the same as the Psi4 one, except the required one- and two-electron integrals are taken from the PySCF package. To run this example, you need to install PySCF (see https://pyscf.org/).
+
+## The SDP problem

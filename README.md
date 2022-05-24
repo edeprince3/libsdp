@@ -101,6 +101,32 @@ where $x$ is the primal solution vector, $c$ is a vector that defines the object
 
 ### Representing the SDP in Python
 
+You can use the Python interface to libsdp in one of two ways. First, you can use an SDPA-style input file, as is done in 
+```
+libsdp/examples/python_interface
+```
+Alternatively, you can interface with the library directly, as is done in the Psi4 and PySCF examples. To do so, you must provide the library
+
+  - a list of dimensions of each block of the primal solution vector
+  - the vector b that defines the right-hand side of the constraints (Ax = b)
+  - the vector c that defines the objective function, in SDPA sparse format
+  - each row of the constraint matrix A, in SDPA sparse format
+
+Note that c and the rows of A are passed as a single list, and each item in this list is an "sdp_matrix" object, which is a struct referring to a single element of c or a single element of a row of A. This struct contains
+
+  - the current constraint number. 0 refers to the vector c that defines the objective function, 1 refers to the first constraint, 2 is the second constraint, etc.
+  - the block number for the particular block of the primal solution to which the constraint refers (unit offset)
+  - the row of the element in this block of the primal solution to which the constraint refers (unit offset)
+  - the column of the element in this block of the primal solution to which the constraint refers (unit offset)
+  - the value by which the element should be scaled for this constraint
+
+For additional detailes, see the sample code in 
+```
+libsdp/examples/psi4_interface/psi4_v2rdm.py
+```
+which defines each of these quantities and passes them to the libsdp solver.
+
+
 ### Representing the SDP in C/C++
 
 The C/C++ interface to libsdp operates through callback functions, defined by the user. To solve your SDP using this interface, you must provide the following information to the library:
@@ -112,4 +138,8 @@ The C/C++ interface to libsdp operates through callback functions, defined by th
   - a callback function to evlauate the action of the transpose of the constraint matrix on a vector (A^Tu)
   - a callback function to monitor the progress of the solver
 
-For additional detailes, see the sample code in libsdp/examples/c_interface/main.cc, which defines each of these quantities and passes them to the libsdp solver.
+For additional detailes, see the sample code in 
+```
+libsdp/examples/c_interface/main.cc
+```
+which defines each of these quantities and passes them to the libsdp solver.

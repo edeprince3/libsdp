@@ -92,3 +92,13 @@ libsdp/examples/pyscf_interface/pyscf_v2rdm.py
 This example is the same as the Psi4 one, except the required one- and two-electron integrals are taken from the PySCF package. To run this example, you need to install PySCF (see https://pyscf.org/).
 
 ## The SDP problem
+
+We express the primal form of the semidefinite programming (SDP) problem as
+$$ {\rm min} ~ x^T c $$
+$$ Ax ~ = ~ b$$
+$$ x ~ \succeq ~ 0$$
+where $x$ is the primal solution vector, $c$ is a vector that defines the objective function being minimized, and $A$ and $b$ represent the constraint matrix and vector, respectively, which encode the linear constraints applied in the problem. If you are familiar with the SDPA representation of the SDP, our formulation is equivalent (to within a sign) what SDPA considers to be the dual problem.
+
+### Representing the SDP in Python
+
+### Representing the SDP in C/C++

@@ -7,6 +7,9 @@ a library of semidefinite programming solvers
 
 [The SDP Problem](#the-sdp-problem)
 
+[Methods and Functionality](#methods-and-functionality)
+
+
 ## Installation
 Installing libsdp requires cmake.  To install, first clone the package
 ```

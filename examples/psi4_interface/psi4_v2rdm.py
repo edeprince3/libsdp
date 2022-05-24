@@ -1,5 +1,5 @@
 """
-Driver for variational two-electron reduced-density matrix method. Integrals come from psi4.
+Driver for variational two-electron reduced-density matrix method. Integrals come from Psi4
 """
 import numpy as np
 from numpy import einsum
@@ -12,17 +12,16 @@ import libsdp
 import psi4
 
 def build_sdp(nalpha, nbeta, nmo, oei, tei):
-    """
-    set up details of the SDP
+    """ set up details of the SDP
 
     :param nalpha:       number of alpha electrons
     :param nbeta:        number of beta electrons
     :param nmo:          number of spatial molecular orbitals
     :param oei:          core Hamiltonian matrix
     :param tei:          two-electron repulsion integrals
-    :return: c:          the constraint vector
-    :return: Fi:         list of rows of constraint matrix in sparse format; 
-                         note that Fi[0] is actually the vector defining the 
+    :return: b:          the constraint vector
+    :return: F:          list of rows of constraint matrix in sparse format; 
+                         note that F[0] is actually the vector defining the 
                          problem (contains the one- and two-electron integrals)
     :return: dimensions: list of dimensions of blocks of primal solution
     """
@@ -45,7 +44,7 @@ def build_sdp(nalpha, nbeta, nmo, oei, tei):
     column=[]
     value=[]
 
-    Fi = [libsdp.sdp_matrix()]
+    F = [libsdp.sdp_matrix()]
 
     for i in range (0,nmo):
         for j in range (0,nmo):
@@ -73,15 +72,15 @@ def build_sdp(nalpha, nbeta, nmo, oei, tei):
                     value.append(tei[i][k][j][l])
 
     count = 0
-    Fi[count].block_number = block_number
-    Fi[count].row          = row
-    Fi[count].column       = column
-    Fi[count].value        = value
+    F[count].block_number = block_number
+    F[count].row          = row
+    F[count].column       = column
+    F[count].value        = value
     count += 1
     
     # constraints (F1, F2, ...)
 
-    c = []
+    b = []
 
     # Tr(D1a)
     block_number=[]
@@ -95,13 +94,13 @@ def build_sdp(nalpha, nbeta, nmo, oei, tei):
         column.append(i+1)
         value.append(1.0)
 
-    Fi.append(libsdp.sdp_matrix())
-    Fi[count].block_number = block_number
-    Fi[count].row          = row
-    Fi[count].column       = column
-    Fi[count].value        = value
+    F.append(libsdp.sdp_matrix())
+    F[count].block_number = block_number
+    F[count].row          = row
+    F[count].column       = column
+    F[count].value        = value
 
-    c.append(nalpha)
+    b.append(nalpha)
 
     count += 1
 
@@ -117,13 +116,13 @@ def build_sdp(nalpha, nbeta, nmo, oei, tei):
         column.append(i+1)
         value.append(1.0)
 
-    Fi.append(libsdp.sdp_matrix())
-    Fi[count].block_number = block_number
-    Fi[count].row          = row
-    Fi[count].column       = column
-    Fi[count].value        = value
+    F.append(libsdp.sdp_matrix())
+    F[count].block_number = block_number
+    F[count].row          = row
+    F[count].column       = column
+    F[count].value        = value
 
-    c.append(nbeta)
+    b.append(nbeta)
 
     count += 1
 
@@ -141,13 +140,13 @@ def build_sdp(nalpha, nbeta, nmo, oei, tei):
             column.append(ij+1)
             value.append(1.0)
 
-    Fi.append(libsdp.sdp_matrix())
-    Fi[count].block_number = block_number
-    Fi[count].row          = row
-    Fi[count].column       = column
-    Fi[count].value        = value
+    F.append(libsdp.sdp_matrix())
+    F[count].block_number = block_number
+    F[count].row          = row
+    F[count].column       = column
+    F[count].value        = value
 
-    c.append(nalpha*nbeta)
+    b.append(nalpha*nbeta)
 
     count += 1
 
@@ -174,13 +173,13 @@ def build_sdp(nalpha, nbeta, nmo, oei, tei):
             column.append(j+1)
             value.append(-nbeta)
     
-            Fi.append(libsdp.sdp_matrix())
-            Fi[count].block_number = block_number
-            Fi[count].row          = row
-            Fi[count].column       = column
-            Fi[count].value        = value
+            F.append(libsdp.sdp_matrix())
+            F[count].block_number = block_number
+            F[count].row          = row
+            F[count].column       = column
+            F[count].value        = value
 
-            c.append(0.0)
+            b.append(0.0)
 
             count += 1
 
@@ -207,18 +206,17 @@ def build_sdp(nalpha, nbeta, nmo, oei, tei):
             column.append(j+1)
             value.append(-nalpha)
     
-            Fi.append(libsdp.sdp_matrix())
-            Fi[count].block_number = block_number
-            Fi[count].row          = row
-            Fi[count].column       = column
-            Fi[count].value        = value
+            F.append(libsdp.sdp_matrix())
+            F[count].block_number = block_number
+            F[count].row          = row
+            F[count].column       = column
+            F[count].value        = value
 
-            c.append(0.0)
+            b.append(0.0)
 
             count += 1
 
-    return c, Fi, dimensions
-
+    return b, F, dimensions
 
 def main():
 
@@ -230,8 +228,8 @@ def main():
     no_reorient
     nocom
     symmetry c1
-    """)  
-    
+    """)
+
     # set options
     psi4_options_dict = {
         'basis': 'sto-3g',
@@ -240,7 +238,7 @@ def main():
         'd_convergence': 1e-10
     }
     psi4.set_options(psi4_options_dict)
-    
+
     # compute the Hartree-Fock energy and wave function
     scf_e, wfn = psi4.energy('SCF', return_wfn=True)
 
@@ -252,7 +250,7 @@ def main():
 
     # total number of orbitals
     nmo     = wfn.nmo()
-    
+
     # molecular orbitals (spatial):
     C = wfn.Ca()
 
@@ -265,9 +263,17 @@ def main():
 
     # build the two-electron integrals:
     tei = np.asarray(mints.mo_eri(C, C, C, C))
-    
+
     # build inputs for the SDP
-    c, Fi, dimensions = build_sdp(nalpha,nbeta,nmo,oei,tei)
+    # 
+    # min   x.c
+    # s.t.  Ax = b
+    #       x >= 0
+    # 
+    # b is the right-hand side of Ax = b
+    # F contains c followed by the rows of A, in SDPA sparse matrix format
+    # 
+    b, F, dimensions = build_sdp(nalpha,nbeta,nmo,oei,tei)
 
     # set options
     options = libsdp.sdp_options()
@@ -282,15 +288,15 @@ def main():
 
     # solve sdp
     sdp = libsdp.sdp_solver(options)
-    x = sdp.solve(c,Fi,dimensions,maxiter)
+    x = sdp.solve(b,F,dimensions,maxiter)
 
     # primal energy:
     objective = 0
-    for i in range (0,len(Fi[0].block_number)):
-        block  = Fi[0].block_number[i] - 1
-        row    = Fi[0].row[i] - 1
-        column = Fi[0].column[i] - 1
-        value  = Fi[0].value[i]
+    for i in range (0,len(F[0].block_number)):
+        block  = F[0].block_number[i] - 1
+        row    = F[0].row[i] - 1
+        column = F[0].column[i] - 1
+        value  = F[0].value[i]
         
         off = 0
         for j in range (0,block):

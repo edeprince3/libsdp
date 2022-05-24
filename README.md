@@ -99,7 +99,7 @@ $$ Ax ~ = ~ b$$
 $$ x ~ \succeq ~ 0$$
 where $x$ is the primal solution vector, $c$ is a vector that defines the objective function being minimized, and $A$ and $b$ represent the constraint matrix and vector, respectively, which encode the linear constraints applied in the problem. If you are familiar with the SDPA representation of the SDP, our formulation is equivalent (to within a sign) what SDPA considers to be the dual problem.
 
-### Representing the SDP in Python
+### Representing the SDP problem in Python
 
 You can use the Python interface to libsdp in one of two ways. First, you can use an SDPA-style input file, as is done in 
 ```
@@ -127,7 +127,7 @@ libsdp/examples/psi4_interface/psi4_v2rdm.py
 which defines each of these quantities and passes them to the libsdp solver.
 
 
-### Representing the SDP in C/C++
+### Representing the SDP problem in C/C++
 
 The C/C++ interface to libsdp operates through callback functions, defined by the user. To solve your SDP using this interface, you must provide the following information to the library:
 

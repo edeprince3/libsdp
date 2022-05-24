@@ -102,3 +102,14 @@ where $x$ is the primal solution vector, $c$ is a vector that defines the object
 ### Representing the SDP in Python
 
 ### Representing the SDP in C/C++
+
+The C/C++ interface to libsdp operates through callback functions, defined by the user. To solve your SDP using this interface, you must provide the following information to the library:
+
+  - a list of dimensions of each block of the primal solution vector
+  - the vector b that defines the right-hand side of the constraints (Ax = b)
+  - the vector c that defines the objective function
+  - a callback function to evaluate the action of the constraint matrix on a vector (Au)
+  - a callback function to evlauate the action of the transpose of the constraint matrix on a vector (A^Tu)
+  - a callback function to monitor the progress of the solver
+
+For additional detailes, see the sample code in libsdp/examples/c_interface/main.cc, which defines each of these quantities and passes them to the libsdp solver.

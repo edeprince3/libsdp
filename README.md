@@ -54,7 +54,7 @@ An example using the Python interface to libsdp is provided in
 ```
 libsdp/examples/python_interface
 ```
-In this example, the SDP problem is expressed in the "SDPA" sparse format described here: http://euler.nmt.edu/~brian/sdplib/sdplib.pdf . We solve a problem that is identical to that given in the C/C++ interface example. You can see how that problem is represented in SDPA-style sparse format in 
+In this example, the SDP problem is expressed in the "SDPA" sparse format described here: http://euler.nmt.edu/~brian/sdplib/sdplib.pdf . We solve a problem that is identical to that given in the C/C++ interface example. You can see how that problem is represented in SDPA-style format in 
 ```
 libsdp/examples/python_interface/c_example.in
 ```
@@ -112,13 +112,12 @@ Alternatively, you can interface with the library directly, as is done in the Ps
   - the vector c that defines the objective function, in SDPA sparse format
   - each row of the constraint matrix A, in SDPA sparse format
 
-Note that c and the rows of A are passed as a single list, and each item in this list is an "sdp_matrix" object, which is a struct referring to a single element of c or a single element of a row of A. This struct contains
+Note that c and the rows of A are passed as a single list, and each item in this list is an "sdp_matrix" object, which is a struct referring to c or a row of A. This struct contains
 
-  - the current constraint number. 0 refers to the vector c that defines the objective function, 1 refers to the first constraint, 2 is the second constraint, etc.
-  - the block number for the particular block of the primal solution to which the constraint refers (unit offset)
-  - the row of the element in this block of the primal solution to which the constraint refers (unit offset)
-  - the column of the element in this block of the primal solution to which the constraint refers (unit offset)
-  - the value by which the element should be scaled for this constraint
+  - a list of block numbers for the particular blocks of the primal solution to which the constraint refers (unit offset)
+  - a list of the rows corresponding to the elements in the blocks of the primal solution to which the constraint refers (unit offset)
+  - a list of the columns corresponding to the elements in this blocks of the primal solution to which the constraint refers (unit offset)
+  - a list of values by which the elements referenced by the block/row/column combination should be scaled for this constraint
 
 For additional detailes, see the sample code in 
 ```
@@ -143,3 +142,57 @@ For additional detailes, see the sample code in
 libsdp/examples/c_interface/main.cc
 ```
 which defines each of these quantities and passes them to the libsdp solver.
+
+## Methods and Functionality
+
+The following methods and objects are exposed at the Python layer:
+
+#### libsdp.sdp_matrix()
+
+Returns a struct for SDPA-style sparse matrix entries. Each row of the sparse matrix has elements that map to the elements of the primal solution vector for evaluating matrix-vector products (e.g, for Ax = b). A row of A can be encoded with the following elements of the sdp_matrix() struct:
+
+  - block_number: a list of blocks in which particular elements of the primal solution reside (unit offset)
+  - row: a list of rows in the corresponding block where particular elements of the primal solution reside (unit offset)
+  - column: a list of columns in the corresponding block where particular elements of the primal solution reside (unit offset)
+  - value: a list of values by which the element corresponing to the block/row/column label should be scaled (the actual entries in the given row of A)
+
+#### libsdp.sdp_options()
+
+Returns an options object for controlling the SDP algorithm, convergence parameters, etc. Members include:
+
+  - sdp_algorithm: the SDP algorithm to be used (valid options are SDPAlgorithm.BPSDP and SDPAlgorithm.RRSDP, see below)
+  - sdp_error_convergence: convergence in ||Ax-b|| for RRSDP and convergence in ||Ax-b|| and ||A^Ty - c + z|| for BPSDP. Here, y and z are dual solution vectors optimized internally by libsdp.
+  - sdp_objective_convergence: the convergence in x.c in RRSDP and the primal-dual gap |x.c - b.y| in BPSDP
+  - cg_maxiter: maximum number of iterations for the conjugate gradient optimization of the dual solution vector (BPSDP only)
+  - mu_update_frequency: number of macrocycles to perform before updating the penalty parameter (BPSDP only)
+  - penalty_parameter_scaling: factory by which penalty parameter should be scaled in each macrocycle (RRSDP only)
+  - maxiter: the maximum number of macrocycles
+
+The options object also defines the enums used to specify sdp_algorithm:
+
+  - SDPAlgorithm.BPSDP: an enum denoting the boundary-point SDP algorithm (BPSDP)
+  - SDPAlgorithm.RRSDP: an enum denoting the matrix-factorization-based SDP algorithm (RRSDP)
+
+Default settings can be found in libsdp/include/sdp_solver.h
+
+#### libsdp.sdp_solver( libsdp.options() )
+
+Returns a solver object for performing the actual SDP optimization. Takes an options object as input. A minimal workflow would be:
+
+```
+import libsdp
+
+options = libsdp.sdp_options()
+
+# change options if you don't like the defaults
+
+sdp = libsdp.sdp_solver(options)
+
+b = [] # ... fill with appropriate elements
+F = [libsdp.sdp_matrix()] # ... fill with c, then rows of A
+dimensions = [] # fill with block dimensions of primal solution
+maxiter = 100000 # maximum number of iterations ... can be used to force BPSDP to return early
+
+x = sdp.solve(b,F,dimensions,maxiter)
+```
+

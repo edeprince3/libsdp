@@ -119,7 +119,7 @@ Note that c and the rows of A are passed as a single list, and each item in this
 
   - a list of block numbers for the particular blocks of the primal solution to which the constraint refers (unit offset)
   - a list of the rows corresponding to the elements in the blocks of the primal solution to which the constraint refers (unit offset)
-  - a list of the columns corresponding to the elements in this blocks of the primal solution to which the constraint refers (unit offset)
+  - a list of the columns corresponding to the elements in the blocks of the primal solution to which the constraint refers (unit offset)
   - a list of values by which the elements referenced by the block/row/column combination should be scaled for this constraint
 
 For additional detailes, see the sample code in 

@@ -115,14 +115,7 @@ Alternatively, you can interface with the library directly, as is done in the Ps
   - the vector c that defines the objective function, in SDPA sparse format
   - each row of the constraint matrix A, in SDPA sparse format
 
-Note that c and the rows of A are passed as a single list, and each item in this list is an "sdp_matrix" object, which is a struct referring to c or a row of A. This struct contains
-
-  - a list of block numbers for the particular blocks of the primal solution to which the constraint refers (unit offset)
-  - a list of the rows corresponding to the elements in the blocks of the primal solution to which the constraint refers (unit offset)
-  - a list of the columns corresponding to the elements in the blocks of the primal solution to which the constraint refers (unit offset)
-  - a list of values by which the elements referenced by the block/row/column combination should be scaled for this constraint
-
-For additional detailes, see the sample code in 
+Note that c and the rows of A are passed as a single list, and each item in this list is an "sdp_matrix" object, which is a struct referring to c or a row of A. The members of this struct are described below ([Methods and Functionality](#methods-and-functionality)). For additional detailes, see the sample code in 
 ```
 libsdp/examples/psi4_interface/psi4_v2rdm.py
 ```

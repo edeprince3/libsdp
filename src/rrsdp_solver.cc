@@ -91,16 +91,16 @@ RRSDPSolver::~RRSDPSolver(){
 }
 
 // low-rank solver
-void RRSDPSolver::solve(double * x,   
-                        double * b, 
-                        double * c,
-                        std::vector<int> primal_block_dim,
-                        std::vector<int> primal_block_rank,
-                        int maxiter,
-                        SDPCallbackFunction evaluate_Au, 
-                        SDPCallbackFunction evaluate_ATu, 
-                        SDPProgressMonitorFunction progress_monitor, 
-                        void * data){
+void RRSDPSolver::solve_low_rank(double * x,   
+                                 double * b, 
+                                 double * c,
+                                 std::vector<int> primal_block_dim,
+                                 std::vector<int> primal_block_rank,
+                                 int maxiter,
+                                 SDPCallbackFunction evaluate_Au, 
+                                 SDPCallbackFunction evaluate_ATu, 
+                                 SDPProgressMonitorFunction progress_monitor, 
+                                 void * data){
 
     // copy block ranks
     primal_block_rank_.clear();

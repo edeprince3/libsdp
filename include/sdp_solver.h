@@ -81,6 +81,23 @@ class SDPSolver{
         exit(1);
     }
 
+    /// solve the sdp problem (low rank)
+    virtual void solve_low_rank(double * x,
+                                double * b,
+                                double * c,
+                                std::vector<int> primal_block_dim,
+                                std::vector<int> primal_block_rank,
+                                int maxiter,
+                                SDPCallbackFunction evaluate_Au,
+                                SDPCallbackFunction evaluate_ATu,
+                                SDPProgressMonitorFunction progress_monitor,
+                                void * data){
+        printf("\n");
+        printf("    solve_low_rank() has not been implemented for this sdp solver\n");
+        printf("\n");
+        exit(1);
+    }
+
     int iiter_total() { return iiter_total_; }
     int oiter_total() { return oiter_; }
 

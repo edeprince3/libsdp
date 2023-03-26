@@ -54,6 +54,18 @@ class RRSDPSolver: public SDPSolver {
                SDPProgressMonitorFunction progress_monitor,
                void * data);
 
+    /// solve the sdp problem (low rank)
+    void solve(double * x,
+               double * b,
+               double * c,
+               std::vector<int> primal_block_dim,
+               std::vector<int> primal_block_rank,
+               int maxiter, 
+               SDPCallbackFunction evaluate_Au,
+               SDPCallbackFunction evaluate_ATu,
+               SDPProgressMonitorFunction progress_monitor,
+               void * data);
+
     double evaluate_gradient_x(const lbfgsfloatval_t * r, lbfgsfloatval_t * g);
 
     void set_iiter(int iiter) { iiter_ = iiter; }

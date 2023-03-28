@@ -54,17 +54,30 @@ class RRSDPSolver: public SDPSolver {
                SDPProgressMonitorFunction progress_monitor,
                void * data);
 
-    /// solve the sdp problem (low rank)
+    /// solve the sdp problem (low rank, only for rrsdp)
     void solve_low_rank(double * x,
                         double * b,
                         double * c,
                         std::vector<int> primal_block_dim,
                         std::vector<int> primal_block_rank,
-                        int maxiter, 
+                        int maxiter,
                         SDPCallbackFunction evaluate_Au,
                         SDPCallbackFunction evaluate_ATu,
                         SDPProgressMonitorFunction progress_monitor,
                         void * data);
+
+    /// solve the sdp problem (low rank, on the fly construction of Au)
+    void solve_low_rank_on_the_fly(double * x,
+                                   double * b,
+                                   double * c,
+                                   std::vector<int> primal_block_dim,
+                                   std::vector<int> primal_block_rank,
+                                   std::vector<bool> do_construct_primal_block,
+                                   int maxiter,
+                                   SDPCallbackFunctionOnTheFly evaluate_Au,
+                                   SDPCallbackFunction evaluate_ATu,
+                                   SDPProgressMonitorFunction progress_monitor,
+                                   void * data);
 
     double evaluate_gradient_x(const lbfgsfloatval_t * r, lbfgsfloatval_t * g);
 
@@ -91,6 +104,9 @@ class RRSDPSolver: public SDPSolver {
     /// copy of Au callback function
     SDPCallbackFunction evaluate_Au_;
 
+    /// copy of Au callback function (on the fly)
+    SDPCallbackFunctionOnTheFly evaluate_Au_on_the_fly_;
+
     /// copy of ATu callback function
     SDPCallbackFunction evaluate_ATu_;
 
@@ -99,6 +115,12 @@ class RRSDPSolver: public SDPSolver {
 
     /// copy of list of block ranks
     std::vector<int> primal_block_rank_;
+
+    /// do construct primal block = r.rT?
+    std::vector<bool> do_construct_primal_block_;
+
+    /// do evaluate Au on the fly?
+    bool do_evaluate_Au_on_the_fly_ = false;
 
     /// the number of inner (lbfgs) iterations
     int iiter_;

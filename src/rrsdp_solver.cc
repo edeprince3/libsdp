@@ -91,15 +91,15 @@ RRSDPSolver::~RRSDPSolver(){
 }
 
 // low-rank solver
-void RRSDPSolver::solve_low_rank(double * x,   
-                                 double * b, 
+void RRSDPSolver::solve_low_rank(double * x,
+                                 double * b,
                                  double * c,
                                  std::vector<int> primal_block_dim,
                                  std::vector<int> primal_block_rank,
                                  int maxiter,
-                                 SDPCallbackFunction evaluate_Au, 
-                                 SDPCallbackFunction evaluate_ATu, 
-                                 SDPProgressMonitorFunction progress_monitor, 
+                                 SDPCallbackFunction evaluate_Au,
+                                 SDPCallbackFunction evaluate_ATu,
+                                 SDPProgressMonitorFunction progress_monitor,
                                  void * data){
 
     // copy block ranks
@@ -110,6 +110,44 @@ void RRSDPSolver::solve_low_rank(double * x,
 
     // call solver
     solve(x, b, c, primal_block_dim, maxiter, evaluate_Au, evaluate_ATu, progress_monitor, data);
+}
+
+// empty evaluate_Au function
+static void evaluate_Au_empty(double * Au, double * u, void * data) {
+    return;
+}
+
+// low-rank solver (on the fly construction of Au)
+void RRSDPSolver::solve_low_rank_on_the_fly(double * x,
+                                            double * b,
+                                            double * c,
+                                            std::vector<int> primal_block_dim,
+                                            std::vector<int> primal_block_rank,
+                                            std::vector<bool> do_construct_primal_block,
+                                            int maxiter,
+                                            SDPCallbackFunctionOnTheFly evaluate_Au,
+                                            SDPCallbackFunction evaluate_ATu,
+                                            SDPProgressMonitorFunction progress_monitor,
+                                            void * data){
+
+    // copy block ranks
+    primal_block_rank_.clear();
+    for (int block = 0; block < primal_block_rank.size(); block++) {
+        primal_block_rank_.push_back(primal_block_rank[block]);
+    }
+
+    // do construct primal blocks?
+    do_construct_primal_block_.clear();
+    for (int block = 0; block < do_construct_primal_block.size(); block++) {
+        do_construct_primal_block_.push_back(do_construct_primal_block[block]);
+    }
+
+    do_evaluate_Au_on_the_fly_ = true;
+
+    // class pointers to callback functions
+    evaluate_Au_on_the_fly_  = evaluate_Au;
+
+    solve(x, b, c, primal_block_dim, maxiter, evaluate_Au_empty, evaluate_ATu, progress_monitor, data);
 }
 
 void RRSDPSolver::solve(double * x,   
@@ -134,11 +172,20 @@ void RRSDPSolver::solve(double * x,
     for (int block = 0; block < primal_block_dim.size(); block++) {
         primal_block_dim_.push_back(primal_block_dim[block]);
     }
+
     // if block ranks are not set, assign rank = dim
     if ( primal_block_rank_.size() != primal_block_dim_.size() ) {
         primal_block_rank_.clear();
         for (int block = 0; block < primal_block_dim.size(); block++) {
             primal_block_rank_.push_back(primal_block_dim[block]);
+        }
+    }
+
+    // if do_construct_primal_block not set, assume all true
+    if ( do_construct_primal_block_.size() != primal_block_dim_.size() ) {
+        do_construct_primal_block_.clear();
+        for (int block = 0; block < primal_block_dim.size(); block++) {
+            do_construct_primal_block_.push_back(true);
         }
     }
 
@@ -196,9 +243,13 @@ void RRSDPSolver::solve(double * x,
         double objective_primal = C_DDOT(n_primal_,x_,1,c_,1);
 
         // evaluate (Ax-b)
-        evaluate_Au_(Au_,x_,data_);
-        C_DAXPY(n_dual_,-1.0,b_,1,Au_,1);
-        primal_error_ = C_DNRM2(n_dual_,Au_,1);
+        if ( !do_evaluate_Au_on_the_fly_ ) {
+            evaluate_Au_(Au_, x_, data_);
+        }else {
+            evaluate_Au_on_the_fly_(Au_, x_, lbfgs_vars_x_, data_);
+        }
+        C_DAXPY(n_dual_, -1.0, b_, 1, Au_, 1);
+        primal_error_ = C_DNRM2(n_dual_, Au_, 1);
 
         double new_max_err = 0.0;
         int imax = -1;
@@ -253,7 +304,9 @@ void RRSDPSolver::build_x(double * r){
         long int n = primal_block_dim_[block];
         long int m = primal_block_rank_[block];
         if ( n == 0 ) continue;
-        F_DGEMM(&char_n, &char_t, &n, &n, &m, &one, &r[off_nm], &n, &r[off_nm], &n, &zero, &x_[off_nn], &n);
+        if ( do_construct_primal_block_[block] ) {
+            F_DGEMM(&char_n, &char_t, &n, &n, &m, &one, &r[off_nm], &n, &r[off_nm], &n, &zero, &x_[off_nn], &n);
+        }
         off_nm += n*m;
         off_nn += n*n;
     }
@@ -273,7 +326,11 @@ double RRSDPSolver::evaluate_gradient_x(const lbfgsfloatval_t * r, lbfgsfloatval
     double objective = C_DDOT(n_primal_,x_,1,c_,1);
 
     // evaluate (Ax-b)
-    evaluate_Au_(Au_,x_,data_);
+    if ( !do_evaluate_Au_on_the_fly_ ) {
+        evaluate_Au_(Au_, x_, data_);
+    }else {
+        evaluate_Au_on_the_fly_(Au_, x_, r_p, data_);
+    }
     C_DAXPY(n_dual_,-1.0,b_,1,Au_,1);
 
     // evaluate sqrt(||Ax-b||)

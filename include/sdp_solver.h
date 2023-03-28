@@ -52,8 +52,9 @@ struct SDPOptions {
     SDPAlgorithm algorithm           = SDPAlgorithm::BPSDP;
 };
 
-typedef std::function<void(double*,double*,void*)> SDPCallbackFunction;
-typedef std::function<void(int,int,double,double,double,double,double,void*)> SDPProgressMonitorFunction;
+typedef std::function<void(double*, double*, void*)> SDPCallbackFunction;
+typedef std::function<void(double*, double*, double*, void*)> SDPCallbackFunctionOnTheFly;
+typedef std::function<void(int, int, double, double, double, double, double, void*)> SDPProgressMonitorFunction;
 
 class SDPSolver{
 
@@ -81,7 +82,7 @@ class SDPSolver{
         exit(1);
     }
 
-    /// solve the sdp problem (low rank)
+    /// solve the sdp problem (low rank, only for rrsdp)
     virtual void solve_low_rank(double * x,
                                 double * b,
                                 double * c,
@@ -94,6 +95,24 @@ class SDPSolver{
                                 void * data){
         printf("\n");
         printf("    solve_low_rank() has not been implemented for this sdp solver\n");
+        printf("\n");
+        exit(1);
+    }
+
+    /// solve the sdp problem (low rank, on-the-fly consruction of Au, only for rrsdp)
+    virtual void solve_low_rank_on_the_fly(double * x,
+                                           double * b,
+                                           double * c,
+                                           std::vector<int> primal_block_dim,
+                                           std::vector<int> primal_block_rank,
+                                           std::vector<bool> do_construct_primal_block,
+                                           int maxiter,
+                                           SDPCallbackFunctionOnTheFly evaluate_Au,
+                                           SDPCallbackFunction evaluate_ATu,
+                                           SDPProgressMonitorFunction progress_monitor,
+                                           void * data){
+        printf("\n");
+        printf("    solve_low_rank_on_the_fly() has not been implemented for this sdp solver\n");
         printf("\n");
         exit(1);
     }

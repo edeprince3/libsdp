@@ -242,6 +242,10 @@ class v2rdm_sdp():
             # <s^2> 
             self.constrain_s2()
 
+            # spin block structure (currently only for singlets, D1a = D1b, D2aa(ijkl) = D2ab(ijkl) - D2ab(ijlk), etc.)
+            if self.nalpha == self.nbeta:
+                self.constrain_spin_block_structure()
+
     def trace_d1(self, block_id, n):
         """
         tr(d1) = n
@@ -633,8 +637,8 @@ class v2rdm_sdp():
                 value=[]
    
                 # - i* l* j k
-                il = self.ibas_ab[i][l]
-                kj = self.ibas_ab[k][j]
+                il = self.ibas_ab[i, l]
+                kj = self.ibas_ab[k, j]
                 block_number.append(self.block_id['d2ab'])
                 row.append(il+1)
                 column.append(kj+1)
@@ -683,8 +687,8 @@ class v2rdm_sdp():
                 value=[]
    
                 # - l* i* k j
-                li = self.ibas_ab[l][i]
-                jk = self.ibas_ab[j][k]
+                li = self.ibas_ab[l, i]
+                jk = self.ibas_ab[j, k]
                 block_number.append(self.block_id['d2ab'])
                 row.append(li+1)
                 column.append(jk+1)
@@ -845,8 +849,8 @@ class v2rdm_sdp():
                 value=[]
    
                 # + i* l* j k
-                il = self.ibas_ab[i][l]
-                jk = self.ibas_ab[j][k]
+                il = self.ibas_ab[i, l]
+                jk = self.ibas_ab[j, k]
                 block_number.append(self.block_id['d2ab'])
                 row.append(il+1)
                 column.append(jk+1)
@@ -882,8 +886,8 @@ class v2rdm_sdp():
                 value=[]
    
                 # + l* i* k j
-                li = self.ibas_ab[l][i]
-                kj = self.ibas_ab[k][j]
+                li = self.ibas_ab[l, i]
+                kj = self.ibas_ab[k, j]
                 block_number.append(self.block_id['d2ab'])
                 row.append(li+1)
                 column.append(kj+1)
@@ -919,8 +923,8 @@ class v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                ij = self.ibas_ab[i][j]
-                ji = self.ibas_ab[j][i]
+                ij = self.ibas_ab[i, j]
+                ji = self.ibas_ab[j, i]
 
                 block_number.append(self.block_id['d2ab'])
                 row.append(ij+1)
@@ -935,4 +939,183 @@ class v2rdm_sdp():
 
         self.b.append(0.5 * (self.nalpha + self.nbeta) + ms*ms - ms*(ms+1.0))
         self.F.append(myF)
+
+    def constrain_spin_block_structure(self):
+        """
+        constrain spin-block structure
+
+        for singlets:     d1a = d1b
+                          d2ab(ijkl) = d2ab(jilk)
+                          d2aa(ijkl) = 1/2 ( d2ab(ijkl) - d2ab(ijlk) - d2ab(jikl) + d2ab(jilk) )
+                          d2bb(ijkl) = 1/2 ( d2ab(ijkl) - d2ab(ijlk) - d2ab(jikl) + d2ab(jilk) )
+
+                          TODO: see J. Chem. Phys. 136, 014110 (2012)
+                          d200(ijkl) = 1/(2 sqrt(1+dij)sqrt(1+dkl) ) ( d2ab(ijkl) + d2ab(ijlk) + d2ab(jikl) + d2ab(jilk) )
+
+        for non-singlets: TODO: see J. Chem. Phys. 136, 014110 (2012) 
+        """
+
+        # d1a = d1b
+        for i in range (0, self.nmo):
+            for j in range (0, self.nmo):
+   
+                block_number=[]
+                row=[]
+                column=[]
+                value=[]
+
+                block_number.append(self.block_id['d1a'])
+                row.append(i+1)
+                column.append(j+1)
+                value.append(1.0)
+
+                block_number.append(self.block_id['d1b'])
+                row.append(i+1)
+                column.append(j+1)
+                value.append(-1.0)
+
+                myF = libsdp.sdp_matrix()
+                myF.block_number = block_number
+                myF.row          = row
+                myF.column       = column
+                myF.value        = value
+
+                self.b.append(0.0)
+                self.F.append(myF)
+
+        # d2ab = d2ba
+        for ij in range (0, len(self.bas_ab)):
+            i = self.bas_ab[ij][0]
+            j = self.bas_ab[ij][1]
+            ji = self.ibas_ab[j, i]
+            for kl in range (0, len(self.bas_ab)):
+                k = self.bas_ab[kl][0]
+                l = self.bas_ab[kl][1]
+                lk = self.ibas_ab[l, k]
+   
+                block_number=[]
+                row=[]
+                column=[]
+                value=[]
+   
+                block_number.append(self.block_id['d2ab'])
+                row.append(ij+1)
+                column.append(kl+1)
+                value.append(1.0)
+
+                block_number.append(self.block_id['d2ab'])
+                row.append(ji+1)
+                column.append(lk+1)
+                value.append(-1.0)
+
+                myF = libsdp.sdp_matrix()
+                myF.block_number = block_number
+                myF.row          = row
+                myF.column       = column
+                myF.value        = value
+
+                self.b.append(0.0)
+                self.F.append(myF)
+
+        # d2aa(ijkl) = 1/2 ( d2ab(ijkl) - d2ab(ijlk) - d2ab(jikl) + d2ab(jilk) )
+        for ij in range (0, len(self.bas_aa)):
+            i = self.bas_aa[ij][0]
+            j = self.bas_aa[ij][1]
+            ij_ab = self.ibas_ab[i, j]
+            ji_ab = self.ibas_ab[j, i]
+            for kl in range (0, len(self.bas_aa)):
+                k = self.bas_aa[kl][0]
+                l = self.bas_aa[kl][1]
+                kl_ab = self.ibas_ab[k, l]
+                lk_ab = self.ibas_ab[l, k]
+   
+                block_number=[]
+                row=[]
+                column=[]
+                value=[]
+   
+                block_number.append(self.block_id['d2aa'])
+                row.append(ij+1)
+                column.append(kl+1)
+                value.append(1.0)
+
+                block_number.append(self.block_id['d2ab'])
+                row.append(ij_ab+1)
+                column.append(kl_ab+1)
+                value.append(-0.5)
+
+                block_number.append(self.block_id['d2ab'])
+                row.append(ij_ab+1)
+                column.append(lk_ab+1)
+                value.append(0.5)
+
+                block_number.append(self.block_id['d2ab'])
+                row.append(ji_ab+1)
+                column.append(kl_ab+1)
+                value.append(0.5)
+
+                block_number.append(self.block_id['d2ab'])
+                row.append(ji_ab+1)
+                column.append(lk_ab+1)
+                value.append(-0.5)
+
+                myF = libsdp.sdp_matrix()
+                myF.block_number = block_number
+                myF.row          = row
+                myF.column       = column
+                myF.value        = value
+
+                self.b.append(0.0)
+                self.F.append(myF)
+
+        # d2bb(ijkl) = 1/2 ( d2ab(ijkl) - d2ab(ijlk) - d2ab(jikl) + d2ab(jilk) )
+        for ij in range (0, len(self.bas_aa)):
+            i = self.bas_aa[ij][0]
+            j = self.bas_aa[ij][1]
+            ij_ab = self.ibas_ab[i, j]
+            ji_ab = self.ibas_ab[j, i]
+            for kl in range (0, len(self.bas_aa)):
+                k = self.bas_aa[kl][0]
+                l = self.bas_aa[kl][1]
+                kl_ab = self.ibas_ab[k, l]
+                lk_ab = self.ibas_ab[l, k]
+   
+                block_number=[]
+                row=[]
+                column=[]
+                value=[]
+   
+                block_number.append(self.block_id['d2bb'])
+                row.append(ij+1)
+                column.append(kl+1)
+                value.append(1.0)
+
+                block_number.append(self.block_id['d2ab'])
+                row.append(ij_ab+1)
+                column.append(kl_ab+1)
+                value.append(-0.5)
+
+                block_number.append(self.block_id['d2ab'])
+                row.append(ij_ab+1)
+                column.append(lk_ab+1)
+                value.append(0.5)
+
+                block_number.append(self.block_id['d2ab'])
+                row.append(ji_ab+1)
+                column.append(kl_ab+1)
+                value.append(0.5)
+
+                block_number.append(self.block_id['d2ab'])
+                row.append(ji_ab+1)
+                column.append(lk_ab+1)
+                value.append(-0.5)
+
+                myF = libsdp.sdp_matrix()
+                myF.block_number = block_number
+                myF.row          = row
+                myF.column       = column
+                myF.value        = value
+
+                self.b.append(0.0)
+                self.F.append(myF)
 

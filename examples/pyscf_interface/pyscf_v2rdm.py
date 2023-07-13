@@ -8,221 +8,15 @@ import sys
 sys.path.insert(0, '../../.')
 
 import libsdp
+from v2rdm_sdp import v2rdm_sdp
 
 import pyscf
-
-def build_sdp(nalpha, nbeta, nmo, oei, tei):
-    """ set up details of the SDP
-
-    :param nalpha:       number of alpha electrons
-    :param nbeta:        number of beta electrons
-    :param nmo:          number of spatial molecular orbitals
-    :param oei:          core Hamiltonian matrix
-    :param tei:          two-electron repulsion integrals
-    :return: b:          the constraint vector
-    :return: F:          list of rows of constraint matrix in sparse format; 
-                         note that F[0] is actually the vector defining the 
-                         problem (contains the one- and two-electron integrals)
-    :return: dimensions: list of dimensions of blocks of primal solution
-    """
-
-    # for a two-electron system, all we need are
-    # D1a D1b D2ab 
-
-    # block dimensions
-    dimensions = []
-    dimensions.append(nmo)     # D1a
-    dimensions.append(nmo)     # D1a
-    dimensions.append(nmo*nmo) # D2ab
-
-    # number of blocks
-    nblocks = len(dimensions)
-
-    # F0 
-    block_number=[]
-    row=[]
-    column=[]
-    value=[]
-
-    F = [libsdp.sdp_matrix()]
-
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-            block_number.append(1)
-            row.append(i+1)
-            column.append(j+1)
-            value.append(oei[i][j])
-
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-            block_number.append(2)
-            row.append(i+1)
-            column.append(j+1)
-            value.append(oei[i][j])
-
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-            ij = i * nmo + j
-            for k in range (0,nmo):
-                for l in range (0,nmo):
-                    kl = k * nmo + l
-                    block_number.append(3)
-                    row.append(ij+1)
-                    column.append(kl+1)
-                    value.append(tei[i][k][j][l])
-
-    count = 0
-    F[count].block_number = block_number
-    F[count].row          = row
-    F[count].column       = column
-    F[count].value        = value
-    count += 1
-    
-    # constraints (F1, F2, ...)
-
-    b = []
-
-    # Tr(D1a)
-    block_number=[]
-    row=[]
-    column=[]
-    value=[]
-
-    for i in range (0,nmo):
-        block_number.append(1)
-        row.append(i+1)
-        column.append(i+1)
-        value.append(1.0)
-
-    F.append(libsdp.sdp_matrix())
-    F[count].block_number = block_number
-    F[count].row          = row
-    F[count].column       = column
-    F[count].value        = value
-
-    b.append(nalpha)
-
-    count += 1
-
-    # Tr(D1b)
-    block_number=[]
-    row=[]
-    column=[]
-    value=[]
-
-    for i in range (0,nmo):
-        block_number.append(2)
-        row.append(i+1)
-        column.append(i+1)
-        value.append(1.0)
-
-    F.append(libsdp.sdp_matrix())
-    F[count].block_number = block_number
-    F[count].row          = row
-    F[count].column       = column
-    F[count].value        = value
-
-    b.append(nbeta)
-
-    count += 1
-
-    # Tr(D2ab)
-    block_number=[]
-    row=[]
-    column=[]
-    value=[]
-
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-            ij = i * nmo + j
-            block_number.append(3)
-            row.append(ij+1)
-            column.append(ij+1)
-            value.append(1.0)
-
-    F.append(libsdp.sdp_matrix())
-    F[count].block_number = block_number
-    F[count].row          = row
-    F[count].column       = column
-    F[count].value        = value
-
-    b.append(nalpha*nbeta)
-
-    count += 1
-
-    # D2ab -> D1a
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-
-            block_number=[]
-            row=[]
-            column=[]
-            value=[]
-
-            for k in range (0,nmo):
-
-                ik = i * nmo + k
-                jk = j * nmo + k
-                block_number.append(3)
-                row.append(ik+1)
-                column.append(jk+1)
-                value.append(1.0)
-
-            block_number.append(1)
-            row.append(i+1)
-            column.append(j+1)
-            value.append(-nbeta)
-    
-            F.append(libsdp.sdp_matrix())
-            F[count].block_number = block_number
-            F[count].row          = row
-            F[count].column       = column
-            F[count].value        = value
-
-            b.append(0.0)
-
-            count += 1
-
-    # D2ab -> D1b
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-
-            block_number=[]
-            row=[]
-            column=[]
-            value=[]
-
-            for k in range (0,nmo):
-
-                ki = k * nmo + i
-                kj = k * nmo + j
-                block_number.append(3)
-                row.append(ki+1)
-                column.append(kj+1)
-                value.append(1.0)
-
-            block_number.append(2)
-            row.append(i+1)
-            column.append(j+1)
-            value.append(-nalpha)
-    
-            F.append(libsdp.sdp_matrix())
-            F[count].block_number = block_number
-            F[count].row          = row
-            F[count].column       = column
-            F[count].value        = value
-
-            b.append(0.0)
-
-            count += 1
-
-    return b, F, dimensions
 
 def main():
 
     # build molecule
     mol = pyscf.M(
-        atom='H 0 0 0; H 0 0 1.0',
+        atom='B 0 0 0; H 0 0 1.0',
         basis='sto-3g',
         symmetry=False)
 
@@ -264,22 +58,26 @@ def main():
     # b is the right-hand side of Ax = b
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
-    b, F, dimensions = build_sdp(nalpha,nbeta,nmo,oei,tei)
+    my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei)
+
+    b = my_sdp.b
+    F = my_sdp.F
+    dimensions = my_sdp.dimensions
 
     # set options
     options = libsdp.sdp_options()
 
-    maxiter = 5000000
+    maxiter = 100000
 
-    options.sdp_algorithm             = options.SDPAlgorithm.RRSDP
+    options.sdp_algorithm             = options.SDPAlgorithm.BPSDP
     options.maxiter                   = maxiter
-    options.sdp_error_convergence     = 1e-8
-    options.sdp_objective_convergence = 1e-8
+    options.sdp_error_convergence     = 1e-4
+    options.sdp_objective_convergence = 1e-4
     options.penalty_parameter_scaling = 0.1
 
     # solve sdp
-    sdp = libsdp.sdp_solver(options)
-    x = sdp.solve(b,F,dimensions,maxiter)
+    sdp_solver = libsdp.sdp_solver(options)
+    x = sdp_solver.solve(b, F, dimensions, maxiter)
 
     # primal energy:
     objective = 0

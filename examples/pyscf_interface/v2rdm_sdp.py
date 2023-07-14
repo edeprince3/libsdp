@@ -124,7 +124,7 @@ class v2rdm_sdp():
         column=[]
         value=[]
     
-        self.F = [libsdp.sdp_matrix()]
+        F = libsdp.sdp_matrix()
     
         for i in range (0, nmo):
             for j in range (0, nmo):
@@ -173,10 +173,13 @@ class v2rdm_sdp():
                 column.append(kl+1)
                 value.append(tei[i][k][j][l] - tei[i][l][j][k])
     
-        self.F[0].block_number = block_number
-        self.F[0].row          = row
-        self.F[0].column       = column
-        self.F[0].value        = value
+        F.block_number = block_number
+        F.row          = row
+        F.column       = column
+        F.value        = value
+
+        self.F = []
+        self.F.append(F)
         
         # build constraints (F1, F2, ...)
     
@@ -854,7 +857,7 @@ class v2rdm_sdp():
                 block_number.append(self.block_id['d2ab'])
                 row.append(il+1)
                 column.append(jk+1)
-                value.append(-1.0)
+                value.append(1.0)
 
                 # - i* j l* k 
                 block_number.append(self.block_id['g2aa'])
@@ -891,7 +894,7 @@ class v2rdm_sdp():
                 block_number.append(self.block_id['d2ab'])
                 row.append(li+1)
                 column.append(kj+1)
-                value.append(-1.0)
+                value.append(1.0)
 
                 # - i* j l* k 
                 block_number.append(self.block_id['g2aa'])

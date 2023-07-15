@@ -59,7 +59,7 @@ class SDPHelper{
     /// SDPHelper destructor
     ~SDPHelper();
 
-    /// solve the sdp problem
+    /// solve the sdp problem and return the primal solution
     std::vector<double> solve(std::vector<double> b,
                               std::vector<SDPMatrix> Fi,
                               std::vector<int> primal_block_dim,
@@ -71,7 +71,14 @@ class SDPHelper{
     /// evaluate ATu
     void evaluate_ATu(double * ATu, double * u);
 
+    /// return the BPSDP dual z vector
+    std::vector<double> get_z();
+
+
   protected:
+
+    /// the SDP solver
+    std::shared_ptr<SDPSolver> sdp_;
 
     /// options for the SDP
     SDPOptions options_;

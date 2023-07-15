@@ -74,6 +74,8 @@ class SDPHelper{
     /// return the BPSDP dual z vector
     std::vector<double> get_z();
 
+    /// return the BPSDP dual y vector or RRSDP lagrange multipliers
+    std::vector<double> get_y();
 
   protected:
 

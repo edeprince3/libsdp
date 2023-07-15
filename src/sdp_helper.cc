@@ -82,6 +82,7 @@ void export_SDPHelper(py::module& m) {
             "Fi"_a,
             "primal_block_dim"_a,
             "maxiter"_a)
+        .def("get_y", &SDPHelper::get_y)
         .def("get_z", &SDPHelper::get_z);
 }
 
@@ -312,6 +313,13 @@ std::vector<double> SDPHelper::get_z() {
     double * tmp_z = sdp_->get_z();
     std::vector<double> z(tmp_z, tmp_z + n_primal_);
     return z;
+}
+
+/// return the BPSDP y dual variable or RRSDP lagrange multipliers
+std::vector<double> SDPHelper::get_y() {
+    double * tmp_y = sdp_->get_y();
+    std::vector<double> y(tmp_y, tmp_y + n_dual_);
+    return y;
 }
 
 SDPOptions options() {

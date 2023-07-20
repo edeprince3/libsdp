@@ -83,7 +83,8 @@ void export_SDPHelper(py::module& m) {
             "primal_block_dim"_a,
             "maxiter"_a)
         .def("get_y", &SDPHelper::get_y)
-        .def("get_z", &SDPHelper::get_z);
+        .def("get_z", &SDPHelper::get_z)
+        .def("get_c", &SDPHelper::get_c);
 }
 
 PYBIND11_MODULE(libsdp, m) {
@@ -175,7 +176,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
 
     // c vector (-F0 in SDPA format)
 
-    std::vector<double> c (n_primal_, 0.0);
+    c_.resize(n_primal_);
 
     for (size_t i = 0; i < Fi[0].block_number.size(); i++) {
         int my_block  = Fi[0].block_number[i] - 1;
@@ -193,7 +194,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         // has c = -F0. (we're minimizing; they maximize). the result will be that
         // our final objective will have the opposite sign compared to tabulated
         // SDPLIB values
-        c[off + my_row * primal_block_dim[my_block] + my_column] = Fi[0].value[i];
+        c_[off + my_row * primal_block_dim[my_block] + my_column] = Fi[0].value[i];
     }
 
     // constraint matrices
@@ -289,7 +290,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
     // solve sdp
     sdp_->solve(x.data(),
                 b.data(),
-                c.data(),
+                c_.data(),
                 primal_block_dim_, 
                 maxiter, 
                 Au_callback, 

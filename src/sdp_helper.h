@@ -77,6 +77,9 @@ class SDPHelper{
     /// return the BPSDP dual y vector or RRSDP lagrange multipliers
     std::vector<double> get_y();
 
+    /// return the c vector
+    std::vector<double> get_c() { return c_; }
+
   protected:
 
     /// the SDP solver
@@ -96,6 +99,9 @@ class SDPHelper{
 
     /// list of block sizes
     std::vector<int> primal_block_dim_;
+
+    /// the c vector (F0)
+    std::vector<double> c_;
 
 };
 

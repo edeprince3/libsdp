@@ -1750,4 +1750,21 @@ class g2_v2rdm_sdp():
                 self.F.append(F)
                 self.b.append(0.0)
 
+    def get_rdm_blocks(self, x):
+        """
+        extract rdm/integral blocks from a vector of dimension of primal solution
+
+        :param x: the vector or rdm/integral elements
+        """
+
+        rdms = []
+
+        off = 0
+        for i in range (0, len(self.dimensions)):
+            rdms.append(np.array(x[off:off + self.dimensions[i]**2]).reshape(self.dimensions[i], self.dimensions[i]))
+            off = off + self.dimensions[i]**2
+            print(rdms[i])
+
+        return rdms
+
 

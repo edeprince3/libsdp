@@ -9,6 +9,7 @@ sys.path.insert(0, '../../.')
 
 import libsdp
 from v2rdm_sdp import v2rdm_sdp
+from g2_v2rdm_sdp import g2_v2rdm_sdp
 
 import pyscf
 
@@ -58,7 +59,8 @@ def main():
     # b is the right-hand side of Ax = b
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
-    my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei)
+    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, g2 = True)
+    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = True)
 
     b = my_sdp.b
     F = my_sdp.F

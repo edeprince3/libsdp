@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, '../../.')
 
 import libsdp
+from g2_v2rdm_sdp import g2_v2rdm_sdp
 
 import psi4
 
@@ -223,8 +224,8 @@ def main():
     # set molecule
     mol = psi4.geometry("""
     0 1
-         H 0.0 0.0 0.0
-         H 0.0 0.0 1.0
+         b 0.0 0.0 0.0
+         h 0.0 0.0 1.0
     no_reorient
     nocom
     symmetry c1
@@ -273,17 +274,21 @@ def main():
     # b is the right-hand side of Ax = b
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
-    b, F, dimensions = build_sdp(nalpha,nbeta,nmo,oei,tei)
+    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = True)
+
+    b = my_sdp.b
+    F = my_sdp.F
+    dimensions = my_sdp.dimensions
 
     # set options
     options = libsdp.sdp_options()
 
     maxiter = 5000000
 
-    options.sdp_algorithm             = options.SDPAlgorithm.RRSDP
+    options.sdp_algorithm             = options.SDPAlgorithm.BPSDP
     options.maxiter                   = maxiter
-    options.sdp_error_convergence     = 1e-8
-    options.sdp_objective_convergence = 1e-8
+    options.sdp_error_convergence     = 1e-4
+    options.sdp_objective_convergence = 1e-4
     options.penalty_parameter_scaling = 0.1
 
     # solve sdp

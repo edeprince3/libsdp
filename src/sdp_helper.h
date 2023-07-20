@@ -80,6 +80,12 @@ class SDPHelper{
     /// return the c vector
     std::vector<double> get_c() { return c_; }
 
+    /// get ATu
+    std::vector<double> get_ATu(std::vector<double> u);
+
+    /// get Au
+    std::vector<double> get_Au(std::vector<double> u);
+
   protected:
 
     /// the SDP solver

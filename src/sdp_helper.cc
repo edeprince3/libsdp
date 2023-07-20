@@ -82,6 +82,8 @@ void export_SDPHelper(py::module& m) {
             "Fi"_a,
             "primal_block_dim"_a,
             "maxiter"_a)
+        .def("get_ATu", &SDPHelper::get_ATu)
+        .def("get_Au", &SDPHelper::get_Au)
         .def("get_y", &SDPHelper::get_y)
         .def("get_z", &SDPHelper::get_z)
         .def("get_c", &SDPHelper::get_c);
@@ -321,6 +323,34 @@ std::vector<double> SDPHelper::get_y() {
     double * tmp_y = sdp_->get_y();
     std::vector<double> y(tmp_y, tmp_y + n_dual_);
     return y;
+}
+
+/// return the action of A^T on a vector
+std::vector<double> SDPHelper::get_ATu(std::vector<double> u) {
+
+    double * tmp_ATu = (double*)malloc(n_primal_*sizeof(double));
+
+    evaluate_ATu(tmp_ATu, u.data() );
+
+    std::vector<double> ATu(tmp_ATu, tmp_ATu + n_primal_);
+
+    free(tmp_ATu);
+
+    return ATu;
+}
+
+/// return the action of A on a vector
+std::vector<double> SDPHelper::get_Au(std::vector<double> u) {
+
+    double * tmp_Au = (double*)malloc(n_dual_*sizeof(double));
+
+    evaluate_Au(tmp_Au, u.data() );
+
+    std::vector<double> Au(tmp_Au, tmp_Au + n_dual_);
+
+    free(tmp_Au);
+
+    return Au;
 }
 
 SDPOptions options() {

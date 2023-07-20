@@ -224,7 +224,7 @@ def main():
     # set molecule
     mol = psi4.geometry("""
     0 1
-         b 0.0 0.0 0.0
+         h 0.0 0.0 0.0
          h 0.0 0.0 1.0
     no_reorient
     nocom
@@ -295,24 +295,44 @@ def main():
     sdp = libsdp.sdp_solver(options)
     x = sdp.solve(b,F,dimensions,maxiter)
 
-    # primal energy:
-    objective = 0
-    for i in range (0,len(F[0].block_number)):
-        block  = F[0].block_number[i] - 1
-        row    = F[0].row[i] - 1
-        column = F[0].column[i] - 1
-        value  = F[0].value[i]
-        
-        off = 0
-        for j in range (0,block):
-            off += dimensions[j] * dimensions[j]
+    # now that the sdp is solved, we can play around with the primal and dual solutions
+    z = np.array(sdp.get_z())
+    c = np.array(sdp.get_c())
+    y = np.array(sdp.get_y())
 
-        objective += x[off + row * dimensions[block] + column] * value
+    dual_energy = np.dot(b, y)
+    primal_energy = np.dot(c, x)
+
+    # action of A^T on y
+    ATy = np.array(sdp.get_ATu(y))
+
+    # action of A on x 
+    Ax = np.array(sdp.get_Au(x))
+
+    dual_error = c - z - ATy
+    primal_error = Ax - b
+
+    # extract blocks of rdms
+    #x = my_sdp.get_rdm_blocks(x)
+    #z = my_sdp.get_rdm_blocks(z)
+    #c = my_sdp.get_rdm_blocks(c)
+
+    #import scipy
+    #print('eigenvalues')
+    #for i in range (0, len(c)):
+    #    wz = scipy.linalg.eigh(z[i], eigvals_only=True)
+    #    wc = scipy.linalg.eigh(c[i], eigvals_only=True)
+    #    print(wz, wc)
 
     print('')
-    print('    * v2RDM electronic energy: %20.12f' % (objective))
-    print('    * v2RDM total energy:      %20.12f' % (objective + mol.nuclear_repulsion_energy()))
+    print('    * v2RDM electronic energy: %20.12f' % (primal_energy))
+    print('    * v2RDM total energy:      %20.12f' % (primal_energy + mol.nuclear_repulsion_energy()))
     print('')
+    print('    ||Ax - b||:                %20.12f' % (np.linalg.norm(primal_error)))
+    print('    ||c - ATy - z||:           %20.12f' % (np.linalg.norm(dual_error)))
+    print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
+    print('')
+
 
 if __name__ == "__main__":
     main()

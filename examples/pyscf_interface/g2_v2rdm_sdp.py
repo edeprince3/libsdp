@@ -1763,7 +1763,6 @@ class g2_v2rdm_sdp():
         for i in range (0, len(self.dimensions)):
             rdms.append(np.array(x[off:off + self.dimensions[i]**2]).reshape(self.dimensions[i], self.dimensions[i]))
             off = off + self.dimensions[i]**2
-            print(rdms[i])
 
         return rdms
 

@@ -223,8 +223,8 @@ def main():
 
     # set molecule
     mol = psi4.geometry("""
-    0 1
-         h 0.0 0.0 0.0
+    1 2
+         b 0.0 0.0 0.0
          h 0.0 0.0 1.0
     no_reorient
     nocom
@@ -234,6 +234,7 @@ def main():
     # set options
     psi4_options_dict = {
         'basis': 'sto-3g',
+        'reference': 'rohf',
         'scf_type': 'pk',
         'e_convergence': 1e-10,
         'd_convergence': 1e-10
@@ -332,6 +333,11 @@ def main():
     print('    ||c - ATy - z||:           %20.12f' % (np.linalg.norm(dual_error)))
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
+
+    # refernce energies ... converged to 1e-4
+    #reference_energy_bh_cation = -28.381402635598
+    #reference_energy_bh = -28.518278339385
+    #reference_energy_h2 = -1.630314318537
 
 
 if __name__ == "__main__":

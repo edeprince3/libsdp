@@ -74,8 +74,8 @@ class g2_v2rdm_sdp():
         #self.dimensions.append(nmo*nmo) # d2ab
         #self.dimensions.append(nmo*(nmo-1)//2) # d2aa
         #self.dimensions.append(nmo*(nmo-1)//2) # d2bb
-        self.dimensions.append(nmo) # q1a
-        self.dimensions.append(nmo) # q1b
+        #self.dimensions.append(nmo) # q1a
+        #self.dimensions.append(nmo) # q1b
 
         if q2: 
             self.dimensions.append(nmo*nmo) # q2ab
@@ -91,7 +91,8 @@ class g2_v2rdm_sdp():
         # this is the only dangerous part ... need to be sure the order of the ids matches the dimensions above
 
         #blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb', 'q1a', 'q1b']
-        blocks = ['d1a', 'd1b', 'q1a', 'q1b']
+        #blocks = ['d1a', 'd1b', 'q1a', 'q1b']
+        blocks = ['d1a', 'd1b']
 
         if q2 :
             blocks.append('q2ab')
@@ -204,10 +205,10 @@ class g2_v2rdm_sdp():
         self.b = []
 
         # trace of d1a
-        self.trace_d1(self.block_id['d1a'], nalpha)
+        #self.trace_d1(self.block_id['d1a'], nalpha)
     
         # trace of d1b
-        self.trace_d1(self.block_id['d1b'], nbeta)
+        #self.trace_d1(self.block_id['d1b'], nbeta)
 
         # trace of d2ab
         #self.trace_d2(self.block_id['d2ab'], self.bas_ab, nalpha*nbeta)
@@ -242,17 +243,20 @@ class g2_v2rdm_sdp():
         # g2baba -> d1a, d1b ... 2 contractions
         self.contract_g2abab_d1(self.block_id['g2ba'], self.nalpha, self.block_id['d1b'], self.nbeta, self.block_id['d1a'])
 
+        # trace of g2 (total)
+        self.trace_g2()
+
         # trace of g2aaaa
-        self.trace_g2(0, self.block_id['g2aa'], self.nalpha * self.nmo - self.nalpha * (self.nalpha - 1.0))
+        #self.trace_g2_by_block(0, self.block_id['g2aa'], self.nalpha * self.nmo - self.nalpha * (self.nalpha - 1.0))
 
         # trace of g2bbbb
-        self.trace_g2(len(self.bas_ab), self.block_id['g2aa'], self.nbeta * self.nmo - self.nbeta * (self.nbeta - 1.0))
+        #self.trace_g2_by_block(len(self.bas_ab), self.block_id['g2aa'], self.nbeta * self.nmo - self.nbeta * (self.nbeta - 1.0))
 
         # trace of g2abab
-        self.trace_g2(0, self.block_id['g2ab'], self.nalpha * self.nmo - self.nalpha * self.nbeta)
+        #self.trace_g2_by_block(0, self.block_id['g2ab'], self.nalpha * self.nmo - self.nalpha * self.nbeta)
 
         # trace of g2baba
-        self.trace_g2(0, self.block_id['g2ba'], self.nbeta * self.nmo - self.nalpha * self.nbeta)
+        #self.trace_g2_by_block(0, self.block_id['g2ba'], self.nbeta * self.nmo - self.nalpha * self.nbeta)
 
         # d2ab -> d1a
         #self.contract_d2ab_d1a()
@@ -267,10 +271,10 @@ class g2_v2rdm_sdp():
         #self.contract_d2aa_d1a(self.block_id['d2bb'], self.block_id['d1b'], nbeta)
 
         # d1a <-> q1a
-        self.d1_q1_mapping(self.block_id['d1a'], self.block_id['q1a'])
+        #self.d1_q1_mapping(self.block_id['d1a'], self.block_id['q1a'])
 
         # d1b <-> q1b
-        self.d1_q1_mapping(self.block_id['d1b'], self.block_id['q1b'])
+        #self.d1_q1_mapping(self.block_id['d1b'], self.block_id['q1b'])
 
         #if q2: 
 
@@ -1273,6 +1277,8 @@ class g2_v2rdm_sdp():
         delta[i, i] = 1
 
         # g2aaaa(ij, il) = nalpha djl - (nalpha - 1) d1a(l, j)
+        # or 
+        # g2aaaa(ij, il) = d1a(i, i) djl - (nalpha - 1) d1a(l, j)
         for j in range (0, self.nmo):
             for l in range (0, self.nmo):
    
@@ -1295,13 +1301,21 @@ class g2_v2rdm_sdp():
                 column.append(j + 1)
                 value.append(n - 1.0)
 
+                # could replace this term with the correct trace value in b
+                for i in range (0, self.nmo):
+                    block_number.append(d1_block_id)
+                    row.append(i + 1)
+                    column.append(i + 1)
+                    value.append(-delta[j, l])
+
                 myF = libsdp.sdp_matrix()
                 myF.block_number = block_number
                 myF.row          = row
                 myF.column       = column
                 myF.value        = value
    
-                self.b.append(n * delta[j, l])
+                #self.b.append(n * delta[j, l])
+                self.b.append(0.0)
                 self.F.append(myF)
 
         # g2aaaa(ij, kk) = nalpha d1a(i, j)
@@ -1417,6 +1431,8 @@ class g2_v2rdm_sdp():
         delta[i, i] = 1
 
         # g2ab(ij, il) = nalpha djl - nalpha d1b(l, j)
+        # or
+        # g2ab(ij, il) = d1a(i, i) djl - nalpha d1b(l, j)
         for j in range (0, self.nmo):
             for l in range (0, self.nmo):
    
@@ -1439,13 +1455,21 @@ class g2_v2rdm_sdp():
                 column.append(j + 1)
                 value.append(n_2)
 
+                # could replace this term with the correct trace value in b
+                for i in range (0, self.nmo):
+                    block_number.append(d1_block_id_1)
+                    row.append(i + 1)
+                    column.append(i + 1)
+                    value.append(-delta[j, l])
+
                 myF = libsdp.sdp_matrix()
                 myF.block_number = block_number
                 myF.row          = row
                 myF.column       = column
                 myF.value        = value
    
-                self.b.append(n_2 * delta[j, l])
+                #self.b.append(n_2 * delta[j, l])
+                self.b.append(0.0)
                 self.F.append(myF)
 
     def contract_g2aabb_d1(self, row_offset, col_offset, n_1, d1_block_id_1, n_2, d1_block_id_2):
@@ -1525,9 +1549,70 @@ class g2_v2rdm_sdp():
                 self.b.append(0.0)
                 self.F.append(myF)
 
-    def trace_g2(self, offset, block_id, n):
+    def trace_g2(self):
         """
         tr(g2) = n 
+        """
+    
+        block_number=[]
+        row=[]
+        column=[]
+        value=[]
+   
+        # aaaa
+        for ij in range (0, len(self.bas_ab)):
+            block_number.append(self.block_id['g2aa'])
+            row.append(ij + 1)
+            column.append(ij + 1)
+            value.append(1.0)
+   
+        # bbbb
+        for ij in range (0, len(self.bas_ab)):
+            block_number.append(self.block_id['g2aa'])
+            row.append(ij + len(self.bas_ab) + 1)
+            column.append(ij + len(self.bas_ab) + 1)
+            value.append(1.0)
+   
+        # abab
+        for ij in range (0, len(self.bas_ab)):
+            block_number.append(self.block_id['g2ab'])
+            row.append(ij + 1)
+            column.append(ij + 1)
+            value.append(1.0)
+   
+        # baba
+        for ij in range (0, len(self.bas_ab)):
+            block_number.append(self.block_id['g2ba'])
+            row.append(ij + 1)
+            column.append(ij + 1)
+            value.append(1.0)
+   
+        F = libsdp.sdp_matrix()
+        F.block_number = block_number
+        F.row          = row
+        F.column       = column
+        F.value        = value
+
+        self.F.append(F)
+
+        # trace of g2aaaa
+        n = self.nalpha * self.nmo - self.nalpha * (self.nalpha - 1.0)
+
+        # trace of g2bbbb
+        n = n + self.nbeta * self.nmo - self.nbeta * (self.nbeta - 1.0)
+
+        # trace of g2abab
+        n = n + self.nalpha * self.nmo - self.nalpha * self.nbeta
+
+        # trace of g2baba
+        n = n + self.nbeta * self.nmo - self.nalpha * self.nbeta
+
+        self.b.append(n)
+
+
+    def trace_g2_by_block(self, offset, block_id, n):
+        """
+        tr(g2) = n (for a given block)
 
         :param offset:   the offset of the row and column geminal labels
         :param block_id: the relevant block of g2 (aaaa, bbbb, abab, or baba)

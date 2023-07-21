@@ -59,7 +59,7 @@ def main():
     # b is the right-hand side of Ax = b
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
-    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, g2 = True)
+    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, g2 = False)
     my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = True)
 
     b = my_sdp.b
@@ -89,6 +89,14 @@ def main():
     dual_energy = np.dot(b, y)
     primal_energy = np.dot(c, x)
 
+    #dum = 0.0
+    #for i in range (0, len(b)):
+    #    if np.abs(b[i]) > 1e-6:
+    #        dum += b[i] * y[i]
+    #        print(b[i], y[i])
+    #print()
+    #print(dum)
+
     # action of A^T on y
     ATy = np.array(sdp_solver.get_ATu(y))
 
@@ -99,16 +107,19 @@ def main():
     primal_error = Ax - b
 
     # extract blocks of rdms
-    #x = my_sdp.get_rdm_blocks(x)
-    #z = my_sdp.get_rdm_blocks(z)
-    #c = my_sdp.get_rdm_blocks(c)
+    x = my_sdp.get_rdm_blocks(x)
+    z = my_sdp.get_rdm_blocks(z)
+    c = my_sdp.get_rdm_blocks(c)
+    ATy = my_sdp.get_rdm_blocks(ATy)
 
     #import scipy
     #print('eigenvalues')
     #for i in range (0, len(c)):
-    #    wz = scipy.linalg.eigh(z[i], eigvals_only=True)
     #    wc = scipy.linalg.eigh(c[i], eigvals_only=True)
-    #    print(wz, wc)
+    #    wz = scipy.linalg.eigh(z[i], eigvals_only=True)
+    #    wATy = scipy.linalg.eigh(ATy[i], eigvals_only=True)
+    #    for j in range (0, len(c[i])):
+    #        print('%i %20.12f %20.12f %20.12f %20.12f %20.12f' % (j, wc[j], wz[j], wATy[j], wc[j] - wATy[j], wc[j] - wATy[j] - wz[j]))
 
     print('')
     print('    * v2RDM electronic energy: %20.12f' % (primal_energy))
@@ -118,6 +129,11 @@ def main():
     print('    ||c - ATy - z||:           %20.12f' % (np.linalg.norm(dual_error)))
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
+
+    # refernce energies ... converged to 1e-4 using psi4 integrals
+    #reference_energy_bh_cation = -28.381402635598
+    #reference_energy_bh = -28.518278339385
+    #reference_energy_h2 = -1.630314318537
 
 if __name__ == "__main__":
     main()

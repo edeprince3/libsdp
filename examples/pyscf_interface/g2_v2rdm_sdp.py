@@ -149,7 +149,7 @@ class g2_v2rdm_sdp():
                 column.append(j+1)
                 value.append(oei[i][j] + dum[i][j])
     
-        # (ik|jl) aaaa -> g2aaaa
+        # (ik|lj) aaaa -> g2aaaa
         for ij in range (0, len(self.bas_ab)):
             i = self.bas_ab[ij][0]
             j = self.bas_ab[ij][1]
@@ -159,9 +159,9 @@ class g2_v2rdm_sdp():
                 block_number.append(self.block_id['g2aa'])
                 row.append(ij+1)
                 column.append(kl+1)
-                value.append(-0.5 * tei[i][k][j][l])
+                value.append(-0.5 * tei[i][k][l][j])
     
-        # (ik|jl) bbbb -> g2bbbb
+        # (ik|lj) bbbb -> g2bbbb
         for ij in range (0, len(self.bas_ab)):
             i = self.bas_ab[ij][0]
             j = self.bas_ab[ij][1]
@@ -171,9 +171,9 @@ class g2_v2rdm_sdp():
                 block_number.append(self.block_id['g2aa'])
                 row.append(ij+len(self.bas_ab)+1)
                 column.append(kl+len(self.bas_ab)+1)
-                value.append(-0.5 * tei[i][k][j][l])
+                value.append(-0.5 * tei[i][k][l][j])
     
-        # (ik|jl) aabb -> g2abab
+        # (ik|lj) aabb -> g2abab
         for ij in range (0, len(self.bas_ab)):
             i = self.bas_ab[ij][0]
             j = self.bas_ab[ij][1]
@@ -183,9 +183,9 @@ class g2_v2rdm_sdp():
                 block_number.append(self.block_id['g2ab'])
                 row.append(ij+1)
                 column.append(kl+1)
-                value.append(-0.5 * tei[i][k][j][l])
+                value.append(-0.5 * tei[i][k][l][j])
     
-        # (ik|jl) bbaa -> g2baba
+        # (ik|lj) bbaa -> g2baba
         for ij in range (0, len(self.bas_ab)):
             i = self.bas_ab[ij][0]
             j = self.bas_ab[ij][1]
@@ -195,7 +195,7 @@ class g2_v2rdm_sdp():
                 block_number.append(self.block_id['g2ba'])
                 row.append(ij+1)
                 column.append(kl+1)
-                value.append(-0.5 * tei[i][k][j][l])
+                value.append(-0.5 * tei[i][k][l][j])
     
         F.block_number = block_number
         F.row          = row

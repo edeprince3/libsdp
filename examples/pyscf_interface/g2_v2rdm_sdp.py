@@ -209,6 +209,9 @@ class g2_v2rdm_sdp():
     
         self.b = []
 
+        # trace of g2 (total)
+        self.trace_g2()
+
         # if d2 <-> g2 mapping is not enforced, then we need to enforce antisymmetry of d2
         if not d2 :
             # antisymmetry of d2aa via g2aaaa
@@ -234,27 +237,6 @@ class g2_v2rdm_sdp():
 
         # g2baba -> d1a, d1b ... 2 contractions
         self.contract_g2abab_d1(self.block_id['g2ba'], self.nalpha, self.block_id['d1b'], self.nbeta, self.block_id['d1a'])
-
-        # trace of g2 (total)
-        self.trace_g2()
-
-        # trace of g2aaaa
-        #self.trace_g2_by_block(0, self.block_id['g2aa'], self.nalpha * self.nmo - self.nalpha * (self.nalpha - 1.0))
-
-        # trace of g2bbbb
-        #self.trace_g2_by_block(len(self.bas_ab), self.block_id['g2aa'], self.nbeta * self.nmo - self.nbeta * (self.nbeta - 1.0))
-
-        # trace of g2abab
-        #self.trace_g2_by_block(0, self.block_id['g2ab'], self.nalpha * self.nmo - self.nalpha * self.nbeta)
-
-        # trace of g2baba
-        #self.trace_g2_by_block(0, self.block_id['g2ba'], self.nbeta * self.nmo - self.nalpha * self.nbeta)
-
-        # d1a <-> q1a
-        #self.d1_q1_mapping(self.block_id['d1a'], self.block_id['q1a'])
-
-        # d1b <-> q1b
-        #self.d1_q1_mapping(self.block_id['d1b'], self.block_id['q1b'])
 
         if q2: 
 

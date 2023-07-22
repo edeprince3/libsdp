@@ -130,14 +130,6 @@ def main():
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
 
-    # g-only refernce energies ... converged to 1e-4 using psi4 integrals
-    #reference_energy_bh_cation = -28.381402635598
-    #reference_energy_bh = -28.518278339385
-    #reference_energy_h2 = -1.630314318537
-
-    # dg reference energies ... converged to 1e-4 using pyscf integrals
-    # bh = -27.416508887638 
-
 if __name__ == "__main__":
     main()
 

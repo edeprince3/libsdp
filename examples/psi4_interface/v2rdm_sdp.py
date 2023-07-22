@@ -73,8 +73,8 @@ class v2rdm_sdp():
         self.dimensions.append(nmo*nmo) # d2ab
         self.dimensions.append(nmo*(nmo-1)//2) # d2aa
         self.dimensions.append(nmo*(nmo-1)//2) # d2bb
-        self.dimensions.append(nmo) # q1a
-        self.dimensions.append(nmo) # q1b
+        #self.dimensions.append(nmo) # q1a
+        #self.dimensions.append(nmo) # q1b
 
         if q2: 
             self.dimensions.append(nmo*nmo) # q2ab
@@ -82,15 +82,15 @@ class v2rdm_sdp():
             self.dimensions.append(nmo*(nmo-1)//2) # q2bb
 
         if g2: 
-            self.dimensions.append(4*nmo*nmo) # g2aaaa / g2aabb / g2bbaa/ g2bbbb
+            self.dimensions.append(2*nmo*nmo) # g2aaaa / g2aabb / g2bbaa/ g2bbbb
             self.dimensions.append(nmo*nmo) # g2ab
             self.dimensions.append(nmo*nmo) # g2ba
 
         # block ids ... block zero defines the objective function
         # this is the only dangerous part ... need to be sure the order of the ids matches the dimensions above
 
-        blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb', 'q1a', 'q1b']
-        #blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb']
+        #blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb', 'q1a', 'q1b']
+        blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb']
 
         if q2 :
             blocks.append('q2ab')
@@ -214,10 +214,10 @@ class v2rdm_sdp():
         self.contract_d2aa_d1a(self.block_id['d2bb'], self.block_id['d1b'], nbeta)
 
         # d1a <-> q1a
-        self.d1_q1_mapping(self.block_id['d1a'], self.block_id['q1a'])
+        #self.d1_q1_mapping(self.block_id['d1a'], self.block_id['q1a'])
 
         # d1b <-> q1b
-        self.d1_q1_mapping(self.block_id['d1b'], self.block_id['q1b'])
+        #self.d1_q1_mapping(self.block_id['d1b'], self.block_id['q1b'])
 
         if q2: 
 
@@ -728,10 +728,10 @@ class v2rdm_sdp():
         0 = - i* l* j k  - i* j l* k  + i* k d(j,l) 
 
         aabb:
-        0 = - i* l* j k  - i* j l* k  
+        0 = + i* l* k j  - i* j l* k  
 
         bbaa:
-        0 = - i* l* j k  - i* j l* k  
+        0 = + i* l* k j  - i* j l* k  
 
         bbbb:
         0 = - i* l* j k  - i* j l* k  + i* k d(j,l) 
@@ -852,7 +852,7 @@ class v2rdm_sdp():
                 column=[]
                 value=[]
    
-                # + i* l* j k
+                # + i* l* k j
                 il = self.ibas_ab[i, l]
                 jk = self.ibas_ab[j, k]
                 block_number.append(self.block_id['d2ab'])
@@ -889,7 +889,7 @@ class v2rdm_sdp():
                 column=[]
                 value=[]
    
-                # + l* i* k j
+                # + l* i* j k
                 li = self.ibas_ab[l, i]
                 kj = self.ibas_ab[k, j]
                 block_number.append(self.block_id['d2ab'])
@@ -948,53 +948,54 @@ class v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
                 ij = self.ibas_ab[i, j]
+
+                block_number=[]
+                row=[]
+                column=[]
+                value=[]
+
                 for k in range (0, self.nmo):
                     kk = self.ibas_ab[k, k]
-
-                    block_number=[]
-                    row=[]
-                    column=[]
-                    value=[]
-
                     block_number.append(self.block_id['g2ba'])
                     row.append(kk+1)
                     column.append(ij+1)
                     value.append(1.0)
 
-                    myF = libsdp.sdp_matrix()
-                    myF.block_number = block_number
-                    myF.row          = row
-                    myF.column       = column
-                    myF.value        = value
+                myF = libsdp.sdp_matrix()
+                myF.block_number = block_number
+                myF.row          = row
+                myF.column       = column
+                myF.value        = value
 
-                    self.b.append(0.0)
-                    self.F.append(myF)
+                self.b.append(0.0)
+                self.F.append(myF)
 
         # maximal spin 
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
                 ij = self.ibas_ab[i, j]
+
+                block_number=[]
+                row=[]
+                column=[]
+                value=[]
+
                 for k in range (0, self.nmo):
                     kk = self.ibas_ab[k, k]
-
-                    block_number=[]
-                    row=[]
-                    column=[]
-                    value=[]
 
                     block_number.append(self.block_id['g2ba'])
                     row.append(ij+1)
                     column.append(kk+1)
                     value.append(1.0)
 
-                    myF = libsdp.sdp_matrix()
-                    myF.block_number = block_number
-                    myF.row          = row
-                    myF.column       = column
-                    myF.value        = value
+                myF = libsdp.sdp_matrix()
+                myF.block_number = block_number
+                myF.row          = row
+                myF.column       = column
+                myF.value        = value
 
-                    self.b.append(0.0)
-                    self.F.append(myF)
+                self.b.append(0.0)
+                self.F.append(myF)
 
     def constrain_spin_block_structure(self):
         """

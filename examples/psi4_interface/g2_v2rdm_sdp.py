@@ -82,8 +82,9 @@ class g2_v2rdm_sdp():
             self.dimensions.append(nmo*(nmo-1)//2) # d2aa
             self.dimensions.append(nmo*(nmo-1)//2) # d2bb
 
-        # g2 <-> q2 not yet implemented
-        assert(not q2)
+        # g2 <-> q2 not yet implemented without relying on d2
+        if q2 :
+            assert(d2)
 
         if q2: 
             self.dimensions.append(nmo*nmo) # q2ab
@@ -280,6 +281,9 @@ class g2_v2rdm_sdp():
 
             # <i*j S+> = 0
             self.constrain_maximal_spin_projection()
+
+        #self.d1_q1_mapping(self.block_id['d1a'], self.block_id['q1a'])
+        #self.d1_q1_mapping(self.block_id['d1b'], self.block_id['q1b'])
 
     def trace_d1(self, block_id, n):
         """
@@ -984,53 +988,55 @@ class g2_v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
                 ij = self.ibas_ab[i, j]
+
+                block_number=[]
+                row=[]
+                column=[]
+                value=[]
+
                 for k in range (0, self.nmo):
                     kk = self.ibas_ab[k, k]
-
-                    block_number=[]
-                    row=[]
-                    column=[]
-                    value=[]
 
                     block_number.append(self.block_id['g2ba'])
                     row.append(kk+1)
                     column.append(ij+1)
                     value.append(1.0)
 
-                    myF = libsdp.sdp_matrix()
-                    myF.block_number = block_number
-                    myF.row          = row
-                    myF.column       = column
-                    myF.value        = value
+                myF = libsdp.sdp_matrix()
+                myF.block_number = block_number
+                myF.row          = row
+                myF.column       = column
+                myF.value        = value
 
-                    self.b.append(0.0)
-                    self.F.append(myF)
+                self.b.append(0.0)
+                self.F.append(myF)
 
         # maximal spin 
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
                 ij = self.ibas_ab[i, j]
+
+                block_number=[]
+                row=[]
+                column=[]
+                value=[]
+
                 for k in range (0, self.nmo):
                     kk = self.ibas_ab[k, k]
-
-                    block_number=[]
-                    row=[]
-                    column=[]
-                    value=[]
 
                     block_number.append(self.block_id['g2ba'])
                     row.append(ij+1)
                     column.append(kk+1)
                     value.append(1.0)
 
-                    myF = libsdp.sdp_matrix()
-                    myF.block_number = block_number
-                    myF.row          = row
-                    myF.column       = column
-                    myF.value        = value
+                myF = libsdp.sdp_matrix()
+                myF.block_number = block_number
+                myF.row          = row
+                myF.column       = column
+                myF.value        = value
 
-                    self.b.append(0.0)
-                    self.F.append(myF)
+                self.b.append(0.0)
+                self.F.append(myF)
 
     def contract_g2aaaa_d1a(self, offset, d1_block_id, n):
         """

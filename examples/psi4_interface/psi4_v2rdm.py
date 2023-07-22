@@ -276,8 +276,8 @@ def main():
     # b is the right-hand side of Ax = b
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
-    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = True, g2 = True)
-    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False)
+    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, constrain_spin = True, g2 = True)
+    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False, q2 = False, constrain_spin = True)
 
     b = my_sdp.b
     F = my_sdp.F
@@ -319,6 +319,7 @@ def main():
     #x = my_sdp.get_rdm_blocks(x)
     #z = my_sdp.get_rdm_blocks(z)
     #c = my_sdp.get_rdm_blocks(c)
+    #ATy = my_sdp.get_rdm_blocks(ATy)
 
     #import scipy
     #print('eigenvalues')
@@ -335,14 +336,6 @@ def main():
     print('    ||c - ATy - z||:           %20.12f' % (np.linalg.norm(dual_error)))
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
-
-    # g-only refernce energies ... converged to 1e-4
-    #reference_energy_bh_cation = -28.381402635598
-    #reference_energy_bh = -28.518278339385
-    #reference_energy_h2 = -1.630314318537
-
-    # dg refernce energies ... converged to 1e-4
-    # bh = -27.416508887638 
 
 if __name__ == "__main__":
     main()

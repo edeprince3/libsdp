@@ -90,6 +90,7 @@ class v2rdm_sdp():
         # this is the only dangerous part ... need to be sure the order of the ids matches the dimensions above
 
         blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb', 'q1a', 'q1b']
+        #blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb']
 
         if q2 :
             blocks.append('q2ab')
@@ -246,8 +247,8 @@ class v2rdm_sdp():
             self.constrain_s2()
 
             # spin block structure (currently only for singlets, D1a = D1b, D2aa(ijkl) = D2ab(ijkl) - D2ab(ijlk), etc.)
-            if self.nalpha == self.nbeta:
-                self.constrain_spin_block_structure()
+            #if self.nalpha == self.nbeta:
+            #    self.constrain_spin_block_structure()
 
     def trace_d1(self, block_id, n):
         """
@@ -942,6 +943,58 @@ class v2rdm_sdp():
 
         self.b.append(0.5 * (self.nalpha + self.nbeta) + ms*ms - ms*(ms+1.0))
         self.F.append(myF)
+
+        # maximal spin 
+        for i in range (0, self.nmo):
+            for j in range (0, self.nmo):
+                ij = self.ibas_ab[i, j]
+                for k in range (0, self.nmo):
+                    kk = self.ibas_ab[k, k]
+
+                    block_number=[]
+                    row=[]
+                    column=[]
+                    value=[]
+
+                    block_number.append(self.block_id['g2ba'])
+                    row.append(kk+1)
+                    column.append(ij+1)
+                    value.append(1.0)
+
+                    myF = libsdp.sdp_matrix()
+                    myF.block_number = block_number
+                    myF.row          = row
+                    myF.column       = column
+                    myF.value        = value
+
+                    self.b.append(0.0)
+                    self.F.append(myF)
+
+        # maximal spin 
+        for i in range (0, self.nmo):
+            for j in range (0, self.nmo):
+                ij = self.ibas_ab[i, j]
+                for k in range (0, self.nmo):
+                    kk = self.ibas_ab[k, k]
+
+                    block_number=[]
+                    row=[]
+                    column=[]
+                    value=[]
+
+                    block_number.append(self.block_id['g2ba'])
+                    row.append(ij+1)
+                    column.append(kk+1)
+                    value.append(1.0)
+
+                    myF = libsdp.sdp_matrix()
+                    myF.block_number = block_number
+                    myF.row          = row
+                    myF.column       = column
+                    myF.value        = value
+
+                    self.b.append(0.0)
+                    self.F.append(myF)
 
     def constrain_spin_block_structure(self):
         """

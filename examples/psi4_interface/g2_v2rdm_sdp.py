@@ -96,6 +96,7 @@ class g2_v2rdm_sdp():
         # this is the only dangerous part ... need to be sure the order of the ids matches the dimensions above
 
         blocks = ['d1a', 'd1b', 'g2aa', 'g2ab', 'g2ba']
+        #blocks = ['d1a', 'd1b', 'q1a', 'q1b', 'g2aa', 'g2ab', 'g2ba']
 
         if q2 :
             blocks.append('q2ab')
@@ -133,6 +134,7 @@ class g2_v2rdm_sdp():
         F = libsdp.sdp_matrix()
 
         dum = np.einsum('ijkk->ij', tei)
+
         for i in range (0, nmo):
             for j in range (0, nmo):
                 block_number.append(self.block_id['d1a'])
@@ -207,14 +209,13 @@ class g2_v2rdm_sdp():
     
         self.b = []
 
-        self.trace_d1(self.block_id['d1a'], self.nalpha)
-        self.trace_d1(self.block_id['d1b'], self.nbeta)
+        # if d2 <-> g2 mapping is not enforced, then we need to enforce antisymmetry of d2
+        if not d2 :
+            # antisymmetry of d2aa via g2aaaa
+            self.g2aaaa_antisymmetry(0, self.block_id['d1a'])
 
-        # antisymmetry of d2aa via g2aaaa
-        self.g2aaaa_antisymmetry(0, self.block_id['d1a'])
-
-        # antisymmetry of d2aa via g2aaaa
-        self.g2aaaa_antisymmetry(len(self.bas_ab), self.block_id['d1b'])
+            # antisymmetry of d2aa via g2aaaa
+            self.g2aaaa_antisymmetry(len(self.bas_ab), self.block_id['d1b'])
 
         # g2aaaa -> d1a ... 4 contractions
         self.contract_g2aaaa_d1a(0, self.block_id['d1a'], self.nalpha)
@@ -769,8 +770,6 @@ class g2_v2rdm_sdp():
         0 = - i* l* j k  - i* j l* k  + i* k d(j,l) 
            
         """
-
-        return
 
         # aaaa:
         # 0 = - i* l* j k  - i* j l* k  + i* k d(j,l) 

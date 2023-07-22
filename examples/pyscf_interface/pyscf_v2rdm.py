@@ -60,7 +60,7 @@ def main():
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
     #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, g2 = False)
-    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = True)
+    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True)
 
     b = my_sdp.b
     F = my_sdp.F
@@ -130,10 +130,13 @@ def main():
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
 
-    # refernce energies ... converged to 1e-4 using psi4 integrals
+    # g-only refernce energies ... converged to 1e-4 using psi4 integrals
     #reference_energy_bh_cation = -28.381402635598
     #reference_energy_bh = -28.518278339385
     #reference_energy_h2 = -1.630314318537
+
+    # dg reference energies ... converged to 1e-4 using pyscf integrals
+    # bh = -27.416508887638 
 
 if __name__ == "__main__":
     main()

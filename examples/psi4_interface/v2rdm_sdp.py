@@ -73,8 +73,8 @@ class v2rdm_sdp():
         self.dimensions.append(nmo*nmo) # d2ab
         self.dimensions.append(nmo*(nmo-1)//2) # d2aa
         self.dimensions.append(nmo*(nmo-1)//2) # d2bb
-        #self.dimensions.append(nmo) # q1a
-        #self.dimensions.append(nmo) # q1b
+        self.dimensions.append(nmo) # q1a
+        self.dimensions.append(nmo) # q1b
 
         if q2: 
             self.dimensions.append(nmo*nmo) # q2ab
@@ -89,8 +89,8 @@ class v2rdm_sdp():
         # block ids ... block zero defines the objective function
         # this is the only dangerous part ... need to be sure the order of the ids matches the dimensions above
 
-        #blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb', 'q1a', 'q1b']
-        blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb']
+        blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb', 'q1a', 'q1b']
+        #blocks = ['d1a', 'd1b', 'd2ab', 'd2aa', 'd2bb']
 
         if q2 :
             blocks.append('q2ab')
@@ -214,10 +214,10 @@ class v2rdm_sdp():
         self.contract_d2aa_d1a(self.block_id['d2bb'], self.block_id['d1b'], nbeta)
 
         # d1a <-> q1a
-        #self.d1_q1_mapping(self.block_id['d1a'], self.block_id['q1a'])
+        self.d1_q1_mapping(self.block_id['d1a'], self.block_id['q1a'])
 
         # d1b <-> q1b
-        #self.d1_q1_mapping(self.block_id['d1b'], self.block_id['q1b'])
+        self.d1_q1_mapping(self.block_id['d1b'], self.block_id['q1b'])
 
         if q2: 
 

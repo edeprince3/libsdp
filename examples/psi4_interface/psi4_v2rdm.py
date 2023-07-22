@@ -276,8 +276,8 @@ def main():
     # b is the right-hand side of Ax = b
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
-    my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = True, g2 = True)
-    #my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False)
+    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = True, g2 = True)
+    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False)
 
     b = my_sdp.b
     F = my_sdp.F
@@ -342,9 +342,7 @@ def main():
     #reference_energy_h2 = -1.630314318537
 
     # dg refernce energies ... converged to 1e-4
-    # bh = -27.422211627748 ... g2-based (g2_v2rdm_sdp)
-    # bh = -27.416546074875 ... d2-based (v2rdm_sdp)
-
+    # bh = -27.416508887638 
 
 if __name__ == "__main__":
     main()

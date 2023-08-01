@@ -13,213 +13,6 @@ from g2_v2rdm_sdp import g2_v2rdm_sdp
 
 import psi4
 
-def build_sdp(nalpha, nbeta, nmo, oei, tei):
-    """ set up details of the SDP
-
-    :param nalpha:       number of alpha electrons
-    :param nbeta:        number of beta electrons
-    :param nmo:          number of spatial molecular orbitals
-    :param oei:          core Hamiltonian matrix
-    :param tei:          two-electron repulsion integrals
-    :return: b:          the constraint vector
-    :return: F:          list of rows of constraint matrix in sparse format; 
-                         note that F[0] is actually the vector defining the 
-                         problem (contains the one- and two-electron integrals)
-    :return: dimensions: list of dimensions of blocks of primal solution
-    """
-
-    # for a two-electron system, all we need are
-    # D1a D1b D2ab 
-
-    # block dimensions
-    dimensions = []
-    dimensions.append(nmo)     # D1a
-    dimensions.append(nmo)     # D1a
-    dimensions.append(nmo*nmo) # D2ab
-
-    # number of blocks
-    nblocks = len(dimensions)
-
-    # F0 
-    block_number=[]
-    row=[]
-    column=[]
-    value=[]
-
-    F = [libsdp.sdp_matrix()]
-
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-            block_number.append(1)
-            row.append(i+1)
-            column.append(j+1)
-            value.append(oei[i][j])
-
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-            block_number.append(2)
-            row.append(i+1)
-            column.append(j+1)
-            value.append(oei[i][j])
-
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-            ij = i * nmo + j
-            for k in range (0,nmo):
-                for l in range (0,nmo):
-                    kl = k * nmo + l
-                    block_number.append(3)
-                    row.append(ij+1)
-                    column.append(kl+1)
-                    value.append(tei[i][k][j][l])
-
-    count = 0
-    F[count].block_number = block_number
-    F[count].row          = row
-    F[count].column       = column
-    F[count].value        = value
-    count += 1
-    
-    # constraints (F1, F2, ...)
-
-    b = []
-
-    # Tr(D1a)
-    block_number=[]
-    row=[]
-    column=[]
-    value=[]
-
-    for i in range (0,nmo):
-        block_number.append(1)
-        row.append(i+1)
-        column.append(i+1)
-        value.append(1.0)
-
-    F.append(libsdp.sdp_matrix())
-    F[count].block_number = block_number
-    F[count].row          = row
-    F[count].column       = column
-    F[count].value        = value
-
-    b.append(nalpha)
-
-    count += 1
-
-    # Tr(D1b)
-    block_number=[]
-    row=[]
-    column=[]
-    value=[]
-
-    for i in range (0,nmo):
-        block_number.append(2)
-        row.append(i+1)
-        column.append(i+1)
-        value.append(1.0)
-
-    F.append(libsdp.sdp_matrix())
-    F[count].block_number = block_number
-    F[count].row          = row
-    F[count].column       = column
-    F[count].value        = value
-
-    b.append(nbeta)
-
-    count += 1
-
-    # Tr(D2ab)
-    block_number=[]
-    row=[]
-    column=[]
-    value=[]
-
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-            ij = i * nmo + j
-            block_number.append(3)
-            row.append(ij+1)
-            column.append(ij+1)
-            value.append(1.0)
-
-    F.append(libsdp.sdp_matrix())
-    F[count].block_number = block_number
-    F[count].row          = row
-    F[count].column       = column
-    F[count].value        = value
-
-    b.append(nalpha*nbeta)
-
-    count += 1
-
-    # D2ab -> D1a
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-
-            block_number=[]
-            row=[]
-            column=[]
-            value=[]
-
-            for k in range (0,nmo):
-
-                ik = i * nmo + k
-                jk = j * nmo + k
-                block_number.append(3)
-                row.append(ik+1)
-                column.append(jk+1)
-                value.append(1.0)
-
-            block_number.append(1)
-            row.append(i+1)
-            column.append(j+1)
-            value.append(-nbeta)
-    
-            F.append(libsdp.sdp_matrix())
-            F[count].block_number = block_number
-            F[count].row          = row
-            F[count].column       = column
-            F[count].value        = value
-
-            b.append(0.0)
-
-            count += 1
-
-    # D2ab -> D1b
-    for i in range (0,nmo):
-        for j in range (0,nmo):
-
-            block_number=[]
-            row=[]
-            column=[]
-            value=[]
-
-            for k in range (0,nmo):
-
-                ki = k * nmo + i
-                kj = k * nmo + j
-                block_number.append(3)
-                row.append(ki+1)
-                column.append(kj+1)
-                value.append(1.0)
-
-            block_number.append(2)
-            row.append(i+1)
-            column.append(j+1)
-            value.append(-nalpha)
-    
-            F.append(libsdp.sdp_matrix())
-            F[count].block_number = block_number
-            F[count].row          = row
-            F[count].column       = column
-            F[count].value        = value
-
-            b.append(0.0)
-
-            count += 1
-
-    return b, F, dimensions
-
 def main():
 
     # set molecule
@@ -276,8 +69,8 @@ def main():
     # b is the right-hand side of Ax = b
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
-    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, constrain_spin = True, g2 = True)
-    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False, q2 = False, constrain_spin = True)
+    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = False, g2 = True)
+    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False, q2 = False, constrain_spin = False)
 
     b = my_sdp.b
     F = my_sdp.F
@@ -296,7 +89,7 @@ def main():
 
     # solve sdp
     sdp = libsdp.sdp_solver(options)
-    x = sdp.solve(b,F,dimensions,maxiter)
+    x = sdp.solve(b, F, dimensions, maxiter)
 
     # now that the sdp is solved, we can play around with the primal and dual solutions
     z = np.array(sdp.get_z())
@@ -321,13 +114,6 @@ def main():
     #c = my_sdp.get_rdm_blocks(c)
     #ATy = my_sdp.get_rdm_blocks(ATy)
 
-    #import scipy
-    #print('eigenvalues')
-    #for i in range (0, len(c)):
-    #    wz = scipy.linalg.eigh(z[i], eigvals_only=True)
-    #    wc = scipy.linalg.eigh(c[i], eigvals_only=True)
-    #    print(wz, wc)
-
     print('')
     print('    * v2RDM electronic energy: %20.12f' % (primal_energy))
     print('    * v2RDM total energy:      %20.12f' % (primal_energy + mol.nuclear_repulsion_energy()))
@@ -336,6 +122,39 @@ def main():
     print('    ||c - ATy - z||:           %20.12f' % (np.linalg.norm(dual_error)))
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
+
+    # get individual constraint matrices and build up SOS hamiltonian
+    a0_y = my_sdp.get_constraint_matrix(0) * y[0]
+    print(a0_y, my_sdp.get_constraint_matrix(0), y[0])
+    energy = 0.0
+    ai_y = np.zeros(len(x), dtype = 'float64')
+    for i in range (1, len(y)):
+        a = my_sdp.get_constraint_matrix(i)
+        ai_y = ai_y + a * y[i]
+
+    # check that individual constraint matrices sum up correctly
+    assert(np.isclose(0.0, np.linalg.norm(ATy - a0_y - ai_y)))
+
+    # check that individual constraint matrices sum up correctly, again
+    assert(np.isclose(np.linalg.norm(dual_error), np.linalg.norm(c - z - a0_y - ai_y)))
+
+    # sum of squares hamiltonian
+    c_sos = z + ai_y
+
+    # check that c_sos . x = 0 ... this should approach zero with sufficiently tight convergence
+    sos_energy = np.dot(c_sos, x)
+    #print(sos_energy)
+
+    # sum of squares hamiltonian, blocked
+    c_sos = my_sdp.get_rdm_blocks(c_sos) 
+
+    #import scipy
+    #print('eigenvalues of SOS hamiltonian')
+    #for i in range (0, len(c_sos)):
+    #    print(c_sos[i].shape)
+    #    w = scipy.linalg.eigh(c_sos[i], eigvals_only=True)
+    #    print()
+    #    print(w)
 
 if __name__ == "__main__":
     main()

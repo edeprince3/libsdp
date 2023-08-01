@@ -59,7 +59,7 @@ class SDPHelper{
     /// SDPHelper destructor
     ~SDPHelper();
 
-    /// solve the sdp problem
+    /// solve the sdp problem and return the primal solution
     std::vector<double> solve(std::vector<double> b,
                               std::vector<SDPMatrix> Fi,
                               std::vector<int> primal_block_dim,
@@ -71,7 +71,25 @@ class SDPHelper{
     /// evaluate ATu
     void evaluate_ATu(double * ATu, double * u);
 
+    /// return the BPSDP dual z vector
+    std::vector<double> get_z();
+
+    /// return the BPSDP dual y vector or RRSDP lagrange multipliers
+    std::vector<double> get_y();
+
+    /// return the c vector
+    std::vector<double> get_c() { return c_; }
+
+    /// get ATu
+    std::vector<double> get_ATu(std::vector<double> u);
+
+    /// get Au
+    std::vector<double> get_Au(std::vector<double> u);
+
   protected:
+
+    /// the SDP solver
+    std::shared_ptr<SDPSolver> sdp_;
 
     /// options for the SDP
     SDPOptions options_;
@@ -87,6 +105,9 @@ class SDPHelper{
 
     /// list of block sizes
     std::vector<int> primal_block_dim_;
+
+    /// the c vector (F0)
+    std::vector<double> c_;
 
 };
 

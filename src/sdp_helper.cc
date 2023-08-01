@@ -81,7 +81,12 @@ void export_SDPHelper(py::module& m) {
             "b"_a,
             "Fi"_a,
             "primal_block_dim"_a,
-            "maxiter"_a);
+            "maxiter"_a)
+        .def("get_ATu", &SDPHelper::get_ATu)
+        .def("get_Au", &SDPHelper::get_Au)
+        .def("get_y", &SDPHelper::get_y)
+        .def("get_z", &SDPHelper::get_z)
+        .def("get_c", &SDPHelper::get_c);
 }
 
 PYBIND11_MODULE(libsdp, m) {
@@ -153,7 +158,7 @@ void SDPHelper::evaluate_ATu(double * ATu, double * u) {
     }
 }
 
-/// solve the sdp problem
+/// solve the sdp problem and return the primal solution
 std::vector<double> SDPHelper::solve(std::vector<double> b,
                                      std::vector<SDPMatrix> Fi,
                                      std::vector<int> primal_block_dim,
@@ -173,7 +178,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
 
     // c vector (-F0 in SDPA format)
 
-    std::vector<double> c (n_primal_, 0.0);
+    c_.resize(n_primal_);
 
     for (size_t i = 0; i < Fi[0].block_number.size(); i++) {
         int my_block  = Fi[0].block_number[i] - 1;
@@ -191,7 +196,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         // has c = -F0. (we're minimizing; they maximize). the result will be that
         // our final objective will have the opposite sign compared to tabulated
         // SDPLIB values
-        c[off + my_row * primal_block_dim[my_block] + my_column] = Fi[0].value[i];
+        c_[off + my_row * primal_block_dim[my_block] + my_column] = Fi[0].value[i];
     }
 
     // constraint matrices
@@ -241,18 +246,16 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
 
     // initialize sdp solver
 
-    std::shared_ptr<SDPSolver> sdp;
-
     libsdp::SDPProgressMonitorFunction sdp_monitor;
 
     if ( options_.algorithm == SDPOptions::SDPAlgorithm::BPSDP ) {
 
-        sdp = (std::shared_ptr<SDPSolver>)(new BPSDPSolver(n_primal_,n_dual_,options_));
+        sdp_ = (std::shared_ptr<SDPSolver>)(new BPSDPSolver(n_primal_,n_dual_,options_));
         sdp_monitor = bpsdp_monitor;
 
     }else if ( options_.algorithm == SDPOptions::SDPAlgorithm::RRSDP ) {
 
-        sdp = (std::shared_ptr<SDPSolver>)(new RRSDPSolver(n_primal_,n_dual_,options_));
+        sdp_ = (std::shared_ptr<SDPSolver>)(new RRSDPSolver(n_primal_,n_dual_,options_));
         sdp_monitor = rrsdp_monitor;
 
     }
@@ -287,20 +290,67 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
     } 
 
     // solve sdp
-    sdp->solve(x.data(),
-               b.data(),
-               c.data(),
-               primal_block_dim_, 
-               maxiter, 
-               Au_callback, 
-               ATu_callback, 
-               sdp_monitor, 
-               (void*)this);
+    sdp_->solve(x.data(),
+                b.data(),
+                c_.data(),
+                primal_block_dim_, 
+                maxiter, 
+                Au_callback, 
+                ATu_callback, 
+                sdp_monitor, 
+                (void*)this);
 
     printf("\n");
     fflush(stdout);
 
     return x;
+}
+
+/// return the BPSDP z dual variable
+std::vector<double> SDPHelper::get_z() {
+    if ( options_.algorithm != SDPOptions::SDPAlgorithm::BPSDP ) {
+        printf("\n");
+        printf("    error: z dual variable only defined for SDPAlgorithm:BPSDP\n");
+        printf("\n");
+    }
+    double * tmp_z = sdp_->get_z();
+    std::vector<double> z(tmp_z, tmp_z + n_primal_);
+    return z;
+}
+
+/// return the BPSDP y dual variable or RRSDP lagrange multipliers
+std::vector<double> SDPHelper::get_y() {
+    double * tmp_y = sdp_->get_y();
+    std::vector<double> y(tmp_y, tmp_y + n_dual_);
+    return y;
+}
+
+/// return the action of A^T on a vector
+std::vector<double> SDPHelper::get_ATu(std::vector<double> u) {
+
+    double * tmp_ATu = (double*)malloc(n_primal_*sizeof(double));
+
+    evaluate_ATu(tmp_ATu, u.data() );
+
+    std::vector<double> ATu(tmp_ATu, tmp_ATu + n_primal_);
+
+    free(tmp_ATu);
+
+    return ATu;
+}
+
+/// return the action of A on a vector
+std::vector<double> SDPHelper::get_Au(std::vector<double> u) {
+
+    double * tmp_Au = (double*)malloc(n_dual_*sizeof(double));
+
+    evaluate_Au(tmp_Au, u.data() );
+
+    std::vector<double> Au(tmp_Au, tmp_Au + n_dual_);
+
+    free(tmp_Au);
+
+    return Au;
 }
 
 SDPOptions options() {

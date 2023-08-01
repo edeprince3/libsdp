@@ -150,13 +150,18 @@ def main():
     # sum of squares hamiltonian, blocked
     c_sos = my_sdp.get_rdm_blocks(c_sos) 
 
-    #import scipy
-    #print('eigenvalues of SOS hamiltonian')
+    import scipy
+    idx = my_sdp.block_id['g2aa']
+    w = scipy.linalg.eigh(c_sos[idx], eigvals_only=True)
+    print('    most negative eigenvalue of the SOS hamiltonian: %20.12f' % (w[0]) )
+    print()
+
+    #print()
     #for i in range (0, len(c_sos)):
-    #    print(c_sos[i].shape)
     #    w = scipy.linalg.eigh(c_sos[i], eigvals_only=True)
-    #    print()
-    #    print(w)
+    #    print('    %5s: %20.12f' % (my_sdp.blocks[i], w[0]) )
+    #    #print(w)
+    #print()
 
 if __name__ == "__main__":
     main()

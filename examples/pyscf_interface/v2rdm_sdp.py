@@ -28,7 +28,8 @@ class v2rdm_sdp():
                        problem (contains the one- and two-electron integrals)
         dimensions:    list of dimensions of blocks of primal solution
         offsets:       list of offsets of blocks of primal solution
-        block_id:      list of block ids for blocks of primal solution
+        block_id:      list of block ids (integers) for blocks of primal solution
+        blocks:        list of block ids (strings) for blocks of primal solution
         nmo:           number of spatial molecular orbitals
         nalpha:        number of alpha electrons
         nbeta:         number of beta electrons
@@ -102,6 +103,9 @@ class v2rdm_sdp():
             blocks.append('g2aa')
             blocks.append('g2ab')
             blocks.append('g2ba')
+
+        # in case someone outside of the class wants to know how the blocks are ordered
+        self.blocks = blocks
 
         self.block_id = {
         }

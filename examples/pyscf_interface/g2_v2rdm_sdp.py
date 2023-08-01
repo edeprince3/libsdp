@@ -29,7 +29,8 @@ class g2_v2rdm_sdp():
                        problem (contains the one- and two-electron integrals)
         dimensions:    list of dimensions of blocks of primal solution
         offsets:       list of offsets of blocks of primal solution
-        block_id:      list of block ids for blocks of primal solution
+        block_id:      list of block ids (integers) for blocks of primal solution
+        blocks:        list of block ids (strings) for blocks of primal solution
         nmo:           number of spatial molecular orbitals
         nalpha:        number of alpha electrons
         nbeta:         number of beta electrons
@@ -123,6 +124,9 @@ class g2_v2rdm_sdp():
             blocks.append('t2aab')
             blocks.append('t2bba')
 
+        # in case someone outside of the class wants to know how the blocks are ordered
+        self.blocks = blocks
+
         self.block_id = {
         }
         count = 1
@@ -148,7 +152,7 @@ class g2_v2rdm_sdp():
     
         F = libsdp.sdp_matrix()
 
-        dum = np.einsum('ijkk->ij', tei)
+        dum = -0.5 * np.einsum('ikkj->ij', tei)
 
         for i in range (0, nmo):
             for j in range (0, nmo):
@@ -163,55 +167,55 @@ class g2_v2rdm_sdp():
                 row.append(i+1)
                 column.append(j+1)
                 value.append(oei[i][j] + dum[i][j])
-    
-        # (ik|lj) aaaa -> g2aaaa
-        for ij in range (0, len(self.bas_ab)):
-            i = self.bas_ab[ij][0]
-            j = self.bas_ab[ij][1]
-            for kl in range (0, len(self.bas_ab)):
-                k = self.bas_ab[kl][0]
-                l = self.bas_ab[kl][1]
+   
+        # (ik|jl) i* j* l k -> i* k j* l (ik|jl) ... aaaa
+        for ik in range (0, len(self.bas_ab)):
+            i = self.bas_ab[ik][0]
+            k = self.bas_ab[ik][1]
+            for lj in range (0, len(self.bas_ab)):
+                l = self.bas_ab[lj][0]
+                j = self.bas_ab[lj][1]
                 block_number.append(self.block_id['g2aa'])
-                row.append(ij+1)
-                column.append(kl+1)
-                value.append(-0.5 * tei[i][k][l][j])
+                row.append(ik+1)
+                column.append(lj+1)
+                value.append(0.5 * tei[i][k][j][l])
     
-        # (ik|lj) bbbb -> g2bbbb
-        for ij in range (0, len(self.bas_ab)):
-            i = self.bas_ab[ij][0]
-            j = self.bas_ab[ij][1]
-            for kl in range (0, len(self.bas_ab)):
-                k = self.bas_ab[kl][0]
-                l = self.bas_ab[kl][1]
+        # (ik|jl) i* j* l k -> i* k j* l (ik|jl) ... bbbb
+        for ik in range (0, len(self.bas_ab)):
+            i = self.bas_ab[ik][0]
+            k = self.bas_ab[ik][1]
+            for lj in range (0, len(self.bas_ab)):
+                l = self.bas_ab[lj][0]
+                j = self.bas_ab[lj][1]
                 block_number.append(self.block_id['g2aa'])
-                row.append(ij+len(self.bas_ab)+1)
-                column.append(kl+len(self.bas_ab)+1)
-                value.append(-0.5 * tei[i][k][l][j])
+                row.append(ik+len(self.bas_ab)+1)
+                column.append(lj+len(self.bas_ab)+1)
+                value.append(0.5 * tei[i][k][j][l])
     
-        # (ik|lj) aabb -> g2abab
-        for ij in range (0, len(self.bas_ab)):
-            i = self.bas_ab[ij][0]
-            j = self.bas_ab[ij][1]
-            for kl in range (0, len(self.bas_ab)):
-                k = self.bas_ab[kl][0]
-                l = self.bas_ab[kl][1]
-                block_number.append(self.block_id['g2ab'])
-                row.append(ij+1)
-                column.append(kl+1)
-                value.append(-0.5 * tei[i][k][l][j])
+        # (ik|jl) i* j* l k -> i* k j* l (ik|jl) ... aabb
+        for ik in range (0, len(self.bas_ab)):
+            i = self.bas_ab[ik][0]
+            k = self.bas_ab[ik][1]
+            for lj in range (0, len(self.bas_ab)):
+                l = self.bas_ab[lj][0]
+                j = self.bas_ab[lj][1]
+                block_number.append(self.block_id['g2aa'])
+                row.append(ik+1)
+                column.append(lj+len(self.bas_ab)+1)
+                value.append(0.5 * tei[i][k][j][l])
     
-        # (ik|lj) bbaa -> g2baba
-        for ij in range (0, len(self.bas_ab)):
-            i = self.bas_ab[ij][0]
-            j = self.bas_ab[ij][1]
-            for kl in range (0, len(self.bas_ab)):
-                k = self.bas_ab[kl][0]
-                l = self.bas_ab[kl][1]
-                block_number.append(self.block_id['g2ba'])
-                row.append(ij+1)
-                column.append(kl+1)
-                value.append(-0.5 * tei[i][k][l][j])
-    
+        # (ik|jl) i* j* l k -> i* k j* l (ik|jl) ... bbaa 
+        for ik in range (0, len(self.bas_ab)):
+            i = self.bas_ab[ik][0]
+            k = self.bas_ab[ik][1]
+            for lj in range (0, len(self.bas_ab)):
+                l = self.bas_ab[lj][0]
+                j = self.bas_ab[lj][1]
+                block_number.append(self.block_id['g2aa'])
+                row.append(ik+len(self.bas_ab)+1)
+                column.append(lj+1)
+                value.append(0.5 * tei[i][k][j][l])
+
         F.block_number = block_number
         F.row          = row
         F.column       = column

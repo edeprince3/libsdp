@@ -70,7 +70,7 @@ def main():
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
     #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = False, g2 = True)
-    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False, q2 = False, constrain_spin = False)
+    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False, q2 = False, constrain_spin = True)
 
     b = my_sdp.b
     F = my_sdp.F
@@ -124,9 +124,11 @@ def main():
     print('')
 
     # get individual constraint matrices and build up SOS hamiltonian
+
+    # zeroth constraint
     a0_y = my_sdp.get_constraint_matrix(0) * y[0]
-    print(a0_y, my_sdp.get_constraint_matrix(0), y[0])
-    energy = 0.0
+
+    # all other constraints
     ai_y = np.zeros(len(x), dtype = 'float64')
     for i in range (1, len(y)):
         a = my_sdp.get_constraint_matrix(i)

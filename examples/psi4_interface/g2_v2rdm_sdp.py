@@ -172,60 +172,6 @@ class g2_v2rdm_sdp():
                 column.append(j+1)
                 value.append(oei[i][j] + dum[i][j])
 
-        # old way
-
-        ## (ik|lj) aaaa -> g2aaaa
-        #for ij in range (0, len(self.bas_ab)):
-        #    i = self.bas_ab[ij][0]
-        #    j = self.bas_ab[ij][1]
-        #    for kl in range (0, len(self.bas_ab)):
-        #        k = self.bas_ab[kl][0]
-        #        l = self.bas_ab[kl][1]
-        #        block_number.append(self.block_id['g2aa'])
-        #        row.append(ij+1)
-        #        column.append(kl+1)
-        #        value.append(-0.5 * tei[i][k][l][j])
-
-        ## (ik|lj) bbbb -> g2bbbb
-        #for ij in range (0, len(self.bas_ab)):
-        #    i = self.bas_ab[ij][0]
-        #    j = self.bas_ab[ij][1]
-        #    for kl in range (0, len(self.bas_ab)):
-        #        k = self.bas_ab[kl][0]
-        #        l = self.bas_ab[kl][1]
-        #        block_number.append(self.block_id['g2aa'])
-        #        row.append(ij+len(self.bas_ab)+1)
-        #        column.append(kl+len(self.bas_ab)+1)
-        #        value.append(-0.5 * tei[i][k][l][j])
-
-        ## (ik|lj) aabb -> g2abab
-        #for ij in range (0, len(self.bas_ab)):
-        #    i = self.bas_ab[ij][0]
-        #    j = self.bas_ab[ij][1]
-        #    for kl in range (0, len(self.bas_ab)):
-        #        k = self.bas_ab[kl][0]
-        #        l = self.bas_ab[kl][1]
-        #        block_number.append(self.block_id['g2ab'])
-        #        row.append(ij+1)
-        #        column.append(kl+1)
-        #        value.append(-0.5 * tei[i][k][l][j])
-
-        ## (ik|lj) bbaa -> g2baba
-        #for ij in range (0, len(self.bas_ab)):
-        #    i = self.bas_ab[ij][0]
-        #    j = self.bas_ab[ij][1]
-        #    for kl in range (0, len(self.bas_ab)):
-        #        k = self.bas_ab[kl][0]
-        #        l = self.bas_ab[kl][1]
-        #        block_number.append(self.block_id['g2ba'])
-        #        row.append(ij+1)
-        #        column.append(kl+1)
-        #        value.append(-0.5 * tei[i][k][l][j])
-   
-        ## end of old way
-
-        # new way
-
         # (ik|jl) i* j* l k -> i* k j* l (ik|jl) ... aaaa
         for ik in range (0, len(self.bas_ab)):
             i = self.bas_ab[ik][0]
@@ -273,8 +219,6 @@ class g2_v2rdm_sdp():
                 row.append(ik+len(self.bas_ab)+1)
                 column.append(lj+1)
                 value.append(0.5 * tei[i][k][j][l])
-
-        # end of new way
 
         F.block_number = block_number
         F.row          = row

@@ -69,7 +69,7 @@ def main():
     # b is the right-hand side of Ax = b
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
-    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = False, constrain_spin = False, g2 = True)
+    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, constrain_spin = True, g2 = True)
     my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False, q2 = False, constrain_spin = True)
 
     b = my_sdp.b
@@ -151,17 +151,12 @@ def main():
     c_sos = my_sdp.get_rdm_blocks(c_sos) 
 
     import scipy
-    idx = my_sdp.block_id['g2aa']
-    w = scipy.linalg.eigh(c_sos[idx], eigvals_only=True)
-    print('    most negative eigenvalue of the SOS hamiltonian: %20.12f' % (w[0]) )
+    for i in range (0, len(c_sos)):
+        block = my_sdp.blocks[i]
+        idx = my_sdp.get_block_id(block)
+        w = scipy.linalg.eigh(c_sos[idx], eigvals_only=True)
+        print('    most negative eigenvalue of the %5s block of the SOS hamiltonian: %20.12f' % (block, w[0]) )
     print()
-
-    #print()
-    #for i in range (0, len(c_sos)):
-    #    w = scipy.linalg.eigh(c_sos[i], eigvals_only=True)
-    #    print('    %5s: %20.12f' % (my_sdp.blocks[i], w[0]) )
-    #    #print(w)
-    #print()
 
 if __name__ == "__main__":
     main()

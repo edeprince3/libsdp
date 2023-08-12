@@ -196,7 +196,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         // has c = -F0. (we're minimizing; they maximize). the result will be that
         // our final objective will have the opposite sign compared to tabulated
         // SDPLIB values
-        c_[off + my_row * primal_block_dim[my_block] + my_column] = Fi[0].value[i];
+        c_[off + my_row * primal_block_dim[my_block] + my_column] += Fi[0].value[i];
     }
 
     // constraint matrices

@@ -35,6 +35,11 @@ FetchContent_Declare(
     GIT_TAG        v2.5.0
 )
 
+find_package(Python COMPONENTS Interpreter Development)
+
+set(PYBIND11_PYTHON_VERSION 3)
+set(PYBIND11_FINDPYTHON ON)
+
 FetchContent_GetProperties(pybind11)
 if(NOT pybind11_POPULATED)
     FetchContent_Populate(pybind11)

@@ -18,25 +18,35 @@ def main():
     # set molecule
     mol = psi4.geometry("""
     0 1
-         b 0.0 0.0 0.0
-         h 0.0 0.0 1.0
-    no_reorient
-    nocom
+         H
+         H 1 1.0
     symmetry c1
     """)
 
     # set options
     psi4_options_dict = {
-        'basis': 'sto-3g',
-        'reference': 'rohf',
+        'basis': '6-31g',
         'scf_type': 'pk',
-        'e_convergence': 1e-10,
-        'd_convergence': 1e-10
     }
     psi4.set_options(psi4_options_dict)
 
     # compute the Hartree-Fock energy and wave function
     scf_e, wfn = psi4.energy('SCF', return_wfn=True)
+
+    # molecular orbitals (spatial):
+    C = wfn.Ca()
+
+    # use Psi4's MintsHelper to generate integrals
+    mints = psi4.core.MintsHelper(wfn.basisset())
+
+    # build the one-electron integrals
+    # build the one-electron integrals
+    T = np.asarray(mints.ao_kinetic())
+    V = np.asarray(mints.ao_potential())
+    oei = np.einsum('uj,vi,uv', C, C, T + V)
+
+    # build the two-electron integrals in the MO basis:
+    tei = np.asarray(mints.mo_eri(C, C, C, C))
 
     # number of alpha electrons
     nalpha = wfn.nalpha()
@@ -47,18 +57,7 @@ def main():
     # total number of orbitals
     nmo     = wfn.nmo()
 
-    # molecular orbitals (spatial):
-    C = wfn.Ca()
 
-    # use Psi4's MintsHelper to generate integrals
-    mints = psi4.core.MintsHelper(wfn.basisset())
-
-    # build the one-electron integrals
-    oei = np.asarray(mints.ao_kinetic()) + np.asarray(mints.ao_potential())
-    oei = np.einsum('uj,vi,uv', C, C, oei)
-
-    # build the two-electron integrals:
-    tei = np.asarray(mints.mo_eri(C, C, C, C))
 
     # build inputs for the SDP
     # 
@@ -70,7 +69,7 @@ def main():
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
     #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, constrain_spin = True, g2 = True)
-    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False, q2 = False, constrain_spin = True)
+    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True, q2 = True, constrain_spin = True)
 
     b = my_sdp.b
     F = my_sdp.F

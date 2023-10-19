@@ -1539,7 +1539,7 @@ class g2_v2rdm_sdp():
 
         a = np.zeros(n_primal, dtype = 'float64')
 
-        for i in range (0, len(self.F[constraint_id + 1].block_number)):
+        for i in range (0, self.F[constraint_id + 1].block_number.size()):
             my_block = self.F[constraint_id + 1].block_number[i] - 1
             my_row = self.F[constraint_id + 1].row[i] - 1
             my_col = self.F[constraint_id + 1].column[i] - 1

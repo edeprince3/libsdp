@@ -64,6 +64,16 @@ void export_SDPHelper(py::module& m) {
         .value("BPSDP", SDPOptions::SDPAlgorithm::BPSDP)
         .export_values();
 
+    py::class_<my_vector<int>> (m, "int_vector")
+        .def(py::init<>())
+        .def("append", &my_vector<int>::append)
+        .def("get", &my_vector<int>::get);
+
+    py::class_<my_vector<double>> (m, "double_vector")
+        .def(py::init<>())
+        .def("append", &my_vector<double>::append)
+        .def("get", &my_vector<double>::get);
+
     // export SDPMatrix type
     py::class_<SDPMatrix> matrix(m, "sdp_matrix");
 

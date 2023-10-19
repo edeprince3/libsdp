@@ -66,11 +66,15 @@ void export_SDPHelper(py::module& m) {
 
     py::class_<my_vector<int>> (m, "int_vector")
         .def(py::init<>())
+        .def("__getitem__", &my_vector<int>::operator[])
+        .def("size", &my_vector<int>::size)
         .def("append", &my_vector<int>::append)
         .def("get", &my_vector<int>::get);
 
     py::class_<my_vector<double>> (m, "double_vector")
         .def(py::init<>())
+        .def("__getitem__", &my_vector<double>::operator[])
+        .def("size", &my_vector<double>::size)
         .def("append", &my_vector<double>::append)
         .def("get", &my_vector<double>::get);
 

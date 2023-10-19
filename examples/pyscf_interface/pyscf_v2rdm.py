@@ -10,8 +10,6 @@ sys.path.insert(0, '../../.')
 import libsdp
 from v2rdm_sdp import v2rdm_sdp
 from g2_v2rdm_sdp import g2_v2rdm_sdp
-from dual_k2 import dual_sdp
-#from dual_sdp import dual_sdp
 
 import pyscf
 
@@ -63,13 +61,10 @@ def main():
     # 
 
     # use this one for d-only
-    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, g2 = True, constrain_spin = False)
+    my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, g2 = True, constrain_spin = True)
 
     # use this one for g-only 
-    #my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True, q2 = False, constrain_spin = False)
-
-    # dual
-    my_sdp = dual_sdp(nalpha, nbeta, nmo, oei, tei, d2 = False, q2 = False)
+    #my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True, q2 = True, constrain_spin = True)
 
     b = my_sdp.b
     F = my_sdp.F

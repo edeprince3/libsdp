@@ -45,17 +45,13 @@ def read_sdp_problem(filename):
     for i in range(0,len(c)):
         c[i] = float((c[i]))
                      
-    # Fi ... define as a list of sdp_matrix objects
-    Fi = [libsdp.sdp_matrix()]
+    # Fi ... a list of sdp_matrix objects
+    Fi = []
     
     current_block = 0
+
+    F = libsdp.sdp_matrix()
     
-    block_number=[]
-    row=[]
-    column=[]
-    value=[]
-    
-    count = 0
     for i in range(offset+4,len(my_file)):
     
         temp=(my_file[i].split())
@@ -66,42 +62,27 @@ def read_sdp_problem(filename):
     
             current_block = my_block
     
-            # assign arrays in Fi
-            Fi[count].block_number = block_number
-            Fi[count].row          = row
-            Fi[count].column       = column
-            Fi[count].value        = value
-    
-            # update number of constraint blocks
-            count = count + 1
-    
-            # reset temporary arrays
-            block_number=[]
-            row=[]
-            column=[]
-            value=[]
+            # append F to Fi
+            Fi.append(F)
     
             # create new matrix object
-            Fi.append(libsdp.sdp_matrix())
+            F = libsdp.sdp_matrix()
     
         # append constraint matrix values
-        block_number.append(int(temp[1]))
-        row.append(int(temp[2]))
-        column.append(int(temp[3]))
-        value.append(float(temp[4]))
+        F.block_number.append(int(temp[1]))
+        F.row.append(int(temp[2]))
+        F.column.append(int(temp[3]))
+        F.value.append(float(temp[4]))
     
         # remember, SDPA assumes constraint matrices are symmetric
         if ( int(temp[2]) != int(temp[3]) ):
-            block_number.append(int(temp[1]))
-            row.append(int(temp[3]))
-            column.append(int(temp[2]))
-            value.append(float(temp[4]))
+            F.block_number.append(int(temp[1]))
+            F.row.append(int(temp[3]))
+            F.column.append(int(temp[2]))
+            F.value.append(float(temp[4]))
     
     # assign last set of arrays in Fi
-    Fi[count].block_number = block_number
-    Fi[count].row          = row
-    Fi[count].column       = column
-    Fi[count].value        = value
+    Fi.append(F)
 
     return c, Fi, block_dim
 

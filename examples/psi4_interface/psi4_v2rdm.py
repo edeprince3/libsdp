@@ -122,41 +122,6 @@ def main():
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
 
-    # get individual constraint matrices and build up SOS hamiltonian
-
-    # zeroth constraint
-    a0_y = my_sdp.get_constraint_matrix(0) * y[0]
-
-    # all other constraints
-    ai_y = np.zeros(len(x), dtype = 'float64')
-    for i in range (1, len(y)):
-        a = my_sdp.get_constraint_matrix(i)
-        ai_y = ai_y + a * y[i]
-
-    # check that individual constraint matrices sum up correctly
-    assert(np.isclose(0.0, np.linalg.norm(ATy - a0_y - ai_y)))
-
-    # check that individual constraint matrices sum up correctly, again
-    assert(np.isclose(np.linalg.norm(dual_error), np.linalg.norm(c - z - a0_y - ai_y)))
-
-    # sum of squares hamiltonian
-    c_sos = z + ai_y
-
-    # check that c_sos . x = 0 ... this should approach zero with sufficiently tight convergence
-    sos_energy = np.dot(c_sos, x)
-    #print(sos_energy)
-
-    # sum of squares hamiltonian, blocked
-    c_sos = my_sdp.get_rdm_blocks(c_sos) 
-
-    import scipy
-    for i in range (0, len(c_sos)):
-        block = my_sdp.blocks[i]
-        idx = my_sdp.get_block_id(block)
-        w = scipy.linalg.eigh(c_sos[idx], eigvals_only=True)
-        print('    most negative eigenvalue of the %5s block of the SOS hamiltonian: %20.12f' % (block, w[0]) )
-    print()
-
 if __name__ == "__main__":
     main()
 

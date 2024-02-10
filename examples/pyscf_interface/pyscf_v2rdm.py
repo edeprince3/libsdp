@@ -5,7 +5,6 @@ import numpy as np
 from numpy import einsum
 
 import sys
-sys.path.insert(0, '../../.')
 
 import libsdp
 from v2rdm_sdp import v2rdm_sdp

@@ -1,8 +1,5 @@
 import numpy as np
-
 import sys
-sys.path.insert(0, '../../.')
-
 import libsdp
 
 def read_sdp_problem(filename):

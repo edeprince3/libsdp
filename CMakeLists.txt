@@ -51,53 +51,53 @@ set(PYBIND11_CPP_STANDARD -std=c++14)
 # python interface
 if ( BUILD_PYTHON_INTERFACE ) 
 
-    pybind11_add_module(libsdp SHARED 
-        src/blas_helper.cc 
-        src/lbfgs_helper.cc 
-        src/cg_solver.cc 
-        src/sdp_solver.cc 
-        src/bpsdp_solver.cc 
-        src/rrsdp_solver.cc
-        src/sdp_helper.cc)
+    pybind11_add_module(_libsdp SHARED 
+        libsdp/src/blas_helper.cc 
+        libsdp/src/lbfgs_helper.cc 
+        libsdp/src/cg_solver.cc 
+        libsdp/src/sdp_solver.cc 
+        libsdp/src/bpsdp_solver.cc 
+        libsdp/src/rrsdp_solver.cc
+        libsdp/src/sdp_helper.cc)
     
     # BLAS
     find_package(BLAS REQUIRED)
-    target_link_libraries(libsdp PRIVATE ${BLAS_LIBRARIES})
+    target_link_libraries(_libsdp PRIVATE ${BLAS_LIBRARIES})
     
     # liblbfgs
-    set(EXTERNAL_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/external/)
-    add_subdirectory(external)
-    target_link_libraries(libsdp PUBLIC LBFGS::lib)
+    set(EXTERNAL_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/libsdp/external/)
+    add_subdirectory(libsdp/external)
+    target_link_libraries(_libsdp PUBLIC LBFGS::lib)
 
     # libsdp 
-    target_include_directories(libsdp PUBLIC "${PROJECT_SOURCE_DIR}/include")
+    target_include_directories(_libsdp PUBLIC "${PROJECT_SOURCE_DIR}/libsdp/include")
     
 else()
 
     add_library(sdp SHARED 
-        include/sdp_solver.h
-        include/rrsdp_solver.h 
-        include/bpsdp_solver.h 
-        src/blas_helper.cc 
-        src/lbfgs_helper.cc 
-        src/cg_solver.cc 
-        src/sdp_solver.cc 
-        src/bpsdp_solver.cc 
-        src/rrsdp_solver.cc)
+        libsdp/include/sdp_solver.h
+        libsdp/include/rrsdp_solver.h 
+        libsdp/include/bpsdp_solver.h 
+        libsdp/src/blas_helper.cc 
+        libsdp/src/lbfgs_helper.cc 
+        libsdp/src/cg_solver.cc 
+        libsdp/src/sdp_solver.cc 
+        libsdp/src/bpsdp_solver.cc 
+        libsdp/src/rrsdp_solver.cc)
     
     # libsdp headers
-    target_include_directories(sdp PUBLIC "${PROJECT_SOURCE_DIR}/include")
+    target_include_directories(sdp PUBLIC "${PROJECT_SOURCE_DIR}/libsdp/include")
 
     # BLAS
     find_package(BLAS REQUIRED)
     target_link_libraries(sdp PRIVATE ${BLAS_LIBRARIES})
     
     # liblbfgs
-    set(EXTERNAL_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/external/)
-    add_subdirectory(external)
+    set(EXTERNAL_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/libsdp/external/)
+    add_subdirectory(libsdp/external)
     target_link_libraries(sdp PUBLIC LBFGS::lib)
 
-    set_target_properties(sdp PROPERTIES PUBLIC_HEADER "include/sdp_solver.h;include/rrsdp_solver.h;include/bpsdp_solver.h")
+    set_target_properties(sdp PROPERTIES PUBLIC_HEADER "libsdp/include/sdp_solver.h;libsdp/include/rrsdp_solver.h;libsdp/include/bpsdp_solver.h")
     
     install(TARGETS sdp
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

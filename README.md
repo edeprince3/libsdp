@@ -27,8 +27,7 @@ make
 Alternatively, to build the library's Python interface
 ```
 cd libsdp
-cmake . -DBUILD_PYTHON_INTERFACE=true
-make
+pip install .
 ```
 Note that the Python interface also requires BLAS and libLBFGS.
 
@@ -64,8 +63,7 @@ libsdp/examples/python_interface/c_example.in
 You can run the corresponding test by first building the Python interface to the library
 ```
 cd libsdp
-cmake . -DBUILD_PYTHON_INTERFACE=true
-make
+pip install .
 ```
 and then
 ```

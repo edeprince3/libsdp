@@ -103,7 +103,7 @@ void export_SDPHelper(py::module& m) {
         .def("get_c", &SDPHelper::get_c);
 }
 
-PYBIND11_MODULE(libsdp, m) {
+PYBIND11_MODULE(_libsdp, m) {
     m.doc() = "Python API of libsdp";
     export_SDPHelper(m);
 }

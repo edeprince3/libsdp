@@ -26,30 +26,30 @@
 
 cmake_minimum_required(VERSION 3.11)
 project(libsdp)
-set(CMAKE_CXX_STANDARD 14)
-
-include(FetchContent)
-FetchContent_Declare(
-    pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11
-    GIT_TAG        v2.5.0
-)
-
-find_package(Python COMPONENTS Interpreter Development)
-
-set(PYBIND11_PYTHON_VERSION 3)
-set(PYBIND11_FINDPYTHON ON)
-
-FetchContent_GetProperties(pybind11)
-if(NOT pybind11_POPULATED)
-    FetchContent_Populate(pybind11)
-    add_subdirectory(${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
-endif()
-
-set(PYBIND11_CPP_STANDARD -std=c++14)
+set(CMAKE_CXX_STANDARD 17)
 
 # python interface
 if ( BUILD_PYTHON_INTERFACE ) 
+
+    include(FetchContent)
+    FetchContent_Declare(
+        pybind11
+        GIT_REPOSITORY https://github.com/pybind/pybind11
+        GIT_TAG        v2.11.1
+    )
+
+    find_package(Python 3.10 EXACT COMPONENTS Interpreter Development)
+
+    set(PYBIND11_PYTHON_VERSION 3)
+    set(PYBIND11_FINDPYTHON ON)
+
+    FetchContent_GetProperties(pybind11)
+    if(NOT pybind11_POPULATED)
+        FetchContent_Populate(pybind11)
+        add_subdirectory(${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
+    endif()
+
+    set(PYBIND11_CPP_STANDARD -std=c++17)
 
     pybind11_add_module(_libsdp SHARED 
         libsdp/src/blas_helper.cc 

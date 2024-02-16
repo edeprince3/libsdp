@@ -38,7 +38,7 @@ if ( BUILD_PYTHON_INTERFACE )
         GIT_TAG        v2.11.1
     )
 
-    find_package(Python 3.10 EXACT COMPONENTS Interpreter Development)
+    find_package(Python 3.11 EXACT COMPONENTS Interpreter Development)
 
     set(PYBIND11_PYTHON_VERSION 3)
     set(PYBIND11_FINDPYTHON ON)

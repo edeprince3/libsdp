@@ -25,30 +25,40 @@
 #
 
 cmake_minimum_required(VERSION 3.11)
-project(libsdp)
+project(libsdp LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # python interface
 if ( BUILD_PYTHON_INTERFACE ) 
 
+
+    # find python and set variables for:
+    #     the interpreter, include dirs, libraries, and version
+    set(Python3_FIND_STRATEGY LOCATION)
+    find_package(Python3 REQUIRED COMPONENTS Development Interpreter)
+    set(PYTHON_EXECUTABLE   ${Python3_EXECUTABLE})
+    set(PYTHON_INCLUDE_DIRS ${Python3_INCLUDE_DIRS})
+    set(PYTHON_LIBRARIES    ${Python3_LIBRARIES})
+    set(PYTHON_VERSION      ${Python3_VERSION})
+    
+    # find pybind11 and set variables for:
+    set(PYBIND11_PYTHON_VERSION 3)
+    set(PYBIND11_FINDPYTHON ON)
+    
     include(FetchContent)
     FetchContent_Declare(
         pybind11
         GIT_REPOSITORY https://github.com/pybind/pybind11
         GIT_TAG        v2.11.1
     )
-
-    find_package(Python 3.11 EXACT COMPONENTS Interpreter Development)
-
-    set(PYBIND11_PYTHON_VERSION 3)
-    set(PYBIND11_FINDPYTHON ON)
-
+    
     FetchContent_GetProperties(pybind11)
     if(NOT pybind11_POPULATED)
         FetchContent_Populate(pybind11)
         add_subdirectory(${pybind11_SOURCE_DIR} ${pybind11_BINARY_DIR})
     endif()
-
+    
     set(PYBIND11_CPP_STANDARD -std=c++17)
 
     pybind11_add_module(_libsdp SHARED 

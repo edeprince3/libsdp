@@ -73,7 +73,8 @@ class SDPHelper{
     std::vector<double> solve(std::vector<double> b,
                               std::vector<SDPMatrix> Fi,
                               std::vector<int> primal_block_dim,
-                              int maxiter);
+                              int maxiter,
+                              std::vector<int> primal_block_rank);
 
     /// evaluate Au
     void evaluate_Au(double * Au, double * u);
@@ -115,6 +116,9 @@ class SDPHelper{
 
     /// list of block sizes
     std::vector<int> primal_block_dim_;
+
+    /// list of block ranks (for low-rank RRSDP)
+    std::vector<int> primal_block_rank_;
 
     /// the c vector (F0)
     std::vector<double> c_;

@@ -40,6 +40,8 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+std::vector<double> empty_list = {};
+
 namespace libsdp {
 
 void export_SDPHelper(py::module& m) {
@@ -91,16 +93,26 @@ void export_SDPHelper(py::module& m) {
 
     py::class_<SDPHelper, std::shared_ptr<SDPHelper> >(m, "sdp_solver")
         .def(py::init<SDPOptions>())
-        .def("solve", &SDPHelper::solve,
-            "b"_a,
-            "Fi"_a,
-            "primal_block_dim"_a,
-            "maxiter"_a)
+        .def("solve", 
+             [](SDPHelper& self, 
+                 const std::vector<double> & b, 
+                 const std::vector<SDPMatrix> & Fi,
+                 const std::vector<int> & primal_block_dim,
+                 const int & maxdim,
+                 const std::vector<int> & primal_block_rank) {
+                 return self.solve(b, Fi, primal_block_dim, maxdim, primal_block_rank);
+             },
+             py::arg("b"), 
+             py::arg("Fi"), 
+             py::arg("primal_block_dim"), 
+             py::arg("maxdim"), 
+             py::arg("primal_block_rank") = empty_list )
         .def("get_ATu", &SDPHelper::get_ATu)
         .def("get_Au", &SDPHelper::get_Au)
         .def("get_y", &SDPHelper::get_y)
         .def("get_z", &SDPHelper::get_z)
         .def("get_c", &SDPHelper::get_c);
+
 }
 
 PYBIND11_MODULE(_libsdp, m) {
@@ -176,7 +188,8 @@ void SDPHelper::evaluate_ATu(double * ATu, double * u) {
 std::vector<double> SDPHelper::solve(std::vector<double> b,
                                      std::vector<SDPMatrix> Fi,
                                      std::vector<int> primal_block_dim,
-                                     int maxiter) {
+                                     int maxiter,
+                                     std::vector<int> primal_block_rank) {
 
     // copy some quantities to class members for objective 
     // function / Au / ATu evaluation
@@ -277,6 +290,14 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
     // print header
     if ( options_.algorithm == SDPOptions::SDPAlgorithm::BPSDP ) {
     
+        if ( !primal_block_rank.empty() ) {
+            printf("\n");
+            printf("    ==> WARNING <== \n");
+            printf("\n");
+            printf("        SDPAlgorithm::BPSDP uses full-rank RDMs\n");
+            printf("\n");
+        }
+
         printf("\n");
         printf("    ==> BPSDP: Boundary-point SDP <==\n");
         printf("\n");
@@ -288,7 +309,18 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         printf("      mu");
         printf("    ||Ax-b||");
         printf(" ||ATy-c+z||\n");
-        
+
+        // solve sdp
+        sdp_->solve(x.data(),
+                    b.data(),
+                    c_.data(),
+                    primal_block_dim_, 
+                    maxiter, 
+                    Au_callback, 
+                    ATu_callback, 
+                    sdp_monitor, 
+                    (void*)this);
+            
     }else if ( options_.algorithm == SDPOptions::SDPAlgorithm::RRSDP ) {
     
         printf("\n");
@@ -301,18 +333,30 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         printf("           mu");
         printf("     ||Ax-b||\n");
         
+        // primal block ranks
+        if ( primal_block_rank.empty() ) {
+            for (size_t i = 0; i < primal_block_dim_.size(); i++) {
+                primal_block_rank_.push_back(primal_block_dim_[i]);
+            }
+        }else {
+            for (size_t i = 0; i < primal_block_rank.size(); i++) {
+                primal_block_rank_.push_back(primal_block_rank[i]);
+            }
+        }
+
+        // solve (possibly low-rank) sdp
+        sdp_->solve_low_rank(x.data(),
+                             b.data(),
+                             c_.data(),
+                             primal_block_dim_, 
+                             primal_block_rank_, 
+                             maxiter, 
+                             Au_callback, 
+                             ATu_callback, 
+                             sdp_monitor, 
+                             (void*)this);
     } 
 
-    // solve sdp
-    sdp_->solve(x.data(),
-                b.data(),
-                c_.data(),
-                primal_block_dim_, 
-                maxiter, 
-                Au_callback, 
-                ATu_callback, 
-                sdp_monitor, 
-                (void*)this);
 
     printf("\n");
     fflush(stdout);

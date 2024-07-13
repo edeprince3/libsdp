@@ -56,6 +56,9 @@ class BPSDPSolver: public SDPSolver{
 
   protected:
 
+    /// a vector the size of the primal vector for containing ATu during the CG solve
+    double * ATu_;
+
     /// the right-hand side of AATy = A(c - z) + mu(b - Ax) 
     double * cg_rhs_;
 

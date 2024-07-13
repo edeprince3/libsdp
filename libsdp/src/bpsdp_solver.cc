@@ -45,15 +45,9 @@ static void evaluate_cg_AATu(double * Ax, double * x, void * data) {
 
 void BPSDPSolver::evaluate_AATu(double * AATu,double * u) {
 
-    memset((void*)AATu,'\0',n_dual_*sizeof(double));
+    evaluate_ATu_(ATu_,u,data_);
+    evaluate_Au_(AATu,ATu_,data_);
 
-    double * ATu = (double*)malloc(n_primal_*sizeof(double));
-    memset((void*)ATu,'\0',n_primal_*sizeof(double));
-
-    evaluate_ATu_(ATu,u,data_);
-    evaluate_Au_(AATu,ATu,data_);
-
-    free(ATu);
 }
 
 BPSDPSolver::BPSDPSolver(long int n_primal, long int n_dual,SDPOptions options)
@@ -62,10 +56,13 @@ BPSDPSolver::BPSDPSolver(long int n_primal, long int n_dual,SDPOptions options)
     cg_rhs_ = (double*)malloc(n_dual_*sizeof(double));
     memset((void*)cg_rhs_,'\0',n_dual_*sizeof(double));
 
+    ATu_ = (double*)malloc(n_primal_*sizeof(double));
+    memset((void*)ATu_,'\0',n_primal_*sizeof(double));
 }
 
 BPSDPSolver::~BPSDPSolver(){
     free(cg_rhs_);
+    free(ATu_);
 }
 
 

@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import libsdp
+import libsdp.bpsdp
 
 def read_sdp_problem(filename):
 
@@ -96,19 +97,22 @@ def main():
     #filename = 'SDPLIB/data/gpp100.dat-s'
 
     c, Fi, block_dim = read_sdp_problem(filename)
-    
+
     # set options
     options = libsdp.sdp_options()
     
     maxiter = 5000000
     
-    options.sdp_algorithm             = options.SDPAlgorithm.RRSDP
+    options.sdp_algorithm             = options.SDPAlgorithm.BPSDP
     options.maxiter                   = maxiter
     options.sdp_error_convergence     = 1e-6
     options.sdp_objective_convergence = 1e-6
     options.penalty_parameter_scaling = 0.1
-    
-    # solve sdp
+   
+    # solve sdp (python) 
+    #libsdp.bpsdp.solve(c, Fi, block_dim, options)
+
+    # solve sdp (c++)
     sdp = libsdp.sdp_solver(options)
     sdp.solve(c,Fi,block_dim,maxiter)
 

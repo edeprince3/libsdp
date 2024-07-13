@@ -87,7 +87,8 @@ void export_SDPHelper(py::module& m) {
         .def_readwrite("block_number",&SDPMatrix::block_number)
         .def_readwrite("row",&SDPMatrix::row)
         .def_readwrite("column",&SDPMatrix::column)
-        .def_readwrite("value",&SDPMatrix::value);
+        .def_readwrite("value",&SDPMatrix::value)
+        .def_readwrite("id",&SDPMatrix::id);
 
     // export SDP solver
 
@@ -253,7 +254,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
             size_t id = off + my_row * primal_block_dim[my_block] + my_column;
 
             // add to matrix object
-            Fi_[i-1].id.push_back(id);
+            Fi_[i-1].id.append(id);
 
         }
 

@@ -55,8 +55,7 @@ struct SDPMatrix {
     my_vector<double> value;
 
     //// composite index, accounting for row, column, block offset
-    //// (not meant for use on python side)
-    std::vector<int> id;
+    my_vector<int> id;
 };
 
 class SDPHelper{

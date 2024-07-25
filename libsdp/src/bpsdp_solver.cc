@@ -107,14 +107,16 @@ void BPSDPSolver::solve(double * x,
         C_DAXPY(n_dual_,1.0,Au_,1,cg_rhs_,1);
 
         // set convergence for CG problem (step 1 in table 1 of PRL 106 083001)
-        double cg_conv_i = options_.cg_convergence;
-        if (oiter_ == 0)
-            cg_conv_i = 0.01;
-        else
-            cg_conv_i = (primal_error_ > dual_error_) ? 0.01 * dual_error_ : 0.01 * primal_error_;
-        if (cg_conv_i < options_.cg_convergence)
-            cg_conv_i = options_.cg_convergence;
-        cg->set_convergence(cg_conv_i);
+        if (options_.dynamic_cg_convergence) {
+            double cg_conv_i = options_.cg_convergence;
+            if (oiter_ == 0)
+                cg_conv_i = 0.01;
+            else
+                cg_conv_i = (primal_error_ > dual_error_) ? 0.01 * dual_error_ : 0.01 * primal_error_;
+            if (cg_conv_i < options_.cg_convergence)
+                cg_conv_i = options_.cg_convergence;
+            cg->set_convergence(cg_conv_i);
+        }
 
         // solve CG problem (step 1 in table 1 of PRL 106 083001)
         cg->solve(Au_,y_,cg_rhs_,evaluate_cg_AATu,(void*)this);

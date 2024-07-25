@@ -47,6 +47,7 @@ struct SDPOptions {
     int mu_update_frequency          = 500;
     double penalty_parameter_scaling = 0.1;
     double cg_convergence            = 1e-8;
+    bool dynamic_cg_convergence      = true;
     double sdp_objective_convergence = 1e-4;
     double sdp_error_convergence     = 1e-4;
     SDPAlgorithm algorithm           = SDPAlgorithm::BPSDP;

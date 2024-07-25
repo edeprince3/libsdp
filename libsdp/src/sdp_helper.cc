@@ -55,6 +55,7 @@ void export_SDPHelper(py::module& m) {
         .def_readwrite("cg_maxiter",&SDPOptions::cg_maxiter)
         .def_readwrite("mu_update_frequency",&SDPOptions::mu_update_frequency)
         .def_readwrite("cg_convergence",&SDPOptions::cg_convergence)
+        .def_readwrite("dynamic_cg_convergence",&SDPOptions::dynamic_cg_convergence)
         .def_readwrite("sdp_objective_convergence",&SDPOptions::sdp_objective_convergence)
         .def_readwrite("sdp_error_convergence",&SDPOptions::sdp_error_convergence)
         .def_readwrite("sdp_objective_convergence",&SDPOptions::sdp_objective_convergence)

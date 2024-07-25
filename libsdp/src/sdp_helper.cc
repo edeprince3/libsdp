@@ -270,7 +270,8 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
     srand(0);
     std::vector<double> x;
     for (size_t i = 0; i < n_primal_; i++) {
-        x.push_back(2.0 * ( (double)rand()/RAND_MAX - 1.0 ) * 0.001);
+        x.push_back(2.0 * ( (double)rand()/RAND_MAX - 0.5 ) * 0.001);
+        //x.push_back(0.0);
     }
 
     // initialize sdp solver

@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 
 #include <vector>
 
@@ -160,6 +161,7 @@ static void Au_callback(double * Au, double * u, void * data) {
 
 }
 void SDPHelper::evaluate_Au(double * Au, double * u) {
+#pragma omp parallel for schedule(static)
     for (size_t i = 0; i < Fi_.size(); i++) {
         double dum = 0.0;
         for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {

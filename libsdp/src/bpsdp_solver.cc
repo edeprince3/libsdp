@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include <memory>
+#include <omp.h>
 
 #include <bpsdp_solver.h>
 #include <cg_solver.h>
@@ -181,6 +182,7 @@ void BPSDPSolver::Update_xz(double * x, double * c, std::vector<int> primal_bloc
     double zero = 0.0;
 
     // loop over each block of x/z
+#pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < primal_block_dim.size(); i++) {
         if ( primal_block_dim[i] == 0 ) continue;
         int myoffset = 0;

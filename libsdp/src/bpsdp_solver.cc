@@ -65,7 +65,6 @@ BPSDPSolver::~BPSDPSolver(){
     free(ATu_);
 }
 
-
 void BPSDPSolver::solve(double * x,   
                         double * b, 
                         double * c,
@@ -165,6 +164,83 @@ void BPSDPSolver::solve(double * x,
         if ( oiter_local == maxiter ) break;
     }while( !is_converged_ );
 
+}
+
+// update x and z
+void BPSDPSolver::Update_xz_nonsym(double * x, double * c, std::vector<int> primal_block_dim, SDPCallbackFunction evaluate_ATu, void * data) {
+
+    // evaluate M(mu*x + ATy - c)
+    evaluate_ATu(ATu_, y_, data);
+    C_DAXPY(n_primal_,-1.0,c,1,ATu_,1);
+    C_DAXPY(n_primal_,mu_,x,1,ATu_,1);
+
+    char char_n = 'n';
+    char char_t = 't';
+    double one = 1.0;
+    double zero = 0.0;
+
+    // loop over each block of x/z
+    for (int i = 0; i < primal_block_dim.size(); i++) {
+        if ( primal_block_dim[i] == 0 ) continue;
+        int myoffset = 0;
+        for (int j = 0; j < i; j++) {
+            myoffset += primal_block_dim[j] * primal_block_dim[j];
+        }
+
+        long int block_dim = primal_block_dim[i];
+
+        double * mat     = (double*)malloc(block_dim*block_dim*sizeof(double));
+        double * eigvec2 = (double*)malloc(block_dim*block_dim*sizeof(double));
+        double * VL     = (double*)malloc(block_dim*block_dim*sizeof(double));
+        double * VR     = (double*)malloc(block_dim*block_dim*sizeof(double));
+        double * eigval  = (double*)malloc(block_dim*sizeof(double));
+
+        for (int p = 0; p < block_dim; p++) {
+            for (int q = 0; q < block_dim; q++) {
+                mat[p*block_dim + q] = ATu_[myoffset + p * block_dim + q];
+                //mat[p*block_dim + q] = 0.5 * (ATu_[myoffset + p * block_dim + q] + ATu_[myoffset + q * block_dim + p]);
+                //mat[q*block_dim + p] = 0.5 * (ATu_[myoffset + p * block_dim + q] + ATu_[myoffset + q * block_dim + p]);
+            }
+        }
+
+        Diagonalize_nonsym(block_dim,mat,eigval,VL,VR);
+
+        // separate U+ and U-, transform back to nondiagonal basis
+
+        // (+) part
+        long int mydim = 0;
+        for (long int j = 0; j < block_dim; j++) {
+            if ( eigval[j] > 0.0 ) {
+                for (long int q = 0; q < block_dim; q++) {
+                    mat[q*block_dim+mydim]     = VR[j*block_dim+q] * eigval[j]/mu_;
+                    eigvec2[q*block_dim+mydim] = VL[j*block_dim+q];
+                }
+                mydim++;
+            }
+        }
+
+        F_DGEMM(&char_t,&char_n,&block_dim,&block_dim,&mydim,&one,mat,&block_dim,eigvec2,&block_dim,&zero,&x[myoffset],&block_dim);
+
+        // (-) part
+        mydim = 0;
+        for (long int j = 0; j < block_dim; j++) {
+            if ( eigval[j] < 0.0 ) {
+                for (long int q = 0; q < block_dim; q++) {
+                    mat[q*block_dim+mydim]     = -VR[j*block_dim+q] * eigval[j];
+                    eigvec2[q*block_dim+mydim] =  VL[j*block_dim+q];
+                }
+                mydim++;
+            }
+        }
+
+        F_DGEMM(&char_t,&char_n,&block_dim,&block_dim,&mydim,&one,mat,&block_dim,eigvec2,&block_dim,&zero,&z_[myoffset],&block_dim);
+
+        free(VL);
+        free(VR);
+        free(mat);
+        free(eigvec2);
+        free(eigval);
+    }
 }
 
 // update x and z

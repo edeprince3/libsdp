@@ -69,6 +69,13 @@ class BPSDPSolver: public SDPSolver{
                    SDPCallbackFunction evaluate_ATu,
                    void * data);
 
+    /// update the primal (x) and dual (z) solutions
+    void Update_xz_nonsym(double * x, 
+                          double * c, 
+                          std::vector<int> primal_block_dim, 
+                          SDPCallbackFunction evaluate_ATu,
+                          void * data);
+
 };
 
 }

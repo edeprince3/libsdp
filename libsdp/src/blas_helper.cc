@@ -134,6 +134,28 @@ void C_DCOPY(size_t length, double *x, long int inc_x, double *y, long int inc_y
 }
 
 /**
+ *  Diagonalize a real non-symmetric matrix
+ */
+void Diagonalize_nonsym(long int N, double* A, double* W, double *VL, double * VR) {
+    char JOBVL = 'V';
+    char JOBVR = 'V';
+    long int LDA = N;
+    long int LDVL = N;
+    long int LDVR = N;
+
+    double * WI = (double*)malloc(N*sizeof(double));
+
+    long int LWORK = 4 * N;
+    double* WORK = (double*)malloc(LWORK * sizeof(double));
+    long int INFO = 0;
+
+    F_DGEEV(JOBVL, JOBVR, N, A, LDA, W, WI, VL, LDVL, VR, LDVR, WORK, LWORK, INFO);
+
+    free(WORK);
+    free(WI);
+}
+
+/**
  *  Diagonalize a real symmetric matrix
  */
 void Diagonalize(long int N, double* A, double* W) {

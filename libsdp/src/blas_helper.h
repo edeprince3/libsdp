@@ -41,6 +41,7 @@ namespace libsdp{
 #define F_DGEMM dgemm_
 #define F_DGEMV dgemv_
 #define F_DSYEV dsyev_
+#define F_DGEEV dgeev_
 
 extern "C" {
 
@@ -52,6 +53,7 @@ extern void   F_DSCAL(long int *n, double *alpha, double *vec, long int *inc);
 extern double F_DDOT(long int *n, double *x, long int *incx, double *y, long int *incy);
 extern double F_DNRM2(long int *n, double *x, long int *incx);
 extern void   F_DSYEV(char &JOBZ, char &UPLO, long int &N, double *A, long int &LDA, double *W, double *WORK,long int &LWORK, long int &INFO);
+extern void   F_DGEEV(char &JOBVL, char &JOBVR, long int &N, double *A, long int &LDA, double *WR, double *WI, double *VL, long int &LDVL, double *VR, long int &LDVR, double *WORK, long int &LWORK, long int &INFO);
 
 }
 
@@ -65,6 +67,7 @@ double C_DNRM2(size_t n, double* X, long int inc_x);
  * diagonalize a real symmetric matrix
  */
 void Diagonalize(long int N, double *A, double *W);
+void Diagonalize_nonsym(long int N, double *A, double *W, double *VL, double *VR);
 
 
 } // end of namespace

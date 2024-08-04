@@ -140,20 +140,28 @@ SDPHelper::~SDPHelper() {
 }
 
 /// BPSDP monitor callback function
-static void bpsdp_monitor(int oiter, int iiter, double energy_primal, double energy_dual, double mu, double primal_error, double dual_error, void * data) {
+static void bpsdp_monitor(int print_level, int oiter, int iiter, double energy_primal, double energy_dual, double mu, double primal_error, double dual_error, void * data) {
 
-    printf("      %5i %5i %11.6lf %11.6lf %11.6le %7.3lf %10.5le %10.5le\n",
-        oiter,iiter,energy_primal,energy_dual,fabs(energy_primal-energy_dual),mu,primal_error,dual_error);
-    fflush(stdout);
+    if ( print_level > 0 ) {
+        if ( oiter % print_level == 0 ) {
+            printf("      %5i %5i %11.6lf %11.6lf %11.6le %7.3lf %10.5le %10.5le\n",
+                oiter,iiter,energy_primal,energy_dual,fabs(energy_primal-energy_dual),mu,primal_error,dual_error);
+            fflush(stdout);
+        }
+    }
 
 }
 
 /// RRSDP monitor callback function
-static void rrsdp_monitor(int oiter, int iiter, double lagrangian, double objective, double mu, double error, double zero, void * data) {
+static void rrsdp_monitor(int print_level, int oiter, int iiter, double lagrangian, double objective, double mu, double error, double zero, void * data) {
 
-    printf("    %12i %12i %12.6lf %12.6lf %12.2le %12.3le\n",
-        oiter,iiter,lagrangian,objective,mu,error);
-    fflush(stdout);
+    if ( print_level > 0 ) {
+        if ( oiter % print_level == 0 ) {
+            printf("    %12i %12i %12.6lf %12.6lf %12.2le %12.3le\n",
+                oiter,iiter,lagrangian,objective,mu,error);
+            fflush(stdout);
+        }
+    }
 
 }
 
@@ -333,17 +341,19 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
             printf("\n");
         }
 
-        printf("\n");
-        printf("    ==> BPSDP: Boundary-point SDP <==\n");
-        printf("\n");
-        printf("      oiter");
-        printf(" iiter");
-        printf("         c.x");
-        printf("         b.y");
-        printf("    |c.x-b.y|");
-        printf("      mu");
-        printf("    ||Ax-b||");
-        printf(" ||ATy-c+z||\n");
+        if ( options_.print_level > 0 ) {
+            printf("\n");
+            printf("    ==> BPSDP: Boundary-point SDP <==\n");
+            printf("\n");
+            printf("      oiter");
+            printf(" iiter");
+            printf("         c.x");
+            printf("         b.y");
+            printf("    |c.x-b.y|");
+            printf("      mu");
+            printf("    ||Ax-b||");
+            printf(" ||ATy-c+z||\n");
+        }
 
         // solve sdp
         sdp_->solve(x.data(),
@@ -354,19 +364,22 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
                     Au_callback, 
                     ATu_callback, 
                     sdp_monitor, 
+                    options_.print_level, 
                     (void*)this);
             
     }else if ( options_.algorithm == "rrsdp" ) {
     
-        printf("\n");
-        printf("    ==> RRSDP: Matrix-factorization-based first-order SDP <==\n");
-        printf("\n");
-        printf("           oiter");
-        printf("        iiter");
-        printf("            L");
-        printf("          c.x");
-        printf("           mu");
-        printf("     ||Ax-b||\n");
+        if ( options_.print_level > 0 ) {
+            printf("\n");
+            printf("    ==> RRSDP: Matrix-factorization-based first-order SDP <==\n");
+            printf("\n");
+            printf("           oiter");
+            printf("        iiter");
+            printf("            L");
+            printf("          c.x");
+            printf("           mu");
+            printf("     ||Ax-b||\n");
+        }
         
         // primal block ranks
         if ( primal_block_rank.empty() ) {
@@ -389,12 +402,15 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
                              Au_callback, 
                              ATu_callback, 
                              sdp_monitor, 
+                             options_.print_level, 
                              (void*)this);
     } 
 
 
-    printf("\n");
-    fflush(stdout);
+    if ( options_.print_level > 0 ) {
+        printf("\n");
+        fflush(stdout);
+    }
 
     return x;
 }

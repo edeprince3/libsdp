@@ -77,6 +77,7 @@ void BPSDPSolver::solve(double * x,
                         SDPCallbackFunction evaluate_Au, 
                         SDPCallbackFunction evaluate_ATu, 
                         SDPProgressMonitorFunction progress_monitor,
+                        int print_level,
                         void * data){
 
     data_         = data;
@@ -149,7 +150,7 @@ void BPSDPSolver::solve(double * x,
 
         primal_dual_objective_gap = fabs(objective_primal-objective_dual);
 
-        progress_monitor(oiter_,iiter,objective_primal,objective_dual,mu_,primal_error_,dual_error_, data);
+        progress_monitor(print_level,oiter_,iiter,objective_primal,objective_dual,mu_,primal_error_,dual_error_, data);
 
         oiter_++;
         oiter_local++;

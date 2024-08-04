@@ -52,7 +52,7 @@ struct SDPOptions {
 };
 
 typedef std::function<void(double*,double*,void*)> SDPCallbackFunction;
-typedef std::function<void(int,int,double,double,double,double,double,void*)> SDPProgressMonitorFunction;
+typedef std::function<void(int,int,int,double,double,double,double,double,void*)> SDPProgressMonitorFunction;
 
 class SDPSolver{
 
@@ -73,6 +73,7 @@ class SDPSolver{
                        SDPCallbackFunction evaluate_Au,
                        SDPCallbackFunction evaluate_ATu,
                        SDPProgressMonitorFunction progress_monitor,
+                       int print_level,
                        void * data){
         printf("\n");
         printf("    solve() has not been implemented for this sdp solver\n");
@@ -90,6 +91,7 @@ class SDPSolver{
                                 SDPCallbackFunction evaluate_Au,
                                 SDPCallbackFunction evaluate_ATu,
                                 SDPProgressMonitorFunction progress_monitor,
+                                int print_level,
                                 void * data){
         printf("\n");
         printf("    solve_low_rank() has not been implemented for this sdp solver\n");

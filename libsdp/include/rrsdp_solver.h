@@ -52,6 +52,7 @@ class RRSDPSolver: public SDPSolver {
                SDPCallbackFunction evaluate_Au,
                SDPCallbackFunction evaluate_ATu,
                SDPProgressMonitorFunction progress_monitor,
+               int print_level,
                void * data);
 
     /// solve the sdp problem (low rank)
@@ -64,6 +65,7 @@ class RRSDPSolver: public SDPSolver {
                         SDPCallbackFunction evaluate_Au,
                         SDPCallbackFunction evaluate_ATu,
                         SDPProgressMonitorFunction progress_monitor,
+                        int print_level,
                         void * data);
 
     double evaluate_gradient_x(const lbfgsfloatval_t * r, lbfgsfloatval_t * g);

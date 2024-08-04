@@ -100,6 +100,7 @@ void RRSDPSolver::solve_low_rank(double * x,
                                  SDPCallbackFunction evaluate_Au, 
                                  SDPCallbackFunction evaluate_ATu, 
                                  SDPProgressMonitorFunction progress_monitor, 
+                                 int print_level, 
                                  void * data){
 
     // copy block ranks
@@ -109,7 +110,7 @@ void RRSDPSolver::solve_low_rank(double * x,
     }
 
     // call solver
-    solve(x, b, c, primal_block_dim, maxiter, evaluate_Au, evaluate_ATu, progress_monitor, data);
+    solve(x, b, c, primal_block_dim, maxiter, evaluate_Au, evaluate_ATu, progress_monitor, print_level, data);
 }
 
 void RRSDPSolver::solve(double * x,   
@@ -120,6 +121,7 @@ void RRSDPSolver::solve(double * x,
                         SDPCallbackFunction evaluate_Au, 
                         SDPCallbackFunction evaluate_ATu, 
                         SDPProgressMonitorFunction progress_monitor, 
+                        int print_level, 
                         void * data){
 
     // class pointer to input data
@@ -217,7 +219,7 @@ void RRSDPSolver::solve(double * x,
         //}
         max_err = new_max_err;
 
-        progress_monitor(oiter_,iiter_,lagrangian,objective_primal,mu_,primal_error_,0.0, data);
+        progress_monitor(print_level,oiter_,iiter_,lagrangian,objective_primal,mu_,primal_error_,0.0, data);
 
         iiter_total_ += iiter_;
 

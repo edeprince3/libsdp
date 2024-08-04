@@ -50,6 +50,7 @@ class BPSDPSolver: public SDPSolver{
                SDPCallbackFunction evaluate_Au,
                SDPCallbackFunction evaluate_ATu,
                SDPProgressMonitorFunction progress_monitor,
+               int print_level,
                void * data);
 
     void evaluate_AATu(double * AATu,double * u);

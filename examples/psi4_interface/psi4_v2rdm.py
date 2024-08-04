@@ -78,7 +78,7 @@ def main():
 
     maxiter = 5000000
 
-    options.sdp_algorithm             = options.SDPAlgorithm.BPSDP
+    options.sdp_algorithm             = "rrsdp"
     options.maxiter                   = maxiter
     options.sdp_error_convergence     = 1e-4
     options.sdp_objective_convergence = 1e-4

@@ -37,10 +37,6 @@
 namespace libsdp {
 
 struct SDPOptions {
-    enum SDPAlgorithm {
-        BPSDP = 0,
-        RRSDP
-    };
     SDPOptions(){};
     int maxiter                      = 50000;
     int cg_maxiter                   = 10000;
@@ -50,7 +46,9 @@ struct SDPOptions {
     bool dynamic_cg_convergence      = true;
     double sdp_objective_convergence = 1e-4;
     double sdp_error_convergence     = 1e-4;
-    SDPAlgorithm algorithm           = SDPAlgorithm::BPSDP;
+    int print_level                  = 1;
+    std::string guess_type           = "random";
+    std::string algorithm            = "bpsdp";
 };
 
 typedef std::function<void(double*,double*,void*)> SDPCallbackFunction;

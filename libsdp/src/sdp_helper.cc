@@ -26,7 +26,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #include <vector>
 
@@ -61,12 +64,9 @@ void export_SDPHelper(py::module& m) {
         .def_readwrite("sdp_error_convergence",&SDPOptions::sdp_error_convergence)
         .def_readwrite("sdp_objective_convergence",&SDPOptions::sdp_objective_convergence)
         .def_readwrite("penalty_parameter_scaling",&SDPOptions::penalty_parameter_scaling)
+        .def_readwrite("print_level",&SDPOptions::print_level)
+        .def_readwrite("guess_type",&SDPOptions::guess_type)
         .def_readwrite("sdp_algorithm",&SDPOptions::algorithm);
-
-    py::enum_<SDPOptions::SDPAlgorithm>(options, "SDPAlgorithm")
-        .value("RRSDP", SDPOptions::SDPAlgorithm::RRSDP)
-        .value("BPSDP", SDPOptions::SDPAlgorithm::BPSDP)
-        .export_values();
 
     py::class_<my_vector<int>> (m, "int_vector")
         .def(py::init<>())
@@ -127,6 +127,12 @@ PYBIND11_MODULE(_libsdp, m) {
 /// SDPHelper constructor
 SDPHelper::SDPHelper(SDPOptions options) {
     options_      = options;
+
+    std::transform(options_.algorithm.begin(), options_.algorithm.end(), options_.algorithm.begin(),
+        [](unsigned char c){ return std::tolower(c); });
+
+    std::transform(options_.guess_type.begin(), options_.guess_type.end(), options_.guess_type.begin(),
+        [](unsigned char c){ return std::tolower(c); });
 }
 
 /// SDPHelper destructor
@@ -269,23 +275,47 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
     }
 
    // primal solution vector (random guess on [-0.001:0.001])
-    srand(0);
     std::vector<double> x;
-    for (size_t i = 0; i < n_primal_; i++) {
-        x.push_back(2.0 * ( (double)rand()/RAND_MAX - 0.5 ) * 0.001);
-        //x.push_back(0.0);
+
+    if ( options_.guess_type == "random" ) {
+        srand(0);
+        for (size_t i = 0; i < n_primal_; i++) {
+            x.push_back(2.0 * ( (double)rand()/RAND_MAX - 0.5 ) * 0.001);
+        }
+    }else if ( options_.guess_type == "zero" ) {
+        if ( options_.algorithm == "rrsdp" ) {
+            printf("\n");
+            printf("    error: guess_type = 'zero' not valid for SDP algorithm: rrsdp\n");
+            printf("\n");
+            exit(1);
+        }
+        for (size_t i = 0; i < n_primal_; i++) {
+            x.push_back(0.0);
+        }
+    }else {
+        printf("\n");
+        printf("    error: undefined guess type: %s\n", options_.guess_type.c_str());
+        printf("\n");
+        exit(1);
     }
 
     // initialize sdp solver
 
+    if ( options_.algorithm != "bpsdp" && options_.algorithm != "rrsdp" ) {
+        printf("\n");
+        printf("    error: undefined SDP algorithm: %s\n", options_.algorithm.c_str());
+        printf("\n");
+        exit(1);
+    }
+
     libsdp::SDPProgressMonitorFunction sdp_monitor;
 
-    if ( options_.algorithm == SDPOptions::SDPAlgorithm::BPSDP ) {
+    if ( options_.algorithm == "bpsdp" ) {
 
         sdp_ = (std::shared_ptr<SDPSolver>)(new BPSDPSolver(n_primal_,n_dual_,options_));
         sdp_monitor = bpsdp_monitor;
 
-    }else if ( options_.algorithm == SDPOptions::SDPAlgorithm::RRSDP ) {
+    }else if ( "rrsdp" ) {
 
         sdp_ = (std::shared_ptr<SDPSolver>)(new RRSDPSolver(n_primal_,n_dual_,options_));
         sdp_monitor = rrsdp_monitor;
@@ -293,13 +323,13 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
     }
 
     // print header
-    if ( options_.algorithm == SDPOptions::SDPAlgorithm::BPSDP ) {
+    if ( options_.algorithm == "bpsdp" ) {
     
         if ( !primal_block_rank.empty() ) {
             printf("\n");
             printf("    ==> WARNING <== \n");
             printf("\n");
-            printf("        SDPAlgorithm::BPSDP uses full-rank RDMs\n");
+            printf("        SDP algorithm BPSDP uses full-rank RDMs\n");
             printf("\n");
         }
 
@@ -326,7 +356,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
                     sdp_monitor, 
                     (void*)this);
             
-    }else if ( options_.algorithm == SDPOptions::SDPAlgorithm::RRSDP ) {
+    }else if ( options_.algorithm == "rrsdp" ) {
     
         printf("\n");
         printf("    ==> RRSDP: Matrix-factorization-based first-order SDP <==\n");
@@ -371,9 +401,9 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
 
 /// return the BPSDP z dual variable
 std::vector<double> SDPHelper::get_z() {
-    if ( options_.algorithm != SDPOptions::SDPAlgorithm::BPSDP ) {
+    if ( options_.algorithm != "bpsdp" ) {
         printf("\n");
-        printf("    error: z dual variable only defined for SDPAlgorithm:BPSDP\n");
+        printf("    error: z dual variable only defined for SDP algorithm BPSDP\n");
         printf("\n");
     }
     double * tmp_z = sdp_->get_z();

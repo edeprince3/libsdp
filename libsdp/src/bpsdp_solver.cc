@@ -26,7 +26,10 @@
 
 #include <string.h>
 #include <memory>
+
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #include <bpsdp_solver.h>
 #include <cg_solver.h>

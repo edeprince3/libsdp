@@ -194,7 +194,7 @@ static void ATu_callback(double * ATu, double * u, void * data) {
 
 }
 void SDPHelper::evaluate_ATu(double * ATu, double * u) {
-    memset((void*)ATu,'\0',n_primal_*sizeof(double));
+    //memset((void*)ATu,'\0',n_primal_*sizeof(double));
     //for (size_t i = 0; i < Fi_.size(); i++) {
     //    for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
     //        ATu[Fi_[i].id[j]] += Fi_[i].value[j] * u[i];

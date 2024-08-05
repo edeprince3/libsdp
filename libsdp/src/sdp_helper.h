@@ -54,7 +54,7 @@ struct SDPMatrix {
     my_vector<int> column;
     my_vector<double> value;
 
-    //// composite index, accounting for row, column, block offset
+    /// composite index, accounting for row, column, block offset
     my_vector<int> id;
 };
 

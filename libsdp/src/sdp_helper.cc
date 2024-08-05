@@ -3,7 +3,7 @@
  * 
  *  libsdp: a library of semidefinite programming solvers
  * 
- *  Copyright (c) 2021 by its authors (LICENSE).
+ *  Copyright (c) 2021-2024 by A. E. DePrince III
  * 
  *  The copyrights for code used from other parties are included in
  *  the corresponding files.
@@ -195,10 +195,18 @@ static void ATu_callback(double * ATu, double * u, void * data) {
 }
 void SDPHelper::evaluate_ATu(double * ATu, double * u) {
     memset((void*)ATu,'\0',n_primal_*sizeof(double));
-    for (size_t i = 0; i < Fi_.size(); i++) {
-        for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
-            ATu[Fi_[i].id[j]] += Fi_[i].value[j] * u[i];
+    //for (size_t i = 0; i < Fi_.size(); i++) {
+    //    for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
+    //        ATu[Fi_[i].id[j]] += Fi_[i].value[j] * u[i];
+    //    }
+    //}
+#pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < FTi_.size(); i++) {
+        double dum = 0.0;
+        for (size_t j = 0; j < FTi_[i].id.size(); j++) {
+            dum += FTi_[i].value[j] * u[FTi_[i].id[j]];
         }
+        ATu[i] = dum;
     }
 }
 
@@ -272,9 +280,16 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
 
             // add to matrix object
             Fi_[i-1].id.append(id);
-
         }
+    }
 
+    // FTi matrices:
+    FTi_.resize(n_primal_);
+    for (size_t i = 0; i < Fi_.size(); i++) {
+        for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
+            FTi_[Fi_[i].id[j]].id.append(i);
+            FTi_[Fi_[i].id[j]].value.append(Fi_[i].value[j]);
+        }
     }
 
     // primal block dimensions

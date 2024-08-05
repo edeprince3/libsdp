@@ -3,7 +3,7 @@
  * 
  *  libsdp: a library of semidefinite programming solvers
  * 
- *  Copyright (c) 2021 by its authors (LICENSE).
+ *  Copyright (c) 2021-2024 by A. E. DePrince III
  * 
  *  The copyrights for code used from other parties are included in
  *  the corresponding files.
@@ -112,6 +112,9 @@ class SDPHelper{
 
     /// the Fi matrices
     std::vector<SDPMatrix> Fi_;
+
+    /// the FTi matrices
+    std::vector<SDPMatrix> FTi_;
 
     /// list of block sizes
     std::vector<int> primal_block_dim_;

@@ -79,7 +79,7 @@ RRSDPSolver::RRSDPSolver(long int n_primal, long int n_dual, SDPOptions options)
         lbfgs_vars_x_[i] = 2.0 * ( (double)rand()/RAND_MAX - 0.5 ) / 1000.0;
     }
 
-    mu_ = 0.1;
+    mu_ = options.penalty_parameter;
     mu_reset_ = true;
     mu_scale_factor_ = options.penalty_parameter_scaling;
 }
@@ -156,7 +156,7 @@ void RRSDPSolver::solve(double * x,
 
     // this function can be called many times. don't forget to reset penalty parameter
     if ( mu_reset_ ) {
-        mu_ = 0.1;
+        mu_ = options_.penalty_parameter;
     }
 
     int oiter_local = 0;

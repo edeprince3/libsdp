@@ -1,7 +1,6 @@
 import numpy as np
 import sys
 import libsdp
-import libsdp.bpsdp
 
 def read_sdp_problem(filename):
 
@@ -37,17 +36,17 @@ def read_sdp_problem(filename):
             block_dim.append(-my_dim)
             #for j in range (0,-my_dim):
             #    block_dim.append(1)
-    
+   
     # TODO: will "float" have the correct precision?
     c=(my_file[offset+3].split())
     for i in range(0,len(c)):
         c[i] = float((c[i]))
                      
-    # Fi ... a list of sdp_matrix objects
+    # Fi ... define as a list of sdp_matrix objects
     Fi = []
     
     current_block = 0
-
+    
     F = libsdp.sdp_matrix()
     
     for i in range(offset+4,len(my_file)):
@@ -60,10 +59,10 @@ def read_sdp_problem(filename):
     
             current_block = my_block
     
-            # append F to Fi
+            # assign arrays in Fi
             Fi.append(F)
     
-            # create new matrix object
+            # new sdp_matrix
             F = libsdp.sdp_matrix()
     
         # append constraint matrix values
@@ -88,33 +87,73 @@ def main():
 
     """
     Example for using libsdp with SDPA sparse format inputs
+
+    max  A0.x = c.x
+    s.t. Ai.x = bi
+         x >= 0
+
     """
 
-    filename = 'c_example.in'
-    #filename = 'SDPLIB/data/truss5.dat-s'
-    #filename = 'truss1.dat-s'
-    #filename = 'arch0.dat-s'
-    #filename = 'SDPLIB/data/gpp100.dat-s'
+    #filename = 'c_example.in'
+    filename = 'truss1.dat-s'
 
-    c, Fi, block_dim = read_sdp_problem(filename)
+    # get constraint matrices (A) and constraint vector (b)
+    # note that the first matrix in A (A0 or c) defines the objective function (A0.x = c.x)
+    b, A, block_dim = read_sdp_problem(filename)
 
     # set options
     options = libsdp.sdp_options()
     
-    maxiter = 5000000
+    maxiter = 500000
     
     options.sdp_algorithm             = "bpsdp"
+    options.procedure                 = "maximize"
+    options.guess_type                = "random"
     options.maxiter                   = maxiter
-    options.sdp_error_convergence     = 1e-6
-    options.sdp_objective_convergence = 1e-6
+    options.sdp_error_convergence     = 1e-8
+    options.sdp_objective_convergence = 1e-8
     options.penalty_parameter_scaling = 0.1
+    options.penalty_parameter         = 0.1
+    options.cg_convergence            = 1e-12
    
     # solve sdp (python) 
-    #libsdp.bpsdp.solve(c, Fi, block_dim, options)
 
     # solve sdp (c++)
     sdp = libsdp.sdp_solver(options)
-    sdp.solve(c,Fi,block_dim,maxiter)
+    x = sdp.solve(b, A, block_dim, maxiter)
+    c = np.array(sdp.get_c())
+
+    # don't forget minus sign since SDPLIB problems are maximizations
+    primal_objective_value = -np.dot(c, x)
+
+    # action of A on x 
+    Ax = np.array(sdp.get_Au(x))
+
+    primal_error = Ax - b
+
+    print('')
+    print('    objective value (primal): %20.12f' % (primal_objective_value))
+    print('    ||Ax - b||:               %20.12f' % (np.linalg.norm(primal_error)))
+    print('')
+
+    # for bpsdp, we can also play around with the dual solutions
+    if options.sdp_algorithm.lower() == "bpsdp" :
+
+        z = np.array(sdp.get_z())
+        y = np.array(sdp.get_y())
+
+        # don't forget minus sign since SDPLIB problems are maximizations
+        dual_objective_value = -np.dot(b, y)
+
+        # action of A^T on y
+        ATy = np.array(sdp.get_ATu(y))
+
+        dual_error = c - z - ATy
+
+        print('    objective value (dual):   %20.12f' % (dual_objective_value))
+        print('    ||c - ATy - z||:          %20.12f' % (np.linalg.norm(dual_error)))
+        print('    |c.x - b.y|:              %20.12f' % (np.linalg.norm(dual_objective_value - primal_objective_value)))
+        print('')
 
 if __name__ == "__main__":
     main()

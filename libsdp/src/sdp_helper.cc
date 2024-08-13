@@ -64,9 +64,11 @@ void export_SDPHelper(py::module& m) {
         .def_readwrite("sdp_error_convergence",&SDPOptions::sdp_error_convergence)
         .def_readwrite("sdp_objective_convergence",&SDPOptions::sdp_objective_convergence)
         .def_readwrite("penalty_parameter_scaling",&SDPOptions::penalty_parameter_scaling)
+        .def_readwrite("penalty_parameter",&SDPOptions::penalty_parameter)
         .def_readwrite("print_level",&SDPOptions::print_level)
         .def_readwrite("guess_type",&SDPOptions::guess_type)
-        .def_readwrite("sdp_algorithm",&SDPOptions::algorithm);
+        .def_readwrite("sdp_algorithm",&SDPOptions::algorithm)
+        .def_readwrite("procedure",&SDPOptions::procedure);
 
     py::class_<my_vector<int>> (m, "int_vector")
         .def(py::init<>())
@@ -127,6 +129,9 @@ PYBIND11_MODULE(_libsdp, m) {
 /// SDPHelper constructor
 SDPHelper::SDPHelper(SDPOptions options) {
     options_      = options;
+
+    std::transform(options_.procedure.begin(), options_.procedure.end(), options_.procedure.begin(),
+        [](unsigned char c){ return std::tolower(c); });
 
     std::transform(options_.algorithm.begin(), options_.algorithm.end(), options_.algorithm.begin(),
         [](unsigned char c){ return std::tolower(c); });
@@ -233,6 +238,22 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
 
     c_.resize(n_primal_);
 
+    // note that, compared to SDPLIB problems, our definition of the problem 
+    // has c = -F0. (we're minimizing; they maximize). the result will be that
+    // our final objective will have the opposite sign compared to tabulated
+    // SDPLIB values
+
+    int sign = 1;
+    if ( options_.procedure == "minimize" ) {
+    }else if ( options_.procedure == "maximize" ) {
+        sign = -1;
+    }else {
+        printf("\n");
+        printf("    error: invalid procedure: %s\n", options_.procedure.c_str());
+        printf("\n");
+        exit(1);
+    }
+
     for (size_t i = 0; i < Fi[0].block_number.size(); i++) {
         int my_block  = Fi[0].block_number[i] - 1;
         int my_row    = Fi[0].row[i] - 1;
@@ -245,11 +266,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         }
 
         // populate relevant entry in c. 
-        // note that, compared to SDPLIB problems, our definition of the problem 
-        // has c = -F0. (we're minimizing; they maximize). the result will be that
-        // our final objective will have the opposite sign compared to tabulated
-        // SDPLIB values
-        c_[off + my_row * primal_block_dim[my_block] + my_column] += Fi[0].value[i];
+        c_[off + my_row * primal_block_dim[my_block] + my_column] += sign * Fi[0].value[i];
     }
 
     // constraint matrices

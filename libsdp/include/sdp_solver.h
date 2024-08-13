@@ -42,6 +42,7 @@ struct SDPOptions {
     int cg_maxiter                   = 10000;
     int mu_update_frequency          = 500;
     double penalty_parameter_scaling = 0.1;
+    double penalty_parameter         = 0.1;
     double cg_convergence            = 1e-8;
     bool dynamic_cg_convergence      = true;
     double sdp_objective_convergence = 1e-4;
@@ -49,6 +50,7 @@ struct SDPOptions {
     int print_level                  = 1;
     std::string guess_type           = "random";
     std::string algorithm            = "bpsdp";
+    std::string procedure            = "minimize";
 };
 
 typedef std::function<void(double*,double*,void*)> SDPCallbackFunction;

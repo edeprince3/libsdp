@@ -95,6 +95,8 @@ void BPSDPSolver::solve(double * x,
 
     int oiter_local = 0;
 
+    mu_ = options_.penalty_parameter;
+
     do {
 
         // evaluate mu * (b - Ax) for CG

@@ -149,7 +149,7 @@ def write_sdpa_problem(filename, ci, Fi, block_dimensions):
     :param filename: the name of the target file to which we will write
     the problem, represented in SDPA sparse format
 
-    :param ci: the constraint vector (ci or bi above)
+    :param c: the constraint vector (ci or bi above)
 
     :param Fi: a list of sdp_matrix objects defining the constraints. the
     first object in the  which (F0) defines the objective function
@@ -162,7 +162,7 @@ def write_sdpa_problem(filename, ci, Fi, block_dimensions):
     f = open(filename, "w")
 
     # number of constraints:
-    f.write("%10i\n" % (len(ci)))
+    f.write("%10i\n" % (len(c)))
 
     # number of blocks:
     f.write("%10i\n" % (len(block_dimensions)))
@@ -175,8 +175,8 @@ def write_sdpa_problem(filename, ci, Fi, block_dimensions):
 
     # constraint values
     s = ''
-    for i in range (0, len(ci)):
-        f.write("%20.12e " % (ci[i]))
+    for i in range (0, len(c)):
+        f.write("%20.12e " % (c[i]))
     f.write("\n")
 
     # Fi

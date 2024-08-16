@@ -119,7 +119,7 @@ def read_sdpa_problem(filename):
 
     return c, Fi, block_dimensions
 
-def write_sdpa_problem(filename, c, Fi, block_dimensions):
+def write_sdpa_problem(filename, ci, Fi, block_dimensions):
 
     """
     Write a file containing a problem represented in SDPA sparse format.

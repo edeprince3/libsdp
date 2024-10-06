@@ -75,6 +75,11 @@ void SDPSolver::set_z(double * z) {
 
 void SDPSolver::write_xyz(double * x) {
 
+    // user may not want to write solution to disk
+    if ( options_.outfile == "" ) {
+        return;
+    }
+
     FILE * fp = fopen(options_.outfile.c_str(), "w");
 
     // x

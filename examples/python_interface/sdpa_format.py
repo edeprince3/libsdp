@@ -22,7 +22,7 @@ def main():
 
     """
 
-    filename = 'SDPLIB/data/truss1.dat-s'
+    filename = 'truss1.dat-s'
 
     # get constraint matrices (A) and constraint vector (b)
     # note that the first matrix in A (A0 or c) defines the objective function (A0.x = c.x)
@@ -35,7 +35,8 @@ def main():
     
     options.sdp_algorithm             = "bpsdp"
     options.procedure                 = "maximize"
-    options.guess_type                = "random"
+    options.guess_type                = "zero"
+    #options.guess_type                = "read"
     options.maxiter                   = maxiter
     options.sdp_error_convergence     = 1e-8
     options.sdp_objective_convergence = 1e-8

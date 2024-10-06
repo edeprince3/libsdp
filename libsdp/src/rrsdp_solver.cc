@@ -149,13 +149,17 @@ void RRSDPSolver::solve(double * x,
     x_ = x;
     b_ = b;
 
+    // R solution is contained in z for guess_type = "read"
+    if ( options_.guess_type == "read" ) {
+        C_DCOPY(n_primal_, z_, 1, lbfgs_vars_x_, 1);
+    }
     build_x(lbfgs_vars_x_);
 
     // initial objective function value   
     double objective =  C_DDOT(n_primal_,x_,1,c_,1);
 
     // this function can be called many times. don't forget to reset penalty parameter
-    if ( mu_reset_ ) {
+    if ( mu_reset_ && options_.guess_type != "read" ) {
         mu_ = options_.penalty_parameter;
     }
 
@@ -236,6 +240,10 @@ void RRSDPSolver::solve(double * x,
         objective = objective_primal;
 
         if ( oiter_local == maxiter ) break;
+
+        // write solution to disk ... use z to pass R
+        C_DCOPY(n_primal_, lbfgs_vars_x_, 1, z_, 1);
+        write_xyz(x);
 
     }while( !is_converged_ );
 

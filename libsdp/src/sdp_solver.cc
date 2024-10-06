@@ -73,5 +73,91 @@ void SDPSolver::set_z(double * z) {
    C_DCOPY(n_primal_,z,1,z_,1); 
 }
 
+void SDPSolver::write_xyz(double * x) {
+
+    // user may not want to write solution to disk
+    if ( options_.outfile == "" ) {
+        return;
+    }
+
+    FILE * fp = fopen(options_.outfile.c_str(), "w");
+
+    // x
+    fprintf(fp, "%li\n", n_primal_);
+    for (long int i = 0; i < n_primal_; i++) {
+        fprintf(fp, "%20.12le\n", x[i]);
+    }
+
+    // y
+    fprintf(fp, "%li\n", n_dual_);
+    for (long int i = 0; i < n_dual_; i++) {
+        fprintf(fp, "%20.12le\n", y_[i]);
+    }
+    
+    // z
+    fprintf(fp, "%li\n", n_primal_);
+    for (long int i = 0; i < n_primal_; i++) {
+        fprintf(fp, "%20.12le\n", z_[i]);
+    }
+
+    // mu
+    fprintf(fp, "%20.12le\n", mu_);
+    
+    fclose(fp);
+}
+
+void SDPSolver::read_xyz(double * x) {
+
+    FILE * fp = fopen(options_.outfile.c_str(), "r");
+    if (fp == NULL) { 
+        printf("\n");
+        printf("    error: restart file does not exist: %s\n", options_.outfile.c_str());
+        printf("\n");
+        exit(1);
+    }
+
+    long int dim;
+
+    // x
+    fscanf(fp, "%li", &dim);
+    if ( dim != n_primal_ ) {
+        printf("\n");
+        printf("    error: dimension mismatch when reading solution (x)\n");
+        printf("\n");
+        exit(1);
+    }
+    for (long int i = 0; i < dim; i++) {
+        fscanf(fp, "%le", &x[i]);
+    }
+
+    // y
+    fscanf(fp, "%li", &dim);
+    if ( dim != n_dual_ ) {
+        printf("\n");
+        printf("    error: dimension mismatch when reading solution (y)\n");
+        printf("\n");
+        exit(1);
+    }
+    for (long int i = 0; i < dim; i++) {
+        fscanf(fp, "%le", &y_[i]);
+    }
+
+    // x
+    fscanf(fp, "%li", &dim);
+    if ( dim != n_primal_ ) {
+        printf("\n");
+        printf("    error: dimension mismatch when reading solution (z)\n");
+        printf("\n");
+        exit(1);
+    }
+    for (long int i = 0; i < dim; i++) {
+        fscanf(fp, "%le", &z_[i]);
+    }
+
+    fscanf(fp, "%le", &mu_);
+
+    fclose(fp);
+}
+
 }
 

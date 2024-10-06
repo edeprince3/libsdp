@@ -51,6 +51,7 @@ struct SDPOptions {
     std::string guess_type           = "random";
     std::string algorithm            = "bpsdp";
     std::string procedure            = "minimize";
+    std::string outfile              = "sdp.out";
 };
 
 typedef std::function<void(double*,double*,void*)> SDPCallbackFunction;
@@ -128,6 +129,9 @@ class SDPSolver{
         exit(1);
     }
 
+    /// read solution from disk
+    void read_xyz(double * x);
+
   protected:
 
     /// options for the SDP
@@ -178,6 +182,8 @@ class SDPSolver{
     /// the dimension of the dual vector
     long int n_dual_;
 
+    /// write solution to disk
+    void write_xyz(double * x);
 };
 
 }

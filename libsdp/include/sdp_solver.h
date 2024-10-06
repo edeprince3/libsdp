@@ -128,6 +128,9 @@ class SDPSolver{
         exit(1);
     }
 
+    /// read solution from disk
+    void read_xyz(double * x);
+
   protected:
 
     /// options for the SDP
@@ -178,6 +181,11 @@ class SDPSolver{
     /// the dimension of the dual vector
     long int n_dual_;
 
+    /// solution file
+    std::string outfile_ = "sdp.out";
+
+    /// write solution to disk
+    void write_xyz(double * x);
 };
 
 }

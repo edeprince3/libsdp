@@ -37,6 +37,8 @@
 #include <rrsdp_solver.h>
 #include <bpsdp_solver.h>
 
+#include "blas_helper.h"
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -314,31 +316,6 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         primal_block_dim_.push_back(primal_block_dim[i]);
     }
 
-   // primal solution vector (random guess on [-0.001:0.001])
-    std::vector<double> x;
-
-    if ( options_.guess_type == "random" ) {
-        srand(0);
-        for (size_t i = 0; i < n_primal_; i++) {
-            x.push_back(2.0 * ( (double)rand()/RAND_MAX - 0.5 ) * 0.001);
-        }
-    }else if ( options_.guess_type == "zero" ) {
-        if ( options_.algorithm == "rrsdp" ) {
-            printf("\n");
-            printf("    error: guess_type = 'zero' not valid for SDP algorithm: rrsdp\n");
-            printf("\n");
-            exit(1);
-        }
-        for (size_t i = 0; i < n_primal_; i++) {
-            x.push_back(0.0);
-        }
-    }else {
-        printf("\n");
-        printf("    error: undefined guess type: %s\n", options_.guess_type.c_str());
-        printf("\n");
-        exit(1);
-    }
-
     // initialize sdp solver
 
     if ( options_.algorithm != "bpsdp" && options_.algorithm != "rrsdp" ) {
@@ -360,6 +337,36 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         sdp_ = (std::shared_ptr<SDPSolver>)(new RRSDPSolver(n_primal_,n_dual_,options_));
         sdp_monitor = rrsdp_monitor;
 
+    }
+
+    // primal solution vector (random guess on [-0.001:0.001])
+    std::vector<double> x;
+
+    if ( options_.guess_type == "random" ) {
+        srand(0);
+        for (size_t i = 0; i < n_primal_; i++) {
+            x.push_back(2.0 * ( (double)rand()/RAND_MAX - 0.5 ) * 0.001);
+        }
+    }else if ( options_.guess_type == "zero" ) {
+        if ( options_.algorithm == "rrsdp" ) {
+            printf("\n");
+            printf("    error: guess_type = 'zero' not valid for SDP algorithm: rrsdp\n");
+            printf("\n");
+            exit(1);
+        }
+        for (size_t i = 0; i < n_primal_; i++) {
+            x.push_back(0.0);
+        }
+    }else if ( options_.guess_type == "read"  ) {
+        for (size_t i = 0; i < n_primal_; i++) {
+            x.push_back(0.0);
+        }
+        sdp_->read_xyz(x.data());
+    }else {
+        printf("\n");
+        printf("    error: undefined guess type: %s\n", options_.guess_type.c_str());
+        printf("\n");
+        exit(1);
     }
 
     // print header
@@ -436,7 +443,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
                              sdp_monitor, 
                              options_.print_level, 
                              (void*)this);
-    } 
+    }
 
 
     if ( options_.print_level > 0 ) {
@@ -499,6 +506,4 @@ SDPOptions options() {
     return opt;
 }
 
-
 }
-

@@ -95,7 +95,9 @@ void BPSDPSolver::solve(double * x,
 
     int oiter_local = 0;
 
-    mu_ = options_.penalty_parameter;
+    if ( options_.guess_type != "read" ) {
+        mu_ = options_.penalty_parameter;
+    }
 
     do {
 
@@ -131,7 +133,7 @@ void BPSDPSolver::solve(double * x,
         iiter_total_ += iiter;
 
         // update primal and dual solutions
-        Update_xz(x, c, primal_block_dim, evaluate_ATu, data);
+        update_xz(x, c, primal_block_dim, evaluate_ATu, data);
 
         // update mu (step 3)
 
@@ -157,9 +159,11 @@ void BPSDPSolver::solve(double * x,
         oiter_++;
         oiter_local++;
 
-        // don't update mu every iteration
+        // write solution to disk whenever we update mu
         if ( oiter_ % options_.mu_update_frequency == 0 && oiter_ > 0 ){
             mu_ = mu_ * primal_error_ / dual_error_;
+
+            write_xyz(x);
         }
 
         if ( primal_error_ > options_.sdp_error_convergence || dual_error_ > options_.sdp_error_convergence  || primal_dual_objective_gap > options_.sdp_objective_convergence ) {
@@ -171,10 +175,13 @@ void BPSDPSolver::solve(double * x,
         if ( oiter_local == maxiter ) break;
     }while( !is_converged_ );
 
+    // write converged solution to disk
+    write_xyz(x);
+
 }
 
 // update x and z
-void BPSDPSolver::Update_xz_nonsym(double * x, double * c, std::vector<int> primal_block_dim, SDPCallbackFunction evaluate_ATu, void * data) {
+void BPSDPSolver::update_xz_nonsym(double * x, double * c, std::vector<int> primal_block_dim, SDPCallbackFunction evaluate_ATu, void * data) {
 
     // evaluate M(mu*x + ATy - c)
     evaluate_ATu(ATu_, y_, data);
@@ -251,7 +258,7 @@ void BPSDPSolver::Update_xz_nonsym(double * x, double * c, std::vector<int> prim
 }
 
 // update x and z
-void BPSDPSolver::Update_xz(double * x, double * c, std::vector<int> primal_block_dim, SDPCallbackFunction evaluate_ATu, void * data) {
+void BPSDPSolver::update_xz(double * x, double * c, std::vector<int> primal_block_dim, SDPCallbackFunction evaluate_ATu, void * data) {
 
     // evaluate M(mu*x + ATy - c)
     evaluate_ATu(ATu_, y_, data);

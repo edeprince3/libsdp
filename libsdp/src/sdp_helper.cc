@@ -69,6 +69,7 @@ void export_SDPHelper(py::module& m) {
         .def_readwrite("penalty_parameter",&SDPOptions::penalty_parameter)
         .def_readwrite("print_level",&SDPOptions::print_level)
         .def_readwrite("guess_type",&SDPOptions::guess_type)
+        .def_readwrite("outfile",&SDPOptions::outfile)
         .def_readwrite("sdp_algorithm",&SDPOptions::algorithm)
         .def_readwrite("procedure",&SDPOptions::procedure);
 

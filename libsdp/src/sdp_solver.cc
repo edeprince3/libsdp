@@ -75,7 +75,7 @@ void SDPSolver::set_z(double * z) {
 
 void SDPSolver::write_xyz(double * x) {
 
-    FILE * fp = fopen(outfile_.c_str(), "w");
+    FILE * fp = fopen(options_.outfile.c_str(), "w");
 
     // x
     fprintf(fp, "%li\n", n_primal_);
@@ -103,10 +103,10 @@ void SDPSolver::write_xyz(double * x) {
 
 void SDPSolver::read_xyz(double * x) {
 
-    FILE * fp = fopen(outfile_.c_str(), "r");
+    FILE * fp = fopen(options_.outfile.c_str(), "r");
     if (fp == NULL) { 
         printf("\n");
-        printf("    error: restart file does not exist: %s\n", outfile_.c_str());
+        printf("    error: restart file does not exist: %s\n", options_.outfile.c_str());
         printf("\n");
         exit(1);
     }

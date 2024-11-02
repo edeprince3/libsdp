@@ -63,15 +63,15 @@ class SDPHelper{
   public:
 
     /// SDPHelper constructor
-    SDPHelper(SDPOptions options);
+    SDPHelper(SDPOptions options, 
+              std::vector<SDPMatrix> Fi,
+              std::vector<int> primal_block_dim);
 
     /// SDPHelper destructor
     ~SDPHelper();
 
     /// solve the sdp problem and return the primal solution
-    std::vector<double> solve(std::vector<double> b,
-                              std::vector<SDPMatrix> Fi,
-                              std::vector<int> primal_block_dim,
+    std::vector<double> solve(std::vector<double> b, 
                               int maxiter,
                               std::vector<int> primal_block_rank);
 
@@ -125,6 +125,11 @@ class SDPHelper{
     /// the c vector (F0)
     std::vector<double> c_;
 
+    /// the primal solution vector 
+    std::vector<double> x_;
+
+    /// progress monitor function
+    libsdp::SDPProgressMonitorFunction sdp_monitor_;
 };
 
 }

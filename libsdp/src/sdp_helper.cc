@@ -100,19 +100,15 @@ void export_SDPHelper(py::module& m) {
     // export SDP solver
 
     py::class_<SDPHelper, std::shared_ptr<SDPHelper> >(m, "sdp_solver")
-        .def(py::init<SDPOptions>())
+        .def(py::init<SDPOptions, std::vector<SDPMatrix> &, std::vector<int> & >())
         .def("solve", 
              [](SDPHelper& self, 
                  const std::vector<double> & b, 
-                 const std::vector<SDPMatrix> & Fi,
-                 const std::vector<int> & primal_block_dim,
                  const int & maxdim,
                  const std::vector<int> & primal_block_rank) {
-                 return self.solve(b, Fi, primal_block_dim, maxdim, primal_block_rank);
+                 return self.solve(b, maxdim, primal_block_rank);
              },
              py::arg("b"), 
-             py::arg("Fi"), 
-             py::arg("primal_block_dim"), 
              py::arg("maxdim"), 
              py::arg("primal_block_rank") = empty_list )
         .def("get_ATu", &SDPHelper::get_ATu)
@@ -126,25 +122,6 @@ void export_SDPHelper(py::module& m) {
 PYBIND11_MODULE(_libsdp, m) {
     m.doc() = "Python API of libsdp";
     export_SDPHelper(m);
-}
-
-
-/// SDPHelper constructor
-SDPHelper::SDPHelper(SDPOptions options) {
-    options_      = options;
-
-    std::transform(options_.procedure.begin(), options_.procedure.end(), options_.procedure.begin(),
-        [](unsigned char c){ return std::tolower(c); });
-
-    std::transform(options_.algorithm.begin(), options_.algorithm.end(), options_.algorithm.begin(),
-        [](unsigned char c){ return std::tolower(c); });
-
-    std::transform(options_.guess_type.begin(), options_.guess_type.end(), options_.guess_type.begin(),
-        [](unsigned char c){ return std::tolower(c); });
-}
-
-/// SDPHelper destructor
-SDPHelper::~SDPHelper() {
 }
 
 /// BPSDP monitor callback function
@@ -173,57 +150,21 @@ static void rrsdp_monitor(int print_level, int oiter, int iiter, double lagrangi
 
 }
 
+/// SDPHelper constructor
+SDPHelper::SDPHelper(SDPOptions options,
+                     std::vector<SDPMatrix> Fi,
+                     std::vector<int> primal_block_dim) {
 
-/// SDP callback function: Au
-static void Au_callback(double * Au, double * u, void * data) {
+    options_      = options;
 
-    // reinterpret void * as an instance of SDPHelper
-    SDPHelper * sdp = reinterpret_cast<SDPHelper*>(data);
-    sdp->evaluate_Au(Au,u);
+    std::transform(options_.procedure.begin(), options_.procedure.end(), options_.procedure.begin(),
+        [](unsigned char c){ return std::tolower(c); });
 
-}
-void SDPHelper::evaluate_Au(double * Au, double * u) {
-#pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < Fi_.size(); i++) {
-        double dum = 0.0;
-        for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
-            dum += Fi_[i].value[j] * u[Fi_[i].id[j]];
-        }
-        Au[i] = dum;
-    }
-}
+    std::transform(options_.algorithm.begin(), options_.algorithm.end(), options_.algorithm.begin(),
+        [](unsigned char c){ return std::tolower(c); });
 
-/// SDP callback function: ATu
-static void ATu_callback(double * ATu, double * u, void * data) {
-
-    // reinterpret void * as an instance of SDPHelper
-    SDPHelper * sdp = reinterpret_cast<SDPHelper*>(data);
-    sdp->evaluate_ATu(ATu,u);
-
-}
-void SDPHelper::evaluate_ATu(double * ATu, double * u) {
-    //memset((void*)ATu,'\0',n_primal_*sizeof(double));
-    //for (size_t i = 0; i < Fi_.size(); i++) {
-    //    for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
-    //        ATu[Fi_[i].id[j]] += Fi_[i].value[j] * u[i];
-    //    }
-    //}
-#pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < FTi_.size(); i++) {
-        double dum = 0.0;
-        for (size_t j = 0; j < FTi_[i].id.size(); j++) {
-            dum += FTi_[i].value[j] * u[FTi_[i].id[j]];
-        }
-        ATu[i] = dum;
-    }
-}
-
-/// solve the sdp problem and return the primal solution
-std::vector<double> SDPHelper::solve(std::vector<double> b,
-                                     std::vector<SDPMatrix> Fi,
-                                     std::vector<int> primal_block_dim,
-                                     int maxiter,
-                                     std::vector<int> primal_block_rank) {
+    std::transform(options_.guess_type.begin(), options_.guess_type.end(), options_.guess_type.begin(),
+        [](unsigned char c){ return std::tolower(c); });
 
     // copy some quantities to class members for objective 
     // function / Au / ATu evaluation
@@ -326,27 +267,25 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         exit(1);
     }
 
-    libsdp::SDPProgressMonitorFunction sdp_monitor;
-
     if ( options_.algorithm == "bpsdp" ) {
 
         sdp_ = (std::shared_ptr<SDPSolver>)(new BPSDPSolver(n_primal_,n_dual_,options_));
-        sdp_monitor = bpsdp_monitor;
+        sdp_monitor_ = bpsdp_monitor;
 
     }else if ( "rrsdp" ) {
 
         sdp_ = (std::shared_ptr<SDPSolver>)(new RRSDPSolver(n_primal_,n_dual_,options_));
-        sdp_monitor = rrsdp_monitor;
+        sdp_monitor_ = rrsdp_monitor;
 
     }
 
     // primal solution vector (random guess on [-0.001:0.001])
-    std::vector<double> x;
+    x_.clear();
 
     if ( options_.guess_type == "random" ) {
         srand(0);
         for (size_t i = 0; i < n_primal_; i++) {
-            x.push_back(2.0 * ( (double)rand()/RAND_MAX - 0.5 ) * 0.001);
+            x_.push_back(2.0 * ( (double)rand()/RAND_MAX - 0.5 ) * 0.001);
         }
     }else if ( options_.guess_type == "zero" ) {
         if ( options_.algorithm == "rrsdp" ) {
@@ -356,19 +295,73 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
             exit(1);
         }
         for (size_t i = 0; i < n_primal_; i++) {
-            x.push_back(0.0);
+            x_.push_back(0.0);
         }
     }else if ( options_.guess_type == "read"  ) {
         for (size_t i = 0; i < n_primal_; i++) {
-            x.push_back(0.0);
+            x_.push_back(0.0);
         }
-        sdp_->read_xyz(x.data());
+        sdp_->read_xyz(x_.data());
     }else {
         printf("\n");
         printf("    error: undefined guess type: %s\n", options_.guess_type.c_str());
         printf("\n");
         exit(1);
     }
+}
+
+/// SDPHelper destructor
+SDPHelper::~SDPHelper() {
+}
+
+/// SDP callback function: Au
+static void Au_callback(double * Au, double * u, void * data) {
+
+    // reinterpret void * as an instance of SDPHelper
+    SDPHelper * sdp = reinterpret_cast<SDPHelper*>(data);
+    sdp->evaluate_Au(Au,u);
+
+}
+void SDPHelper::evaluate_Au(double * Au, double * u) {
+#pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < Fi_.size(); i++) {
+        double dum = 0.0;
+        for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
+            dum += Fi_[i].value[j] * u[Fi_[i].id[j]];
+        }
+        Au[i] = dum;
+    }
+}
+
+/// SDP callback function: ATu
+static void ATu_callback(double * ATu, double * u, void * data) {
+
+    // reinterpret void * as an instance of SDPHelper
+    SDPHelper * sdp = reinterpret_cast<SDPHelper*>(data);
+    sdp->evaluate_ATu(ATu,u);
+
+}
+void SDPHelper::evaluate_ATu(double * ATu, double * u) {
+    //memset((void*)ATu,'\0',n_primal_*sizeof(double));
+    //for (size_t i = 0; i < Fi_.size(); i++) {
+    //    for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
+    //        ATu[Fi_[i].id[j]] += Fi_[i].value[j] * u[i];
+    //    }
+    //}
+#pragma omp parallel for schedule(static)
+    for (size_t i = 0; i < FTi_.size(); i++) {
+        double dum = 0.0;
+        for (size_t j = 0; j < FTi_[i].id.size(); j++) {
+            dum += FTi_[i].value[j] * u[FTi_[i].id[j]];
+        }
+        ATu[i] = dum;
+    }
+}
+
+/// solve the sdp problem and return the primal solution
+std::vector<double> SDPHelper::solve(std::vector<double> b, 
+                                     int maxiter,
+                                     std::vector<int> primal_block_rank) {
 
     // print header
     if ( options_.algorithm == "bpsdp" ) {
@@ -396,14 +389,14 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         }
 
         // solve sdp
-        sdp_->solve(x.data(),
+        sdp_->solve(x_.data(),
                     b.data(),
                     c_.data(),
                     primal_block_dim_, 
                     maxiter, 
                     Au_callback, 
                     ATu_callback, 
-                    sdp_monitor, 
+                    sdp_monitor_, 
                     options_.print_level, 
                     (void*)this);
             
@@ -433,7 +426,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         }
 
         // solve (possibly low-rank) sdp
-        sdp_->solve_low_rank(x.data(),
+        sdp_->solve_low_rank(x_.data(),
                              b.data(),
                              c_.data(),
                              primal_block_dim_, 
@@ -441,7 +434,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
                              maxiter, 
                              Au_callback, 
                              ATu_callback, 
-                             sdp_monitor, 
+                             sdp_monitor_, 
                              options_.print_level, 
                              (void*)this);
     }
@@ -452,7 +445,7 @@ std::vector<double> SDPHelper::solve(std::vector<double> b,
         fflush(stdout);
     }
 
-    return x;
+    return x_;
 }
 
 /// return the BPSDP z dual variable

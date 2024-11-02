@@ -10,14 +10,28 @@ import libsdp
 from v2rdm_sdp import v2rdm_sdp
 from g2_v2rdm_sdp import g2_v2rdm_sdp
 
+from libsdp.sdpa_file_io import clean_sdpa_problem
+from libsdp.sdpa_file_io import read_sdpa_problem
+from libsdp.sdpa_file_io import write_sdpa_problem
+
 import pyscf
 
 def main():
 
     # build molecule
+    # build molecule
     mol = pyscf.M(
-        atom='B 0 0 0; H 0 0 1.0',
+        atom=[
+['H', (0, 0, 0)],
+['H', (0, 0, 1)],
+['H', (0, 0, 2)],
+['H', (0, 0, 3)],
+['H', (0, 0, 4)],
+['H', (0, 0, 5)],
+              ],
         basis='sto-3g',
+        spin=1,
+        charge=+1,
         symmetry=False)
 
     # run RHF
@@ -60,13 +74,13 @@ def main():
     # 
 
     # use this one for d-only
-    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, g2 = True, constrain_spin = True)
+    my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, g2 = True, constrain_spin = False)
 
-    # use this one for g-only 
-    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True, q2 = True, constrain_spin = True)
+    #b = my_sdp.b
+    #F = my_sdp.F
 
-    b = my_sdp.b
-    F = my_sdp.F
+    b, F = clean_sdpa_problem(my_sdp.b, my_sdp.F)
+
     dimensions = my_sdp.dimensions
 
     # set options
@@ -74,15 +88,24 @@ def main():
 
     maxiter = 100000
 
+    #options.sdp_algorithm             = "bpsdp"
+    #options.maxiter                   = maxiter
+    #options.sdp_error_convergence     = 1e-4
+    #options.sdp_objective_convergence = 1e-4
+    #options.penalty_parameter_scaling = 0.1
+
     options.sdp_algorithm             = "bpsdp"
+    #options.procedure                 = "maximize"
+    options.guess_type                = "random"
     options.maxiter                   = maxiter
-    options.sdp_error_convergence     = 1e-4
-    options.sdp_objective_convergence = 1e-4
-    options.penalty_parameter_scaling = 0.1
+    options.sdp_error_convergence     = 5e-5
+    options.sdp_objective_convergence = 5e-5
+    options.cg_convergence            = 1e-8
+    options.dynamic_cg_convergence    = False
 
     # solve sdp
-    sdp_solver = libsdp.sdp_solver(options)
-    x = sdp_solver.solve(b, F, dimensions, maxiter)
+    sdp_solver = libsdp.sdp_solver(options, F, dimensions)
+    x = sdp_solver.solve(b, maxiter)
 
     # now that the sdp is solved, we can play around with the primal and dual solutions
     z = np.array(sdp_solver.get_z())
@@ -123,6 +146,10 @@ def main():
     print('    ||c - ATy - z||:           %20.12f' % (np.linalg.norm(dual_error)))
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
+
+
+
+    
 
 if __name__ == "__main__":
     main()

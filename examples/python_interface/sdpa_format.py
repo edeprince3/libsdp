@@ -48,8 +48,8 @@ def main():
     # solve sdp (python) 
 
     # solve sdp (c++)
-    sdp = libsdp.sdp_solver(options)
-    x = sdp.solve(b, A, block_dim, maxiter)
+    sdp = libsdp.sdp_solver(options, A, block_dim)
+    x = sdp.solve(b, maxiter)
     c = np.array(sdp.get_c())
 
     # don't forget minus sign since SDPLIB problems are maximizations

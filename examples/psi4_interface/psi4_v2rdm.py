@@ -15,15 +15,20 @@ def main():
 
     # set molecule
     mol = psi4.geometry("""
-    0 1
-         H
-         H 1 1.0
+    1 2
+         H 0.0 0.0 0.0
+         H 0.0 0.0 1.0
+         H 0.0 0.0 2.0
+         H 0.0 0.0 3.0
+         H 0.0 0.0 4.0
+         H 0.0 0.0 5.0
     symmetry c1
     """)
 
     # set options
     psi4_options_dict = {
-        'basis': '6-31g',
+        'reference': 'rohf',
+        'basis': 'sto-3g',
         'scf_type': 'pk',
     }
     psi4.set_options(psi4_options_dict)
@@ -67,7 +72,7 @@ def main():
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
     #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, constrain_spin = True, g2 = True)
-    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True, q2 = True, constrain_spin = True)
+    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True, q2 = True, constrain_spin = False)
 
     b = my_sdp.b
     F = my_sdp.F
@@ -78,15 +83,15 @@ def main():
 
     maxiter = 5000000
 
-    options.sdp_algorithm             = "rrsdp"
+    options.sdp_algorithm             = "bpsdp"
     options.maxiter                   = maxiter
     options.sdp_error_convergence     = 1e-4
     options.sdp_objective_convergence = 1e-4
     options.penalty_parameter_scaling = 0.1
 
     # solve sdp
-    sdp = libsdp.sdp_solver(options)
-    x = sdp.solve(b, F, dimensions, maxiter)
+    sdp = libsdp.sdp_solver(options, F, dimensions)
+    x = sdp.solve(b, maxiter)
 
     # now that the sdp is solved, we can play around with the primal and dual solutions
     z = np.array(sdp.get_z())

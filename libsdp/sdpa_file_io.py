@@ -249,3 +249,43 @@ def clean_sdpa_problem(c, Fi):
             new_c.append(c[mi-1])
 
     return new_c, new_F
+
+def read_xyz(filename):
+
+    """
+    Read primal and dual solutions to an SPD
+
+    :param filename: the name of a file containing the solution
+
+    :return x: the primal solution vector
+    :return y: the dual solution vector
+    :return z: z = c - A^T y
+
+    """
+
+    # read data
+    data = np.genfromtxt(filename, dtype=np.float64)
+
+    # x
+
+    off = 0
+    nx = int(data[off])
+
+    off = off + 1
+    x = data[off:off + nx]
+
+    # y
+    off = off + nx
+    ny = int(data[off])
+    
+    off = off + 1
+    y = data[off:off + ny]
+
+    # z
+    off = off + ny
+    nz = int(data[off])
+    z = data[off:off + nz]
+
+    assert nx == nz 
+
+    return x, y, z

@@ -242,10 +242,6 @@ def clean_sdpa_problem(c, Fi):
                     print('')
                     exit()
 
-            # add empty constraint
-            new_F.append(libsdp.sdp_matrix())
-            new_c.append(0.0)
-
             continue
 
         new_F.append(F)

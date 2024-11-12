@@ -237,7 +237,7 @@ def clean_sdpa_problem(c, Fi):
                 print('')
                 exit()
             else :
-                if not math.isclose(c[mi-1], 0., absd_tol=1.0E-14):
+                if not math.isclose(c[mi-1], 0., abs_tol=1.0E-14):
                     print('')
                     print('    error, constraint 0 = %f cannot be satisfied' % (c[mi-1]))
                     print('')

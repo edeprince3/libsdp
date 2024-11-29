@@ -5,9 +5,14 @@ import numpy as np
 from numpy import einsum
 
 import sys
-import libsdp
 from v2rdm_sdp import v2rdm_sdp
 from g2_v2rdm_sdp import g2_v2rdm_sdp
+
+import libsdp
+from libsdp.sdp_helper import sdp_solver
+from libsdp.sdpa_file_io import clean_sdpa_problem
+from libsdp.sdpa_file_io import read_sdpa_problem
+from libsdp.sdpa_file_io import write_sdpa_problem
 
 import psi4
 
@@ -74,9 +79,8 @@ def main():
     #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, constrain_spin = True, g2 = True)
     my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True, q2 = True, constrain_spin = False)
 
-    b = my_sdp.b
-    F = my_sdp.F
     dimensions = my_sdp.dimensions
+    b, F = clean_sdpa_problem(my_sdp.b, my_sdp.F)
 
     # set options
     options = libsdp.sdp_options()
@@ -90,7 +94,7 @@ def main():
     options.penalty_parameter_scaling = 0.1
 
     # solve sdp
-    sdp = libsdp.sdp_solver(options, F, dimensions)
+    sdp = sdp_solver(options, F, dimensions)
     x = sdp.solve(b, maxiter)
 
     # now that the sdp is solved, we can play around with the primal and dual solutions

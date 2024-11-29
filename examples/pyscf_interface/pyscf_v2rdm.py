@@ -6,10 +6,11 @@ from numpy import einsum
 
 import sys
 
-import libsdp
 from v2rdm_sdp import v2rdm_sdp
 from g2_v2rdm_sdp import g2_v2rdm_sdp
 
+import libsdp
+from libsdp.sdp_helper import sdp_solver
 from libsdp.sdpa_file_io import clean_sdpa_problem
 from libsdp.sdpa_file_io import read_sdpa_problem
 from libsdp.sdpa_file_io import write_sdpa_problem
@@ -104,13 +105,13 @@ def main():
     options.dynamic_cg_convergence    = False
 
     # solve sdp
-    sdp_solver = libsdp.sdp_solver(options, F, dimensions)
-    x = sdp_solver.solve(b, maxiter)
+    sdp = sdp_solver(options, F, dimensions)
+    x = sdp.solve(b, maxiter)
 
     # now that the sdp is solved, we can play around with the primal and dual solutions
-    z = np.array(sdp_solver.get_z())
-    c = np.array(sdp_solver.get_c())
-    y = np.array(sdp_solver.get_y())
+    z = np.array(sdp.get_z())
+    c = np.array(sdp.get_c())
+    y = np.array(sdp.get_y())
 
     dual_energy = np.dot(b, y)
     primal_energy = np.dot(c, x)
@@ -124,10 +125,10 @@ def main():
     #print(dum)
 
     # action of A^T on y
-    ATy = np.array(sdp_solver.get_ATu(y))
+    ATy = np.array(sdp.get_ATu(y))
 
     # action of A on x 
-    Ax = np.array(sdp_solver.get_Au(x))
+    Ax = np.array(sdp.get_Au(x))
 
     dual_error = c - z - ATy
     primal_error = Ax - b

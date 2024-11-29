@@ -4,10 +4,7 @@ the semidefinite program for variational two-electron reduced density matrix the
 import numpy as np
 from numpy import einsum
 
-import sys
-sys.path.insert(0, '../../.')
-
-import libsdp
+from libsdp.sdp_helper import sdp_matrix
 
 class g2_v2rdm_sdp():
 
@@ -145,7 +142,7 @@ class g2_v2rdm_sdp():
         nblocks = len(self.dimensions)
     
         # F0  ... the integrals
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
 
         #dum = np.einsum('ijkk->ij', tei)
         dum = -0.5 * np.einsum('ikkj->ij', tei)
@@ -223,7 +220,7 @@ class g2_v2rdm_sdp():
         self.b = []
 
         # 1 = 1
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
         F.block_number.append(self.block_id['1'])
         F.row.append(1)
         F.column.append(1)
@@ -328,7 +325,7 @@ class g2_v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 F.block_number.append(d1_block_id)
                 F.row.append(i+1)
@@ -375,7 +372,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_aa[kl][0]
                 l = self.bas_aa[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # + k* l* j i
                 F.block_number.append(d2_block_id)
@@ -445,7 +442,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # + k* l* j i
                 F.block_number.append(self.block_id['d2ab'])
@@ -492,7 +489,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # - i* l* j k
                 il = self.ibas_ab[i, l]
@@ -533,7 +530,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # - l* i* k j
                 li = self.ibas_ab[l, i]
@@ -586,7 +583,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # - i* l* j k
                 if i != l and k != j:
@@ -627,7 +624,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # - i* l* j k
                 if i != l and k != j:
@@ -668,7 +665,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # + i* l* j k
                 il = self.ibas_ab[i, l]
@@ -696,7 +693,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # + l* i* k j
                 li = self.ibas_ab[l, i]
@@ -722,7 +719,7 @@ class g2_v2rdm_sdp():
 
         ms = 0.5 * (self.nalpha - self.nbeta)
 
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
 
         # <S^2>
         for i in range (0, self.nmo):
@@ -748,7 +745,7 @@ class g2_v2rdm_sdp():
             for j in range (0, self.nmo):
                 ij = self.ibas_ab[i, j]
 
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 for k in range (0, self.nmo):
                     kk = self.ibas_ab[k, k]
@@ -766,7 +763,7 @@ class g2_v2rdm_sdp():
             for j in range (0, self.nmo):
                 ij = self.ibas_ab[i, j]
 
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 for k in range (0, self.nmo):
                     kk = self.ibas_ab[k, k]
@@ -792,7 +789,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 F.block_number.append(self.block_id['g2ab'])
                 F.row.append(ij + 1)
@@ -823,7 +820,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 F.block_number.append(self.block_id['g2ba'])
                 F.row.append(ij + 1)
@@ -854,7 +851,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 F.block_number.append(self.block_id['g2ba'])
                 F.row.append(ij + 1)
@@ -885,7 +882,7 @@ class g2_v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 F.block_number.append(self.block_id['g2ab'])
                 F.row.append(ij + 1)
@@ -921,7 +918,7 @@ class g2_v2rdm_sdp():
         for i in range (0, self.nmo):
             for k in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for j in range (0, self.nmo):
    
@@ -949,7 +946,7 @@ class g2_v2rdm_sdp():
         for l in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for i in range (0, self.nmo):
    
@@ -1001,7 +998,7 @@ class g2_v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 for k in range (0, self.nmo):
    
@@ -1024,7 +1021,7 @@ class g2_v2rdm_sdp():
         for l in range (0, self.nmo):
             for k in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for i in range (0, self.nmo):
    
@@ -1059,7 +1056,7 @@ class g2_v2rdm_sdp():
         for i in range (0, self.nmo):
             for k in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for j in range (0, self.nmo):
    
@@ -1087,7 +1084,7 @@ class g2_v2rdm_sdp():
         for j in range (0, self.nmo):
             for l in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for i in range (0, self.nmo):
    
@@ -1132,7 +1129,7 @@ class g2_v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for k in range (0, self.nmo):
    
@@ -1155,7 +1152,7 @@ class g2_v2rdm_sdp():
         for k in range (0, self.nmo):
             for l in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for i in range (0, self.nmo):
    
@@ -1179,7 +1176,7 @@ class g2_v2rdm_sdp():
         tr(g2) = n 
         """
     
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
 
         # trace of g2aaaa
         n = self.nalpha * self.nmo - self.nalpha * (self.nalpha - 1.0)
@@ -1241,7 +1238,7 @@ class g2_v2rdm_sdp():
         :param n:        the trace
         """
    
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
 
         for ij in range (0, len(self.bas_ab)):
             F.block_number.append(block_id)
@@ -1266,7 +1263,7 @@ class g2_v2rdm_sdp():
             j = self.bas_ab[ij][1]
             for kl in range (0, len(self.bas_ab)):
 
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
@@ -1305,7 +1302,7 @@ class g2_v2rdm_sdp():
             k = self.bas_ab[lk][1]
             for ji in range (0, len(self.bas_ab)):
 
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 j = self.bas_ab[ji][0]
                 i = self.bas_ab[ji][1]
@@ -1344,7 +1341,7 @@ class g2_v2rdm_sdp():
             j = self.bas_ab[ij][1]
             for kl in range (0, len(self.bas_ab)):
 
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
@@ -1389,7 +1386,7 @@ class g2_v2rdm_sdp():
                 lj = self.ibas_ab[l, j]
                 ki = self.ibas_ab[k, i]
 
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 F.block_number.append(self.block_id['g2aa'])
                 F.row.append(lj + offset + 1)
@@ -1428,7 +1425,7 @@ class g2_v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
   
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
   
                 for k in range (0, self.nmo):
   
@@ -1463,7 +1460,7 @@ class g2_v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
 
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 for k in range (0, self.nmo):
 
@@ -1490,7 +1487,7 @@ class g2_v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
 
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 for k in range (0, self.nmo):
 

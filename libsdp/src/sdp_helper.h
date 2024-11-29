@@ -38,24 +38,15 @@
 namespace libsdp {
 
 /// a constraint matrix in sparse SDPA format
-template<typename T>
-struct my_vector {
-    std::vector<T> data;
-    std::vector<T> &get() { return data; }
-    void append(T value) { data.push_back(value); }
-    size_t size() const { return data.size(); }
-    T& operator[](size_t id) { return data[id]; }
-};
-
 struct SDPMatrix {
     SDPMatrix(){};
-    my_vector<int> block_number;
-    my_vector<int> row;
-    my_vector<int> column;
-    my_vector<double> value;
+    std::vector<int> block_number;
+    std::vector<int> row;
+    std::vector<int> column;
+    std::vector<double> value;
 
     /// composite index, accounting for row, column, block offset
-    my_vector<int> id;
+    std::vector<int> id;
 };
 
 class SDPHelper{

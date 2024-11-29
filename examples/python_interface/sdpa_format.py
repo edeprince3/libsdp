@@ -1,7 +1,9 @@
 import numpy as np
 import sys
 import libsdp
+
 from libsdp.sdpa_file_io import read_sdpa_problem
+from libsdp.sdp_helper import sdp_solver
 
 def main():
 
@@ -48,7 +50,7 @@ def main():
     # solve sdp (python) 
 
     # solve sdp (c++)
-    sdp = libsdp.sdp_solver(options, A, block_dim)
+    sdp = sdp_solver(options, A, block_dim)
     x = sdp.solve(b, maxiter)
     c = np.array(sdp.get_c())
 

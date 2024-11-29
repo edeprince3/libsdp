@@ -1,4 +1,3 @@
-import libsdp
 import numpy as np
 
 from libsdp.sdp_helper import sdp_matrix
@@ -184,7 +183,7 @@ def write_sdpa_problem(filename, c, Fi, block_dimensions):
     # Fi
     for i in range (0, len(Fi)):
         s = ''
-        for j in range (0, len(Fi[i].block_number.size)):
+        for j in range (0, len(Fi[i].block_number)):
             if Fi[i].row[j] <= Fi[i].column[j] : 
                 f.write("%5i %5i %5i %5i %20.12e\n" % (i, Fi[i].block_number[j], Fi[i].row[j], Fi[i].column[j], Fi[i].value[j]) )
 

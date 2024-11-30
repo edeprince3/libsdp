@@ -1,5 +1,6 @@
 import libsdp
 import numpy as np
+import math
 
 def read_sdpa_problem(filename):
 
@@ -219,7 +220,7 @@ def clean_sdpa_problem(c, Fi):
 
         F = libsdp.sdp_matrix()
         for key, val in unique_vals.items():
-            if np.isclose(val, 0., atol=1.0E-14):
+            if math.isclose(val, 0., abs_tol=1.0E-14):
                 continue
             bn, rval, cval = key
             F.block_number.append(bn)
@@ -236,7 +237,7 @@ def clean_sdpa_problem(c, Fi):
                 print('')
                 exit()
             else :
-                if not np.isclose(c[mi-1], 0., atol=1.0E-14):
+                if not math.isclose(c[mi-1], 0., abs_tol=1.0E-14):
                     print('')
                     print('    error, constraint 0 = %f cannot be satisfied' % (c[mi-1]))
                     print('')

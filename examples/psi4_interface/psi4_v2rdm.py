@@ -8,7 +8,7 @@ import sys
 from v2rdm_sdp import v2rdm_sdp
 from g2_v2rdm_sdp import g2_v2rdm_sdp
 
-import libsdp
+from libsdp import sdp_options
 from libsdp.sdp_helper import sdp_solver
 from libsdp.sdpa_file_io import clean_sdpa_problem
 from libsdp.sdpa_file_io import read_sdpa_problem
@@ -83,7 +83,7 @@ def main():
     b, F = clean_sdpa_problem(my_sdp.b, my_sdp.F)
 
     # set options
-    options = libsdp.sdp_options()
+    options = sdp_options()
 
     maxiter = 5000000
 

@@ -9,7 +9,7 @@ import sys
 from v2rdm_sdp import v2rdm_sdp
 from g2_v2rdm_sdp import g2_v2rdm_sdp
 
-import libsdp
+from libsdp import sdp_options
 from libsdp.sdp_helper import sdp_solver
 from libsdp.sdpa_file_io import clean_sdpa_problem
 from libsdp.sdpa_file_io import read_sdpa_problem
@@ -85,7 +85,7 @@ def main():
     dimensions = my_sdp.dimensions
 
     # set options
-    options = libsdp.sdp_options()
+    options = sdp_options()
 
     maxiter = 100000
 

@@ -1,7 +1,7 @@
 import numpy as np
 import sys
-import libsdp
 
+from libsdp import sdp_options
 from libsdp.sdpa_file_io import read_sdpa_problem
 from libsdp.sdp_helper import sdp_solver
 
@@ -31,7 +31,7 @@ def main():
     b, A, block_dim = read_sdpa_problem(filename)
 
     # set options
-    options = libsdp.sdp_options()
+    options = sdp_options()
     
     maxiter = 500000
     

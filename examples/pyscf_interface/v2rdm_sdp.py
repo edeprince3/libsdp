@@ -3,10 +3,7 @@ the semidefinite program for variational two-electron reduced density matrix the
 """
 import numpy as np
 
-import sys
-sys.path.insert(0, '../../.')
-
-import libsdp
+from libsdp.sdp_helper import sdp_matrix
 
 class v2rdm_sdp():
 
@@ -125,7 +122,7 @@ class v2rdm_sdp():
         nblocks = len(self.dimensions)
     
         # F0  ... the integrals
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
     
         #for i in range (0, nmo):
         #    for j in range (0, nmo):
@@ -206,7 +203,7 @@ class v2rdm_sdp():
         self.b = []
 
         # 1 = 1
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
         F.block_number.append(self.block_id['1'])
         F.row.append(1)
         F.column.append(1)
@@ -288,7 +285,7 @@ class v2rdm_sdp():
         """
 
         # Tr(D1)
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
     
         for i in range (0, self.nmo):
             F.block_number.append(block_id)
@@ -309,7 +306,7 @@ class v2rdm_sdp():
         """
     
         # Tr(D2)
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
    
         F.block_number.append(self.block_id['1'])
         F.row.append(1)
@@ -334,7 +331,7 @@ class v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for k in range (0, self.nmo):
    
@@ -361,7 +358,7 @@ class v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for k in range (0, self.nmo):
    
@@ -392,7 +389,7 @@ class v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 for k in range (0, self.nmo):
    
@@ -434,7 +431,7 @@ class v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 F.block_number.append(d1_block_id)
                 F.row.append(i+1)
@@ -481,7 +478,7 @@ class v2rdm_sdp():
                 k = self.bas_aa[kl][0]
                 l = self.bas_aa[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # + k* l* j i
                 F.block_number.append(d2_block_id)
@@ -551,7 +548,7 @@ class v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # + k* l* j i
                 F.block_number.append(self.block_id['d2ab'])
@@ -598,7 +595,7 @@ class v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # - i* l* j k
                 il = self.ibas_ab[i, l]
@@ -639,7 +636,7 @@ class v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # - l* i* k j
                 li = self.ibas_ab[l, i]
@@ -692,7 +689,7 @@ class v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # - i* l* j k
                 if i != l and k != j:
@@ -733,7 +730,7 @@ class v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # - i* l* j k
                 if i != l and k != j:
@@ -774,7 +771,7 @@ class v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # + i* l* k j
                 il = self.ibas_ab[i, l]
@@ -802,7 +799,7 @@ class v2rdm_sdp():
                 k = self.bas_ab[kl][0]
                 l = self.bas_ab[kl][1]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 # + l* i* j k
                 li = self.ibas_ab[l, i]
@@ -828,7 +825,7 @@ class v2rdm_sdp():
 
         ms = 0.5 * (self.nalpha - self.nbeta)
 
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
 
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
@@ -849,7 +846,7 @@ class v2rdm_sdp():
         #    for j in range (0, self.nmo):
         #        ij = self.ibas_ab[i, j]
 
-        #        F = libsdp.sdp_matrix()
+        #        F = sdp_matrix()
 
         #        for k in range (0, self.nmo):
         #            kk = self.ibas_ab[k, k]
@@ -866,7 +863,7 @@ class v2rdm_sdp():
         #    for j in range (0, self.nmo):
         #        ij = self.ibas_ab[i, j]
 
-        #        F = libsdp.sdp_matrix()
+        #        F = sdp_matrix()
 
         #        for k in range (0, self.nmo):
         #            kk = self.ibas_ab[k, k]
@@ -898,7 +895,7 @@ class v2rdm_sdp():
         for i in range (0, self.nmo):
             for j in range (0, self.nmo):
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
 
                 F.block_number.append(self.block_id['d1a'])
                 F.row.append(i+1)
@@ -923,7 +920,7 @@ class v2rdm_sdp():
                 l = self.bas_ab[kl][1]
                 lk = self.ibas_ab[l, k]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 F.block_number.append(self.block_id['d2ab'])
                 F.row.append(ij+1)
@@ -950,7 +947,7 @@ class v2rdm_sdp():
                 kl_ab = self.ibas_ab[k, l]
                 lk_ab = self.ibas_ab[l, k]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 F.block_number.append(self.block_id['d2aa'])
                 F.row.append(ij+1)
@@ -992,7 +989,7 @@ class v2rdm_sdp():
                 kl_ab = self.ibas_ab[k, l]
                 lk_ab = self.ibas_ab[l, k]
    
-                F = libsdp.sdp_matrix()
+                F = sdp_matrix()
    
                 F.block_number.append(self.block_id['d2bb'])
                 F.row.append(ij+1)

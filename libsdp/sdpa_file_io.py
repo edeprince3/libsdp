@@ -1,6 +1,7 @@
-import libsdp
 import numpy as np
 import math
+
+from libsdp.sdp_helper import sdp_matrix
 
 def read_sdpa_problem(filename):
 
@@ -84,7 +85,7 @@ def read_sdpa_problem(filename):
     
     current_block = 0
     
-    F = libsdp.sdp_matrix()
+    F = sdp_matrix()
     
     for i in range(offset+4,len(my_file)):
     
@@ -100,7 +101,7 @@ def read_sdpa_problem(filename):
             Fi.append(F)
     
             # new sdp_matrix
-            F = libsdp.sdp_matrix()
+            F = sdp_matrix()
     
         # append constraint matrix values
         F.block_number.append(int(temp[1]))
@@ -183,7 +184,7 @@ def write_sdpa_problem(filename, c, Fi, block_dimensions):
     # Fi
     for i in range (0, len(Fi)):
         s = ''
-        for j in range (0, Fi[i].block_number.size()):
+        for j in range (0, len(Fi[i].block_number)):
             if Fi[i].row[j] <= Fi[i].column[j] : 
                 f.write("%5i %5i %5i %5i %20.12e\n" % (i, Fi[i].block_number[j], Fi[i].row[j], Fi[i].column[j], Fi[i].value[j]) )
 
@@ -196,16 +197,15 @@ def clean_sdpa_problem(c, Fi):
 
     :param c: the constraint vector
 
-    :param Fi: a list of sdp_matrix objects defining the constraints. the
-               first object in the  which (F0) defines the objective
-               function
+    :param Fi: a list of Python SDPA matrix objects defining the 
+               constraints. the first object in the  which (F0) 
+               defines the objective function
 
     :return c: a pruned the constraint vector
 
-    :return Fi: a pruned list of sdp_matrix objects defining the
+    :return Fi: a pruned list of C++ SDPA matrix objects defining the
                 constraints. the first object in the  which (F0) defines
                 the objective function
-               
     """ 
 
     # strategy is to go through every constraint and uniqify
@@ -213,12 +213,11 @@ def clean_sdpa_problem(c, Fi):
     new_c = []
     for mi in range(len(Fi)):
         unique_vals = defaultdict(lambda: 0.) # lambda: 0. is def f(): return 0.
-        # each Fi[mi] is a libsdp._libsdp.int_vector object which has the method .size() returning length
-        for j in range(Fi[mi].row.size()):
+        for j in range(len(Fi[mi].row)):
             key = (Fi[mi].block_number[j], Fi[mi].row[j], Fi[mi].column[j])
             unique_vals[key] += Fi[mi].value[j]
 
-        F = libsdp.sdp_matrix()
+        F = sdp_matrix()
         for key, val in unique_vals.items():
             if math.isclose(val, 0., abs_tol=1.0E-14):
                 continue
@@ -229,7 +228,7 @@ def clean_sdpa_problem(c, Fi):
             F.value.append(val)
 
         # such constraints look like 0 = 0 ... don't include them
-        if F.row.size() == 0 :
+        if len(F.row) == 0 :
 
             if mi == 0 :
                 print('')
@@ -245,6 +244,7 @@ def clean_sdpa_problem(c, Fi):
 
             continue
 
+        # convert python SDPA matrix object to C++ one, then add to list
         new_F.append(F)
         if mi > 0:
             new_c.append(c[mi-1])

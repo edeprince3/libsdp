@@ -24,6 +24,7 @@
  *  @END LICENSE
  */
 
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -40,20 +41,20 @@
 #include "blas_helper.h"
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl_bind.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-std::vector<double> empty_list = {};
+std::vector<int> empty_list = {};
 
 namespace libsdp {
 
 void export_SDPHelper(py::module& m) {
 
     // export SDP options
-
     py::class_<SDPOptions> options(m, "sdp_options");
 
     options.def(py::init< >())
@@ -73,32 +74,16 @@ void export_SDPHelper(py::module& m) {
         .def_readwrite("sdp_algorithm",&SDPOptions::algorithm)
         .def_readwrite("procedure",&SDPOptions::procedure);
 
-    py::class_<my_vector<int>> (m, "int_vector")
-        .def(py::init<>())
-        .def("__getitem__", &my_vector<int>::operator[])
-        .def("size", &my_vector<int>::size)
-        .def("append", &my_vector<int>::append)
-        .def("get", &my_vector<int>::get);
-
-    py::class_<my_vector<double>> (m, "double_vector")
-        .def(py::init<>())
-        .def("__getitem__", &my_vector<double>::operator[])
-        .def("size", &my_vector<double>::size)
-        .def("append", &my_vector<double>::append)
-        .def("get", &my_vector<double>::get);
-
     // export SDPMatrix type
-    py::class_<SDPMatrix> matrix(m, "sdp_matrix");
-
-    matrix.def(py::init< >())
-        .def_readwrite("block_number",&SDPMatrix::block_number)
-        .def_readwrite("row",&SDPMatrix::row)
-        .def_readwrite("column",&SDPMatrix::column)
-        .def_readwrite("value",&SDPMatrix::value)
-        .def_readwrite("id",&SDPMatrix::id);
+    py::class_<SDPMatrix>(m, "sdp_matrix")
+        .def(py::init<>())
+        .def_readwrite("block_number", &SDPMatrix::block_number)
+        .def_readwrite("row", &SDPMatrix::row)
+        .def_readwrite("column", &SDPMatrix::column)
+        .def_readwrite("value", &SDPMatrix::value)
+        .def_readwrite("id", &SDPMatrix::id);
 
     // export SDP solver
-
     py::class_<SDPHelper, std::shared_ptr<SDPHelper> >(m, "sdp_solver")
         .def(py::init<SDPOptions, std::vector<SDPMatrix> &, std::vector<int> & >())
         .def("solve", 
@@ -116,7 +101,6 @@ void export_SDPHelper(py::module& m) {
         .def("get_y", &SDPHelper::get_y)
         .def("get_z", &SDPHelper::get_z)
         .def("get_c", &SDPHelper::get_c);
-
 }
 
 PYBIND11_MODULE(_libsdp, m) {
@@ -134,7 +118,6 @@ static void bpsdp_monitor(int print_level, int oiter, int iiter, double energy_p
             fflush(stdout);
         }
     }
-
 }
 
 /// RRSDP monitor callback function
@@ -147,7 +130,6 @@ static void rrsdp_monitor(int print_level, int oiter, int iiter, double lagrangi
             fflush(stdout);
         }
     }
-
 }
 
 /// SDPHelper constructor
@@ -240,7 +222,8 @@ SDPHelper::SDPHelper(SDPOptions options,
             size_t id = off + my_row * primal_block_dim[my_block] + my_column;
 
             // add to matrix object
-            Fi_[i-1].id.append(id);
+            //Fi_[i-1].id.append(id);
+            Fi_[i-1].id.push_back(id);
         }
     }
 
@@ -248,8 +231,10 @@ SDPHelper::SDPHelper(SDPOptions options,
     FTi_.resize(n_primal_);
     for (size_t i = 0; i < Fi_.size(); i++) {
         for (size_t j = 0; j < Fi_[i].block_number.size(); j++) {
-            FTi_[Fi_[i].id[j]].id.append(i);
-            FTi_[Fi_[i].id[j]].value.append(Fi_[i].value[j]);
+            //FTi_[Fi_[i].id[j]].id.append(i);
+            //FTi_[Fi_[i].id[j]].value.append(Fi_[i].value[j]);
+            FTi_[Fi_[i].id[j]].id.push_back(i);
+            FTi_[Fi_[i].id[j]].value.push_back(Fi_[i].value[j]);
         }
     }
 

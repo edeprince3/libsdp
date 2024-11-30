@@ -139,9 +139,9 @@ which defines each of these quantities and passes them to the libsdp solver.
 
 ## Methods and Functionality
 
-The following methods and objects are exposed at the Python layer:
+The following methods and objects are accessible in libsdp and libsdp.sdp_helper:
 
-#### libsdp.sdp_matrix()
+#### libsdp.sdp_helper.sdp_matrix()
 
 Returns a struct for SDPA-style sparse matrix entries. Each row of the sparse matrix has elements that map to the elements of the primal solution vector for evaluating matrix-vector products (e.g, for Ax = b). A row of A can be encoded with the following elements of the sdp_matrix() struct:
 
@@ -169,21 +169,23 @@ The options object also defines the enums used to specify sdp_algorithm:
 
 Default settings can be found in libsdp/include/sdp_solver.h
 
-#### libsdp.sdp_solver( libsdp.options() )
+#### libsdp.sdp_helper.sdp_solver( libsdp.options() )
 
 Returns a solver object for performing the actual SDP optimization. Takes an options object as input. A minimal workflow would be:
 
 ```
-import libsdp
+from libsdp import sdp_options
+from libsdp.sdp_helper import sdp_solver
+from libsdp.sdp_helper import sdp_matrix
 
-options = libsdp.sdp_options()
+options = sdp_options()
 
 # change options if you don't like the defaults
 
-sdp = libsdp.sdp_solver(options)
+sdp = sdp_solver(options)
 
 b = [] # ... fill with appropriate elements
-F = [libsdp.sdp_matrix()] # ... fill with c, then rows of A
+F = [sdp_matrix()] # ... fill with c, then rows of A
 dimensions = [] # fill with block dimensions of primal solution
 maxiter = 100000 # maximum number of iterations ... can be used to force BPSDP to return early
 

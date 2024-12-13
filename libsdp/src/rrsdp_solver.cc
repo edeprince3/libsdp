@@ -172,7 +172,7 @@ void RRSDPSolver::solve(double * x,
 
     lbfgs_parameter_t param;
     lbfgs_parameter_init(&param);
-    param.max_iterations = options_.maxiter;
+    param.max_iterations = options_.lbfgs_maxiter;
     //param.epsilon        = 1e-8;
 
     do {

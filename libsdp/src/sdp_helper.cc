@@ -58,7 +58,7 @@ void export_SDPHelper(py::module& m) {
     py::class_<SDPOptions> options(m, "sdp_options");
 
     options.def(py::init< >())
-        .def_readwrite("maxiter",&SDPOptions::maxiter)
+        .def_readwrite("lbfgs_maxiter",&SDPOptions::lbfgs_maxiter)
         .def_readwrite("cg_maxiter",&SDPOptions::cg_maxiter)
         .def_readwrite("mu_update_frequency",&SDPOptions::mu_update_frequency)
         .def_readwrite("cg_convergence",&SDPOptions::cg_convergence)
@@ -89,12 +89,12 @@ void export_SDPHelper(py::module& m) {
         .def("solve", 
              [](SDPHelper& self, 
                  const std::vector<double> & b, 
-                 const int & maxdim,
+                 const int & maxiter,
                  const std::vector<int> & primal_block_rank) {
-                 return self.solve(b, maxdim, primal_block_rank);
+                 return self.solve(b, maxiter, primal_block_rank);
              },
              py::arg("b"), 
-             py::arg("maxdim"), 
+             py::arg("maxiter"), 
              py::arg("primal_block_rank") = empty_list )
         .def("get_ATu", &SDPHelper::get_ATu)
         .def("get_Au", &SDPHelper::get_Au)

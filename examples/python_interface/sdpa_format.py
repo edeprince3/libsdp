@@ -33,23 +33,23 @@ def main():
     # set options
     options = sdp_options()
     
-    maxiter = 500000
     
     options.sdp_algorithm             = "bpsdp"
     options.procedure                 = "maximize"
     options.guess_type                = "zero"
     #options.guess_type                = "read"
-    options.maxiter                   = maxiter
     options.sdp_error_convergence     = 1e-8
     options.sdp_objective_convergence = 1e-8
-    options.cg_convergence            = 1e-12
-    options.dynamic_cg_convergence    = False
+    options.lbfgs_maxiter             = 50000 # for RRSDP
+    options.cg_convergence            = 1e-12 # for BPSDP
+    options.dynamic_cg_convergence    = False # for BPSDP
     #options.penalty_parameter_scaling = 0.1
     #options.penalty_parameter         = 0.1
    
     # solve sdp (python) 
 
     # solve sdp (c++)
+    maxiter = 50000
     sdp = sdp_solver(options, A, block_dim)
     x = sdp.solve(b, maxiter)
     c = np.array(sdp.get_c())

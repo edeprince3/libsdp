@@ -87,7 +87,6 @@ def main():
     # set options
     options = sdp_options()
 
-    maxiter = 100000
 
     #options.sdp_algorithm             = "bpsdp"
     #options.maxiter                   = maxiter
@@ -98,13 +97,13 @@ def main():
     options.sdp_algorithm             = "bpsdp"
     #options.procedure                 = "maximize"
     options.guess_type                = "random"
-    options.maxiter                   = maxiter
     options.sdp_error_convergence     = 5e-5
     options.sdp_objective_convergence = 5e-5
     options.cg_convergence            = 1e-8
     options.dynamic_cg_convergence    = False
 
     # solve sdp
+    maxiter = 100000
     sdp = sdp_solver(options, F, dimensions)
     x = sdp.solve(b, maxiter)
 

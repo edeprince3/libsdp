@@ -85,15 +85,13 @@ def main():
     # set options
     options = sdp_options()
 
-    maxiter = 5000000
-
     options.sdp_algorithm             = "bpsdp"
-    options.maxiter                   = maxiter
     options.sdp_error_convergence     = 1e-4
     options.sdp_objective_convergence = 1e-4
     options.penalty_parameter_scaling = 0.1
 
     # solve sdp
+    maxiter = 5000000
     sdp = sdp_solver(options, F, dimensions)
     x = sdp.solve(b, maxiter)
 

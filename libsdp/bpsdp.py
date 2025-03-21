@@ -2,7 +2,7 @@ import numpy as np
 import sys
 import libsdp
 
-def bpsdp(x, b, c, primal_block_dim, Ai, options):
+def bpsdp(x, b, c, primal_block_dim, Ai, options, maxiter = 50000):
     """
     solve an SDP by the boundary-point algorithm
    
@@ -12,10 +12,12 @@ def bpsdp(x, b, c, primal_block_dim, Ai, options):
     :param primal_block_dim: list of block dimensions for the primal solution
     :param Ai: list of constraint matrices
     :param options: libsdp options object
+    :param maxiter: maximum number of outer iterations
 
     :return x: the primal solution vector
     :return y: the dual solution vector
     :return z: c - ATy
+    :return c: the objective function vector
 
     """
 
@@ -40,7 +42,7 @@ def bpsdp(x, b, c, primal_block_dim, Ai, options):
     bpsdp_iter = 0
 
     print('      oiter iiter         c.x         b.y    |c.x-b.y|      mu    ||Ax-b|| ||ATy-c+z||')
-    while bpsdp_iter < options.maxiter:
+    while bpsdp_iter < maxiter:
 
         # step 1: solve for y using the conjuage gradient method
 
@@ -48,18 +50,17 @@ def bpsdp(x, b, c, primal_block_dim, Ai, options):
         cg_rhs = evaluate_Au(Ai, c-z) + tau * mu * (b - evaluate_Au(Ai, x))
 
         # solve AATy = A(c-z) + tau * mu * (b - Ax) via conjugate gradient
-        cg_convergence = 1e-8
-        if bpsdp_iter == 0:
-            cg_convergence = 0.01
-        else:
-            if primal_error > dual_error :
-                cg_convergence = 0.01 * dual_error
+        cg_convergence = options.cg_convergence
+        if options.dynamic_cg_convergence:
+            if bpsdp_iter == 0:
+                cg_convergence = 0.01
             else:
-                cg_convergence = 0.01 * primal_error
-        if cg_convergence < 1e-6:
-            cg_convergence = 1e-6
+                if primal_error > dual_error :
+                    cg_convergence = 0.01 * dual_error
+                else:
+                    cg_convergence = 0.01 * primal_error
 
-        y, cg_iter = cg(y, cg_rhs, Ai, n_primal, cg_convergence)
+        y, cg_iter = cg(y, cg_rhs, Ai, n_primal, cg_convergence, options)
 
         # step 2: update x and z
         
@@ -116,7 +117,7 @@ def bpsdp(x, b, c, primal_block_dim, Ai, options):
 
         bpsdp_iter += 1
 
-    if bpsdp_iter == options.maxiter :
+    if bpsdp_iter == maxiter :
         print('')
         print('    error: bpsdp did not converge')
         print('')
@@ -136,7 +137,7 @@ def evaluate_Au(Ai, u):
     Au = np.zeros([len(Ai)])
     for i in range (0, len(Ai)):
         dum = 0.0
-        for j in range (0, Ai[i].value.size()):
+        for j in range (0, len(Ai[i].value)):
             dum += Ai[i].value[j] * u[Ai[i].id[j]]
         Au[i] = dum
 
@@ -154,7 +155,7 @@ def evaluate_ATu(Ai, u, n_primal):
 
     ATu = np.zeros([n_primal])
     for i in range (0, len(Ai)):
-        for j in range (0, Ai[i].value.size()):
+        for j in range (0, len(Ai[i].value)):
             ATu[Ai[i].id[j]] += Ai[i].value[j] * u[i]
 
     return ATu
@@ -174,7 +175,7 @@ def evaluate_AATu(Ai, u, n_primal):
 
     return AATu
 
-def cg(y, rhs, Ai, n_primal, cg_convergence):
+def cg(y, rhs, Ai, n_primal, cg_convergence, options):
     """
     solve AATy = A(c-z) + tau * mu * (b - Ax) via conjugate gradient
 
@@ -182,6 +183,7 @@ def cg(y, rhs, Ai, n_primal, cg_convergence):
     :param rhs: the right-hand-side of the CG problem, tau * mu * (b - Ax)
     :param Ai: list of constraint matrices
     :param n_primal: the number of primal variables
+    :param options: libsdp options object
     :return y
     """
 
@@ -192,9 +194,8 @@ def cg(y, rhs, Ai, n_primal, cg_convergence):
     p = r.copy()
 
     cg_iter = 0
-    cg_maxiter = 1000
     
-    while(cg_iter < cg_maxiter) :
+    while(cg_iter < options.cg_maxiter) :
 
         Ap = evaluate_AATu(Ai, p, n_primal)
 
@@ -214,7 +215,7 @@ def cg(y, rhs, Ai, n_primal, cg_convergence):
 
         cg_iter += 1
 
-    if cg_iter == cg_maxiter :
+    if cg_iter == options.cg_maxiter :
         print('')
         print('    error: maximum number of cg iterations exceeded')
         print('')
@@ -222,7 +223,7 @@ def cg(y, rhs, Ai, n_primal, cg_convergence):
 
     return y, cg_iter
 
-def solve(b, Ai, primal_block_dim, options):
+def solve(b, Ai, primal_block_dim, options, maxiter = 50000):
 
     n_primal = 0
     for i in range (0, len(primal_block_dim)):
@@ -232,8 +233,14 @@ def solve(b, Ai, primal_block_dim, options):
 
     c = np.zeros([n_primal])
     x = 1e-4 * (np.random.rand(n_primal) - 0.5 )
+    if options.guess_type == "zero":
+        x *= 0.0
 
-    for i in range (0, Ai[0].block_number.size()):
+    sg = 1
+    if options.procedure == "maximize":
+        sg = -1
+
+    for i in range (0, len(Ai[0].block_number)):
 
         my_block  = Ai[0].block_number[i] - 1
         my_row = Ai[0].row[i] - 1
@@ -248,16 +255,16 @@ def solve(b, Ai, primal_block_dim, options):
         # has c = -F0. (we're minimizing; they maximize). the result will be that
         # our final objective will have the opposite sign compared to tabulated
         # SDPLIB values
-        c[off + my_row * primal_block_dim[my_block] + my_column] += Ai[0].value[i]
+        c[off + my_row * primal_block_dim[my_block] + my_column] += sg * Ai[0].value[i]
 
     # constraint matrices
     my_Ai = []
     for i in range (1, len(Ai)):
 
-        F = libsdp.sdp_matrix()
+        F = libsdp.sdp_helper.sdp_matrix()
 
         # add composite indices
-        for j in range (0, Ai[i].block_number.size()):
+        for j in range (0, len(Ai[i].block_number)):
 
             # don't forget that the input Ai used unit-offset labels
             my_block = Ai[i].block_number[j] - 1
@@ -283,5 +290,7 @@ def solve(b, Ai, primal_block_dim, options):
         my_Ai.append(F)
 
     # call bpsdp
-    bpsdp(x, b, c, primal_block_dim, my_Ai, options)
+    x, y, z = bpsdp(x, b, c, primal_block_dim, my_Ai, options, maxiter)
+
+    return x, y, z, c
 

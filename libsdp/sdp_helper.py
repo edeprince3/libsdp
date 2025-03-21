@@ -9,6 +9,7 @@ class sdp_matrix:
         self.column: list = []
         self.block_number: list = []
         self.value: list = []
+        self.id: list = []
 
 def python_to_cpp_sdp_matrix(Fi: sdp_matrix):
     """

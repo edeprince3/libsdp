@@ -101,9 +101,11 @@ if ( BUILD_PYTHON_INTERFACE )
         set(MKL_LIB_DIR "${MKLROOT}/lib/intel64")
     
         target_link_libraries(_libsdp PRIVATE
+            -Wl,--start-group
             ${MKL_LIB_DIR}/libmkl_intel_lp64.a
             ${MKL_LIB_DIR}/libmkl_core.a
             ${MKL_LIB_DIR}/libmkl_gnu_thread.a
+            -Wl,--end-group
             -fopenmp -lpthread -lm -ldl)
     
     else()

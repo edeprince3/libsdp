@@ -82,8 +82,15 @@ if ( BUILD_PYTHON_INTERFACE )
         libsdp/src/sdp_helper.cc)
     
     # BLAS
-    find_package(BLAS REQUIRED)
-    target_link_libraries(_libsdp PRIVATE ${BLAS_LIBRARIES})
+    find_package(MKL CONFIG)
+    if (MKL_FOUND)
+        message(STATUS "MKLROOT found. Using MKL.")
+        target_link_libraries(_libsdp PRIVATE MKL::MKL)
+    else()
+        message(STATUS "MKLROOT not found. Looking for other BLAS.")
+        find_package(BLAS REQUIRED)
+        target_link_libraries(_libsdp PRIVATE ${BLAS_LIBRARIES})
+    endif()
     
     # liblbfgs
     set(EXTERNAL_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/libsdp/external/)

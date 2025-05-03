@@ -139,8 +139,37 @@ else()
     target_include_directories(sdp PUBLIC "${PROJECT_SOURCE_DIR}/libsdp/include")
 
     # BLAS
-    find_package(BLAS REQUIRED)
-    target_link_libraries(sdp PRIVATE ${BLAS_LIBRARIES})
+
+    # Try to find MKL via CMake config package
+    set(USE_MKL OFF)
+    find_package(MKL CONFIG)
+    
+    if (MKL_FOUND)
+        message(STATUS "MKL found via CMake config.")
+        set(USE_MKL ON)
+        target_link_libraries(_libsdp PRIVATE MKL::MKL)
+    
+    elseif(DEFINED ENV{MKLROOT})
+        # Manually link to MKL if MKLROOT is set
+        message(STATUS "MKLROOT found, using manual MKL linking.")
+        set(USE_MKL ON)
+    
+        set(MKLROOT $ENV{MKLROOT})
+        set(MKL_LIB_DIR "${MKLROOT}/lib/intel64")
+    
+        target_link_libraries(_libsdp PRIVATE
+            -Wl,--start-group
+            ${MKL_LIB_DIR}/libmkl_intel_lp64.a
+            ${MKL_LIB_DIR}/libmkl_core.a
+            ${MKL_LIB_DIR}/libmkl_gnu_thread.a
+            -Wl,--end-group
+            -fopenmp -lpthread -lm -ldl)
+    
+    else()
+        message(STATUS "MKL not found. Falling back to generic BLAS.")
+        find_package(BLAS REQUIRED)
+        target_link_libraries(_libsdp PRIVATE ${BLAS_LIBRARIES})
+    endif()
     
     # liblbfgs
     set(EXTERNAL_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/libsdp/external/)

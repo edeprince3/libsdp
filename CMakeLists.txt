@@ -82,16 +82,36 @@ if ( BUILD_PYTHON_INTERFACE )
         libsdp/src/sdp_helper.cc)
     
     # BLAS
+
+    # Try to find MKL via CMake config package
+    set(USE_MKL OFF)
     find_package(MKL CONFIG)
+    
     if (MKL_FOUND)
-        message(STATUS "MKLROOT found. Using MKL.")
+        message(STATUS "MKL found via CMake config.")
+        set(USE_MKL ON)
         target_link_libraries(_libsdp PRIVATE MKL::MKL)
+    
+    elseif(DEFINED ENV{MKLROOT})
+        # Manually link to MKL if MKLROOT is set
+        message(STATUS "MKLROOT found, using manual MKL linking.")
+        set(USE_MKL ON)
+    
+        set(MKLROOT $ENV{MKLROOT})
+        set(MKL_LIB_DIR "${MKLROOT}/lib/intel64")
+    
+        target_link_libraries(_libsdp PRIVATE
+            ${MKL_LIB_DIR}/libmkl_intel_lp64.a
+            ${MKL_LIB_DIR}/libmkl_core.a
+            ${MKL_LIB_DIR}/libmkl_gnu_thread.a
+            -fopenmp -lpthread -lm -ldl)
+    
     else()
-        message(STATUS "MKLROOT not found. Looking for other BLAS.")
+        message(STATUS "MKL not found. Falling back to generic BLAS.")
         find_package(BLAS REQUIRED)
         target_link_libraries(_libsdp PRIVATE ${BLAS_LIBRARIES})
     endif()
-    
+
     # liblbfgs
     set(EXTERNAL_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/libsdp/external/)
     add_subdirectory(libsdp/external)

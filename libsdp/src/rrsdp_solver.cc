@@ -26,6 +26,7 @@
 
 #include <string.h>
 #include <memory>
+#include <pybind11/pybind11.h>
 
 #include <rrsdp_solver.h>
 
@@ -244,6 +245,10 @@ void RRSDPSolver::solve(double * x,
         // write solution to disk ... use z to pass R
         C_DCOPY(n_primal_, lbfgs_vars_x_, 1, z_, 1);
         write_xyz(x);
+
+        if (PyErr_CheckSignals() != 0) {
+            throw pybind11::error_already_set();
+        }
 
     }while( !is_converged_ );
 

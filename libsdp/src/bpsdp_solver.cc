@@ -31,6 +31,8 @@
 #include <omp.h>
 #endif
 
+#include <pybind11/pybind11.h>
+
 #include <bpsdp_solver.h>
 #include <cg_solver.h>
 
@@ -173,6 +175,11 @@ void BPSDPSolver::solve(double * x,
         }
 
         if ( oiter_local == maxiter ) break;
+
+        if (PyErr_CheckSignals() != 0) {
+            throw pybind11::error_already_set();
+        }
+
     }while( !is_converged_ );
 
     // write converged solution to disk

@@ -100,7 +100,8 @@ void export_SDPHelper(py::module& m) {
         .def("get_Au", &SDPHelper::get_Au)
         .def("get_y", &SDPHelper::get_y)
         .def("get_z", &SDPHelper::get_z)
-        .def("get_c", &SDPHelper::get_c);
+        .def("get_c", &SDPHelper::get_c)
+        .def("get_mu", &SDPHelper::get_mu);
 }
 
 PYBIND11_MODULE(_libsdp, m) {
@@ -450,6 +451,11 @@ std::vector<double> SDPHelper::get_y() {
     double * tmp_y = sdp_->get_y();
     std::vector<double> y(tmp_y, tmp_y + n_dual_);
     return y;
+}
+
+/// return the RRSDP penalty parameter, mu
+double SDPHelper::get_mu() {
+    return sdp_->get_mu();
 }
 
 /// return the action of A^T on a vector

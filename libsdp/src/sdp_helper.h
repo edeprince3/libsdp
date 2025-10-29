@@ -72,6 +72,9 @@ class SDPHelper{
     /// evaluate ATu
     void evaluate_ATu(double * ATu, double * u);
 
+    /// return the RRSDP penalty parameter, mu
+    double get_mu();
+
     /// return the BPSDP dual z vector
     std::vector<double> get_z();
 

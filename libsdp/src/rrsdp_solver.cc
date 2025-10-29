@@ -207,23 +207,6 @@ void RRSDPSolver::solve(double * x,
         C_DAXPY(n_dual_,-1.0,b_,1,Au_,1);
         primal_error_ = C_DNRM2(n_dual_,Au_,1);
 
-        double new_max_err = 0.0;
-        int imax = -1;
-        //for (int i = 0; i < n_dual_; i++) {
-        //    if ( fabs(Au_[i]) > new_max_err ) {
-        //        new_max_err = fabs(Au_[i]);
-        //        imax = i;
-        //     }
-        //}
-        //if ( new_max_err < 0.25 * max_err ){
-            for (int i = 0; i < n_dual_; i++) {
-                y_[i] -= Au_[i] / mu_;
-            }
-        //}else{
-            mu_ *= mu_scale_factor_;
-        //}
-        max_err = new_max_err;
-
         progress_monitor(print_level,oiter_,iiter_,lagrangian,objective_primal,mu_,primal_error_,0.0, data);
 
         iiter_total_ += iiter_;
@@ -245,6 +228,26 @@ void RRSDPSolver::solve(double * x,
         // write solution to disk ... use z to pass R
         C_DCOPY(n_primal_, lbfgs_vars_x_, 1, z_, 1);
         write_xyz(x);
+
+
+        if (is_converged_) break;
+
+        double new_max_err = 0.0;
+        int imax = -1;
+        //for (int i = 0; i < n_dual_; i++) {
+        //    if ( fabs(Au_[i]) > new_max_err ) {
+        //        new_max_err = fabs(Au_[i]);
+        //        imax = i;
+        //     }
+        //}
+        //if ( new_max_err < 0.25 * max_err ){
+            for (int i = 0; i < n_dual_; i++) {
+                y_[i] -= Au_[i] / mu_;
+            }
+        //}else{
+            mu_ *= mu_scale_factor_;
+        //}
+        max_err = new_max_err;
 
         if (PyErr_CheckSignals() != 0) {
             throw pybind11::error_already_set();

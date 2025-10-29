@@ -70,3 +70,6 @@ class sdp_solver:
     def get_c(self):
         return self.sdp_solver.get_c()
 
+    def get_mu(self):
+        return self.sdp_solver.get_mu()
+

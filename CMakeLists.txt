@@ -33,6 +33,7 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3") 
 
 find_package(OpenMP)
+
 if (OPENMP_FOUND)
     add_compile_definitions(_OPENMP)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 ${OpenMP_C_FLAGS}")
@@ -42,7 +43,6 @@ endif()
 
 # python interface
 if ( BUILD_PYTHON_INTERFACE ) 
-
 
     # find python and set variables for:
     #     the interpreter, include dirs, libraries, and version
@@ -72,7 +72,7 @@ if ( BUILD_PYTHON_INTERFACE )
     
     set(PYBIND11_CPP_STANDARD -std=c++17)
 
-    pybind11_add_module(_libsdp SHARED 
+    pybind11_add_module(_libsdp MODULE 
         libsdp/src/blas_helper.cc 
         libsdp/src/lbfgs_helper.cc 
         libsdp/src/cg_solver.cc 
@@ -121,6 +121,12 @@ if ( BUILD_PYTHON_INTERFACE )
 
     # libsdp 
     target_include_directories(_libsdp PUBLIC "${PROJECT_SOURCE_DIR}/libsdp/include")
+
+    if(OpenMP_CXX_FOUND)
+        # This automatically handles the include paths (omp.h) and the linking
+        target_link_libraries(_libsdp PRIVATE OpenMP::OpenMP_CXX)
+    endif()
+
     
 else()
 

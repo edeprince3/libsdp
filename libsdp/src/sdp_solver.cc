@@ -132,7 +132,9 @@ void SDPSolver::read_xyz(double * x) {
 
     // y
     fscanf(fp, "%li", &dim);
-    if ( dim != n_dual_ ) {
+    if ( dim == 0 ) {
+        // do nothing ... no guess for y
+    }else if ( dim != n_dual_ ) {
         printf("\n");
         printf("    error: dimension mismatch when reading solution (y)\n");
         printf("\n");
@@ -144,7 +146,9 @@ void SDPSolver::read_xyz(double * x) {
 
     // x
     fscanf(fp, "%li", &dim);
-    if ( dim != n_primal_ ) {
+    if ( dim == 0 ) {
+        // do nothing ... no guess for z
+    }else if ( dim != n_primal_ ) {
         printf("\n");
         printf("    error: dimension mismatch when reading solution (z)\n");
         printf("\n");

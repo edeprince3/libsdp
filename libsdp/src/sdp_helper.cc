@@ -98,6 +98,7 @@ void export_SDPHelper(py::module& m) {
              py::arg("primal_block_rank") = empty_list )
         .def("get_ATu", &SDPHelper::get_ATu)
         .def("get_Au", &SDPHelper::get_Au)
+        .def("get_x", &SDPHelper::get_x)
         .def("get_y", &SDPHelper::get_y)
         .def("get_z", &SDPHelper::get_z)
         .def("get_c", &SDPHelper::get_c)
@@ -451,6 +452,11 @@ std::vector<double> SDPHelper::get_y() {
     double * tmp_y = sdp_->get_y();
     std::vector<double> y(tmp_y, tmp_y + n_dual_);
     return y;
+}
+
+/// return the RRSDP or BPSDP x primal variable
+std::vector<double> SDPHelper::get_x() {
+    return x_;
 }
 
 /// return the RRSDP penalty parameter, mu

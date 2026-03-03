@@ -61,6 +61,9 @@ class sdp_solver:
     def get_Au(self, u):
         return self.sdp_solver.get_Au(u)
 
+    def get_x(self):
+        return self.sdp_solver.get_x()
+
     def get_y(self):
         return self.sdp_solver.get_y()
 

@@ -82,5 +82,12 @@ setup(
     ext_modules=[CMakeExtension("libsdp._libsdp")],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,
-    packages=['libsdp']
+    packages=['libsdp'],
+    install_requires=[
+        'numpy',
+        'jax',
+        'optax',
+        'lineax',
+        'h5py',
+    ],
 )

@@ -130,8 +130,8 @@ def test_pyscf_v2rdm():
     assert np.isclose(primal_energy, -7.848024089674, atol=1e-8), "primal objective value does not match reference value"
 
 def main():
-    #raise Exception("run with pytest")
-    test_pyscf_v2rdm()
+    raise Exception("run with pytest")
+    #test_pyscf_v2rdm()
 
 if __name__ == "__main__":
     main()

@@ -90,6 +90,8 @@ def test_python_interface_sdpa_format():
 
         assert np.isclose(primal_objective_value, -8.999996318987, atol=1e-8), "BPSDP dual objective value does not match reference value"
 
+def main():
+    raise Exception("run with pytest")
 
 if __name__ == "__main__":
     main()

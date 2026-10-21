@@ -1,3 +1,24 @@
+"""
+Example for using libsdp with SDPA sparse format inputs. This example
+uses the reference python implementation of bpsdp. For production
+runs, use the bpsdp_jax or the c++ implementation.
+
+max  tr (F0.y)
+s.t. tr (Fi.y) = ci, i = 1..m
+and  y succeq 0
+
+In libSDP, this problem maps onto 
+
+min  -tr (c.x) 
+s.t. tr (Ai.x) = bi, i = 1..m
+and  x succeq 0
+
+Note the minus sign to account for maximize versus minimize.
+
+"""
+
+
+
 import numpy as np
 import sys
 
@@ -8,22 +29,6 @@ import libsdp.bpsdp
 
 def test_bpsdp_sdpa_format():
 
-    """
-    Example for using libsdp with SDPA sparse format inputs
-
-    max  tr (F0.y)
-    s.t. tr (Fi.y) = ci, i = 1..m
-    and  y succeq 0
-
-    In libSDP, this problem maps onto 
-
-    min  -tr (c.x) 
-    s.t. tr (Ai.x) = bi, i = 1..m
-    and  x succeq 0
-
-    Note the minus sign to account for maximize versus minimize.
-
-    """
 
     filename = 'truss1.dat-s'
 
@@ -57,6 +62,9 @@ def test_bpsdp_sdpa_format():
     print('')
 
     assert np.isclose(primal_objective_value, -8.999996308753, atol=1e-8), "BPSDP primal objective value does not match reference value"
+
+def main():
+    raise Exception("run with pytest")
 
 if __name__ == "__main__":
     main()

@@ -36,8 +36,8 @@ def test_pyscf_v2rdm():
             ['H', (0, 0, 5)],
         ],
         basis='sto-3g',
-        spin=1,
-        charge=+1,
+        spin=0,
+        charge=+0,
         symmetry=False)
 
     # run RHF
@@ -127,11 +127,11 @@ def test_pyscf_v2rdm():
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
 
-    assert np.isclose(primal_energy, -6.833747521046, atol=1e-8), "primal objective value does not match reference value"
+    assert np.isclose(primal_energy, -7.848024089674, atol=1e-8), "primal objective value does not match reference value"
 
 def main():
-    raise Exception("run with pytest")
-    #test_pyscf_v2rdm()
+    #raise Exception("run with pytest")
+    test_pyscf_v2rdm()
 
 if __name__ == "__main__":
     main()

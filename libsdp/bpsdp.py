@@ -1,3 +1,12 @@
+"""
+a reference implementation of a boundary-point method of Povh, Rendl, and
+Wiegele, as used for v2RDM theory by Mazziotti, with conjugate-gradient
+solves for the dual update.
+
+see bpsdp_jax for production use.
+
+"""
+
 import numpy as np
 import sys
 import libsdp

@@ -19,7 +19,7 @@ def test_bpsdp_sdpa_format():
 
     min  -tr (c.x) 
     s.t. tr (Ai.x) = bi, i = 1..m
-    and  x suceeq 0
+    and  x succeq 0
 
     Note the minus sign to account for maximize versus minimize.
 

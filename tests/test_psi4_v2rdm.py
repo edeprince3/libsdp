@@ -1,6 +1,10 @@
 """
-Driver for variational two-electron reduced-density matrix method. Integrals come from Psi4
+
+Test energies from variational two-electron reduced-density matrix method.
+The molecular integrals come from Psi4. The solver is the c++ based one.
+
 """
+
 import numpy as np
 from numpy import einsum
 
@@ -15,8 +19,10 @@ from libsdp.sdpa_file_io import read_sdpa_problem
 from libsdp.sdpa_file_io import write_sdpa_problem
 
 import psi4
+import pytest
+psi4 = pytest.importorskip("psi4", reason="Psi4 is not installed; skipping Psi4 v2RDM test")
 
-def main():
+def test_psi4_v2rdm():
 
     # set molecule
     mol = psi4.geometry("""
@@ -76,8 +82,8 @@ def main():
     # b is the right-hand side of Ax = b
     # F contains c followed by the rows of A, in SDPA sparse matrix format
     # 
-    #my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, constrain_spin = True, g2 = True)
-    my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True, q2 = True, constrain_spin = False)
+    my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, constrain_spin = True, g2 = True)
+    #my_sdp = g2_v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, d2 = True, q2 = True, constrain_spin = True)
 
     dimensions = my_sdp.dimensions
     b, F = clean_sdpa_problem(my_sdp.b, my_sdp.F)
@@ -112,12 +118,6 @@ def main():
     dual_error = c - z - ATy
     primal_error = Ax - b
 
-    # extract blocks of rdms
-    #x = my_sdp.get_rdm_blocks(x)
-    #z = my_sdp.get_rdm_blocks(z)
-    #c = my_sdp.get_rdm_blocks(c)
-    #ATy = my_sdp.get_rdm_blocks(ATy)
-
     print('')
     print('    * v2RDM electronic energy: %20.12f' % (primal_energy))
     print('    * v2RDM total energy:      %20.12f' % (primal_energy + mol.nuclear_repulsion_energy()))
@@ -127,6 +127,11 @@ def main():
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
 
+    assert np.isclose(primal_energy, -7.508844911306, atol=1e-8), "primal objective value does not match reference value"
+
+def main():
+    raise Exception("run with pytest")
+    #test_psi4_v2rdm()
+
 if __name__ == "__main__":
     main()
-

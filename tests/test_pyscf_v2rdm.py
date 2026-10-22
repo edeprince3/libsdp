@@ -1,6 +1,10 @@
 """
-Driver for variational two-electron reduced-density matrix method. Integrals come from PySCF
+
+Test energies from variational two-electron reduced-density matrix method.
+The molecular integrals come from PySCF. The solver is the c++ based one.
+
 """
+
 import numpy as np
 from numpy import einsum
 
@@ -16,23 +20,24 @@ from libsdp.sdpa_file_io import read_sdpa_problem
 from libsdp.sdpa_file_io import write_sdpa_problem
 
 import pyscf
+import pytest
+pyscf = pytest.importorskip("pyscf", reason="PySCF is not installed; skipping PySCF v2RDM test")
 
-def main():
+def test_pyscf_v2rdm():
 
-    # build molecule
     # build molecule
     mol = pyscf.M(
         atom=[
-['H', (0, 0, 0)],
-['H', (0, 0, 1)],
-['H', (0, 0, 2)],
-['H', (0, 0, 3)],
-['H', (0, 0, 4)],
-['H', (0, 0, 5)],
-              ],
+            ['H', (0, 0, 0)],
+            ['H', (0, 0, 1)],
+            ['H', (0, 0, 2)],
+            ['H', (0, 0, 3)],
+            ['H', (0, 0, 4)],
+            ['H', (0, 0, 5)],
+        ],
         basis='sto-3g',
-        spin=1,
-        charge=+1,
+        spin=0,
+        charge=+0,
         symmetry=False)
 
     # run RHF
@@ -77,9 +82,6 @@ def main():
     # use this one for d-only
     my_sdp = v2rdm_sdp(nalpha, nbeta, nmo, oei, tei, q2 = True, g2 = True, constrain_spin = False)
 
-    #b = my_sdp.b
-    #F = my_sdp.F
-
     b, F = clean_sdpa_problem(my_sdp.b, my_sdp.F)
 
     dimensions = my_sdp.dimensions
@@ -87,15 +89,7 @@ def main():
     # set options
     options = sdp_options()
 
-
-    #options.sdp_algorithm             = "bpsdp"
-    #options.maxiter                   = maxiter
-    #options.sdp_error_convergence     = 1e-4
-    #options.sdp_objective_convergence = 1e-4
-    #options.penalty_parameter_scaling = 0.1
-
     options.sdp_algorithm             = "bpsdp"
-    #options.procedure                 = "maximize"
     options.guess_type                = "random"
     options.sdp_error_convergence     = 5e-5
     options.sdp_objective_convergence = 5e-5
@@ -115,14 +109,6 @@ def main():
     dual_energy = np.dot(b, y)
     primal_energy = np.dot(c, x)
 
-    #dum = 0.0
-    #for i in range (0, len(b)):
-    #    if np.abs(b[i]) > 1e-6:
-    #        dum += b[i] * y[i]
-    #        print(b[i], y[i])
-    #print()
-    #print(dum)
-
     # action of A^T on y
     ATy = np.array(sdp.get_ATu(y))
 
@@ -131,12 +117,6 @@ def main():
 
     dual_error = c - z - ATy
     primal_error = Ax - b
-
-    # extract blocks of rdms
-    #x = my_sdp.get_rdm_blocks(x)
-    #z = my_sdp.get_rdm_blocks(z)
-    #c = my_sdp.get_rdm_blocks(c)
-    #ATy = my_sdp.get_rdm_blocks(ATy)
 
     print('')
     print('    * v2RDM electronic energy: %20.12f' % (primal_energy))
@@ -147,10 +127,11 @@ def main():
     print('    |c.x - b.y|:               %20.12f' % (np.linalg.norm(dual_energy - primal_energy)))
     print('')
 
+    assert np.isclose(primal_energy, -7.848024089674, atol=1e-8), "primal objective value does not match reference value"
 
-
-    
+def main():
+    raise Exception("run with pytest")
+    #test_pyscf_v2rdm()
 
 if __name__ == "__main__":
     main()
-

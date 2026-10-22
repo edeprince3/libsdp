@@ -105,7 +105,7 @@ class LoopState(NamedTuple):
     gap: jnp.ndarray
 
 
-def bpsdp(x, b, c, block_dimensions, A, options, maxiter=50000, matvec='scatter', chunk=2**24):
+def bpsdp(x, b, c, block_dimensions, A, options, maxiter=50000, matvec='bcoo', chunk=2**24):
     """
     solve min c.x s.t. A x = b, x >= 0 (blockwise) by the boundary-point algorithm.
 

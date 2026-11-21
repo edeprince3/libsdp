@@ -24,7 +24,6 @@ with conjugate-gradient solves for the dual update. for memory:
 
 the arrays that scale with the primal dimension are x, z, c, and U.
 """
-import sys
 import time
 
 import numpy as np
@@ -92,6 +91,23 @@ def _robust_eigh(U):
     ok = jnp.all(jnp.isfinite(w)) & jnp.all(jnp.isfinite(v))
     shapes = (jax.ShapeDtypeStruct(w.shape, w.dtype), jax.ShapeDtypeStruct(v.shape, v.dtype))
     return lax.cond(ok, lambda _: (w, v), lambda M: jax.pure_callback(_host_eigh, shapes, M), U)
+
+
+class BPSDPNotConverged(RuntimeError):
+    """
+    raised when bpsdp reaches maxiter before converging; carries the last iterate, so a
+    caller can inspect it, accept it, or restart from it
+
+    members: x, y, z (last primal, dual, and dual slack vectors), n_iter, primal_error,
+    dual_error, gap
+    """
+
+    def __init__(self, x, y, z, n_iter, primal_error, dual_error, gap):
+        super().__init__('bpsdp did not converge in %i iterations (||Ax-b|| = %.3e, ||ATy-c+z|| = %.3e, '
+                         '|c.x-b.y| = %.3e)' % (n_iter, primal_error, dual_error, gap))
+        self.x, self.y, self.z = x, y, z
+        self.n_iter = n_iter
+        self.primal_error, self.dual_error, self.gap = primal_error, dual_error, gap
 
 
 class LoopState(NamedTuple):
@@ -276,7 +292,8 @@ def bpsdp(x, b, c, block_dimensions, A, options, maxiter=50000, matvec='bcoo', c
 
     if n_iter == maxiter:
         print('\n    error: bpsdp did not converge\n')
-        sys.exit()
+        raise BPSDPNotConverged(np.array(state.x), np.array(state.y), np.array(state.z), n_iter,
+                                float(state.primal_error), float(state.dual_error), float(state.gap))
 
     print('\n    total bpsdp iterations: %10i' % (n_iter))
     print('    total bpsdp wall time:  %10.3f s  (includes one-time JIT compilation)' % (total_solve_time))
